@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:unilever_activo/bloc/splash_cubit.dart';
-import 'package:unilever_activo/navigations/app_routes.dart';
-import 'package:unilever_activo/navigations/navigation_helper.dart';
-import 'package:unilever_activo/utils/app_colors.dart';
+import 'package:unilever_activo/bloc_cubits/splash_cubit.dart';
+
 import 'package:unilever_activo/utils/assets.dart';
+import 'package:unilever_activo/utils/widgets/app_space.dart';
+import 'package:unilever_activo/utils/widgets/app_text.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,30 +16,38 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    // context.read<SplashCubit>().initState();
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SplashCubit(),
-      child: Scaffold(
-        backgroundColor: AppColors.black,
-        body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(
-                child: Image.asset(
-                  AssetsPath.appLogo,
-                ),
+    final size = MediaQuery.sizeOf(context);
+    return BlocConsumer<SplashCubit, int?>(
+        listener: (context, state) {},
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.background,
+            body: SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      AssetsPath.appLogo,
+                      // height: size.height * 0.5,
+                      width: size.width * 0.4,
+                    ),
+                  ),
+                  AppSpace.vrtSpace(15),
+                  AppText(
+                    text: "Smart Helmet (Activo)",
+                    color: Theme.of(context).textTheme.displayLarge?.color,
+                    fontSize: 18,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
+        });
   }
 }

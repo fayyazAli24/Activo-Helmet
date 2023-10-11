@@ -1,3 +1,3 @@
 class AssetsPath {
-  static const appLogo = 'assets/app_icon/hemet.png';
+  static const appLogo = 'assets/app_icon/helmet.png';
 }
