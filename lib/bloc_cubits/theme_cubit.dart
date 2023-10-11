@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 
-enum AppMode { light, dark }
+enum AppMode { system, light, dark }
 
 class AppThemeModeCubit extends Cubit<AppMode> {
-  AppThemeModeCubit() : super(AppMode.light);
+  AppThemeModeCubit() : super(AppMode.system);
   bool? darkTheme;
 
   changeTheme(bool newTheme) {
     darkTheme = newTheme;
-
     if (darkTheme ?? false) {
       emit(AppMode.dark);
     } else {

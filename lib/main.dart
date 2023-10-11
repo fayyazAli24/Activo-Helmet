@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app.dart';
+import 'package:unilever_activo/bloc_cubits/bluetooth_cubit.dart';
 
 import 'package:unilever_activo/bloc_cubits/home_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/splash_cubit.dart';
@@ -43,7 +44,7 @@ class _MyAppState extends State<MyApp> {
           create: (context) => SplashCubit(),
         ),
         BlocProvider(
-          create: (context) => HomeCubit(),
+          create: (context) => BluetoothCubit(),
         ),
       ],
       child: Builder(
