@@ -31,6 +31,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     // getDevices();
   }
 
+  BluetoothConnection? connection;
   List<BluetoothDiscoveryResult> devices = [];
   StreamSubscription<Uint8List>? inputStream;
   String? deviceName;
@@ -90,18 +91,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     try {
       emit(AppBluetoothState.connecting);
       deviceName = device.name;
-      final connection = await BluetoothConnection.toAddress(device.address);
-      if (connection.isConnected) {
+      connection = await BluetoothConnection.toAddress(device.address);
+      if (connection?.isConnected ?? false) {
         deviceName = device.name;
-
-        inputStream = connection.input?.listen(
+        inputStream = connection?.input?.listen(
           (event) {
             String newData = String.fromCharCodes(event);
 
             emit(AppBluetoothState.newDeviceData);
 
             if (newData.contains(RegExp(r'[a-zA-Z0-9]'))) {
-              // Process the data
               if (newData != deviceData) {
                 deviceData = newData;
 
@@ -118,6 +117,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             inputStream?.cancel();
           },
         );
+        pop();
 
         emit(AppBluetoothState.connected);
       } else {
@@ -133,7 +133,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   disconnect() async {
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
-
+    connection?.finish();
     inputStream?.cancel();
     emit(AppBluetoothState.disconnected);
   }
