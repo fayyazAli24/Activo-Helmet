@@ -39,6 +39,8 @@ dependencies:
   dio: ^5.3.3
   flutter_blue_plus: ^1.17.5
   permission_handler: ^11.0.1
+  lottie: ^2.6.0
+  flutter_bluetooth_serial: ^0.4.0
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +68,7 @@ flutter:
   assets:
     - assets/app_icon/
     - assets/
+    - assets/lottie/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
