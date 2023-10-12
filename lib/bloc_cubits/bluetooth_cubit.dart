@@ -13,11 +13,15 @@ enum AppBluetoothState { scanning, scanned, on, off, disconnected, connected, er
 class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState.scanning) {
     checkBluetoothStatus();
+    getDevices();
+
     startScan();
   }
-  Set<BluetoothDevice> seen = {};
 
   List<ScanResult> devices = [];
+
+  Stream<List<ScanResult>>? scanResults;
+  StreamSubscription<List<ScanResult>>? subscription;
 
   bool scanning = false;
   checkBluetoothStatus() {
@@ -26,35 +30,46 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         if (Platform.isAndroid) {
           await FlutterBluePlus.turnOn();
           emit(AppBluetoothState.on);
+        } else {
+          emit(AppBluetoothState.off);
         }
       }
     });
   }
 
   startScan() async {
-    scanning = FlutterBluePlus.isScanningNow;
+    FlutterBluePlus.isScanning.listen((event) {
+      if (event) {
+        scanning = true;
+      }
+    });
 
     if (scanning) {
       await FlutterBluePlus.stopScan();
     }
-
-    devices = [];
+    emit(AppBluetoothState.scanning);
 
     await FlutterBluePlus.startScan(
       timeout: const Duration(seconds: 4),
-      removeIfGone: const Duration(seconds: 1),
+      oneByOne: false,
+      androidUsesFineLocation: false,
+      withServices: [],
+      removeIfGone: const Duration(seconds: 3),
     );
-    emit(AppBluetoothState.scanning);
-
-    await getDevices();
   }
 
-  getDevices() async {
-    var subscription = FlutterBluePlus.scanResults.listen((results) {
-      devices = results;
-    });
+  getDevices() {
+    subscription = FlutterBluePlus.scanResults.listen((results) {
+      for (ScanResult result in results) {
+        if (!devices.contains(result) && result.device.platformName.isNotEmpty) {
+          devices.add(result);
+        } else {
+          devices.remove(result);
+        }
+      }
 
-    emit(AppBluetoothState.scanned);
+      emit(AppBluetoothState.scanned);
+    });
   }
 
   snackBar(String msg, BuildContext context) {

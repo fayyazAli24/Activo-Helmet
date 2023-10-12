@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/bloc_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/home_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/theme_cubit.dart';
@@ -24,19 +27,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocConsumer<BluetoothCubit, AppBluetoothState>(
       listener: (context, state) {
         final cubit = context.read<BluetoothCubit>();
-        if (state == AppBluetoothState.scanning) {
-          cubit.snackBar("Scanning devices", context);
-        } else if (state == AppBluetoothState.scanned) {
-          cubit.snackBar("Scanned", context);
+        if (state == AppBluetoothState.off) {
+          cubit.snackBar("Bluetooth is turned off", context);
         }
       },
       builder: (context, state) {
-        List list = [];
-
         final cubit = context.read<BluetoothCubit>();
-        if (cubit.devices.any((element) => element.device.platformName.isNotEmpty)) {
-          list = context.read<BluetoothCubit>().devices;
-        }
+
         return Scaffold(
           appBar: AppBar(
             backgroundColor: theme.appBarTheme.backgroundColor,
@@ -89,46 +86,68 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  if (context.read<BluetoothCubit>().devices.isEmpty)
-                    const Center(
-                      child: AppText(
-                        text: "No Devices Found",
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: list.length,
-                        itemBuilder: (context, index) {
-                          final item = cubit.devices[index];
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Card(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      // Image.asset(  ),
-                                      Column(
-                                        children: [
-                                          AppText(
-                                            text: item.device.platformName ?? "",
-                                            fontSize: 15,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                  BlocConsumer<BluetoothCubit, AppBluetoothState>(
+                    builder: (context, state) {
+                      if (state == AppBluetoothState.scanned) {
+                        return Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: cubit.devices.length,
+                            itemBuilder: (context, index) {
+                              final item = cubit.devices[index];
+                              log("${item.device.platformName}");
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                child: Card(
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: const Icon(
+                                      Icons.bluetooth,
+                                      color: AppColors.blueAccent,
+                                      size: 30,
+                                    ),
+                                    title: AppText(
+                                      text: item.device.platformName ?? "",
+                                      fontSize: 15,
+                                    ),
+                                    subtitle: AppText(
+                                      text: "${item.device.remoteId}",
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }
+                      return const Center(
+                        child: AppText(
+                          text: "No Devices Found",
+                        ),
+                      );
+                    },
+                    listener: (context, state) {},
+                  )
+                  // StreamBuilder(
+                  //   stream: cubit.scanResults,
+                  //   builder: (context, snapshot) {
+                  //     if (snapshot.connectionState == ConnectionState.waiting) {
+                  //       return const Center(
+                  //         child: CircularProgressIndicator.adaptive(),
+                  //       );
+                  //     } else if (!snapshot.hasData) {
+                  //       return const Center(
+                  //         child: AppText(
+                  //           text: "No Devices Found",
+                  //         ),
+                  //       );
+                  //     }
+                  //
+                  //     return
+                  //   },
+                  // ),
                 ],
               ),
             ),
