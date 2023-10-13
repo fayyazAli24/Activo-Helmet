@@ -11,6 +11,7 @@ import 'package:unilever_activo/bloc_cubits/bluetooth_cubit.dart';
 
 import 'package:unilever_activo/bloc_cubits/home_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/internet_cubit.dart';
+import 'package:unilever_activo/bloc_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/splash_cubit.dart';
 import 'package:unilever_activo/bloc_cubits/theme_cubit.dart';
 
@@ -18,6 +19,8 @@ import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/services/storage_services.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
+
+import 'utils/widgets/app_text.dart';
 
 permissions() async {
   await [
@@ -59,6 +62,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider(
           create: (context) => InternetCubit(),
+        ),
+        BlocProvider(
+          create: (context) => LocationCubit(),
         ),
       ],
       child: Builder(
