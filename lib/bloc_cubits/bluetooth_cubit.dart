@@ -7,9 +7,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+
+import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
+import 'package:unilever_activo/services/storage_services.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
 enum AppBluetoothState {
@@ -38,11 +41,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   String? deviceData;
   double? batteryPercentage;
   int isWore = 0;
+  bool autoConnected = false;
 
   // Stream<List<ScanResult>>? scanResults;
   // StreamSubscription<List<ScanResult>>? subscription;
   FlutterBluetoothSerial flutterBluetoothSerial = FlutterBluetoothSerial.instance;
   BluetoothConnection? bluetoothConnection;
+
   checkStatus() async {
     final bluetoothState = await flutterBluetoothSerial.state;
     log("**bluetooth state :  $bluetoothState");
@@ -58,32 +63,60 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       getDevices();
     }
 
-    flutterBluetoothSerial.onStateChanged().listen((event) async {
-      print("$event listening");
-      if (event == BluetoothState.STATE_OFF) {
-        emit(AppBluetoothState.off);
-        final isON = await flutterBluetoothSerial.requestEnable();
-        if (isON ?? false) {
+    flutterBluetoothSerial.onStateChanged().listen(
+      (event) async {
+        print("$event listening");
+        if (event == BluetoothState.STATE_OFF) {
+          emit(AppBluetoothState.off);
+          final isON = await flutterBluetoothSerial.requestEnable();
+          if (isON ?? false) {
+            emit(AppBluetoothState.on);
+            getDevices();
+          }
+        } else if (bluetoothState == BluetoothState.STATE_ON) {
           emit(AppBluetoothState.on);
+          getDevices();
         }
-      } else if (bluetoothState == BluetoothState.STATE_ON) {
-        emit(AppBluetoothState.on);
-      }
-    });
+      },
+      onDone: () {
+        disconnect();
+      },
+    );
   }
 
   getDevices() async {
     final blueState = await flutterBluetoothSerial.state;
 
     if (blueState == BluetoothState.STATE_ON) {
-      flutterBluetoothSerial.startDiscovery().listen((newDevice) {
-        emit(AppBluetoothState.scanning);
+      devices = [];
 
-        if (!devices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
-          devices.add(newDevice);
-          emit(AppBluetoothState.scanned);
-        }
-      });
+      flutterBluetoothSerial.startDiscovery().listen(
+        (newDevice) {
+          emit(AppBluetoothState.scanning);
+
+          if (!devices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
+            devices.add(newDevice);
+            emit(AppBluetoothState.scanned);
+          }
+        },
+        onDone: () {
+          disconnect();
+        },
+        cancelOnError: true,
+      );
+    }
+  }
+
+  autoConnect(bool value) async {
+    BluetoothDevice? device = await StorageService().read(lastDeviceKey);
+    print("$value");
+
+    if (device != null) {
+      await connect(device);
+      autoConnected = true;
+    } else {
+      autoConnected = false;
+      emit(AppBluetoothState.disconnected);
     }
   }
 
@@ -91,8 +124,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     try {
       emit(AppBluetoothState.connecting);
       deviceName = device.name;
+
       connection = await BluetoothConnection.toAddress(device.address);
+
       if (connection?.isConnected ?? false) {
+        await StorageService().write(lastDeviceKey, device);
         deviceName = device.name;
         inputStream = connection?.input?.listen(
           (event) {
@@ -103,6 +139,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             if (newData.contains(RegExp(r'[a-zA-Z0-9]'))) {
               if (newData != deviceData) {
                 deviceData = newData;
+                log("$deviceData");
 
                 final batteryValue = deviceData?.split(',')[1].toString();
                 batteryPercentage = double.parse(batteryValue ?? "0");
@@ -113,8 +150,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               }
             }
           },
+          cancelOnError: true,
           onDone: () {
-            inputStream?.cancel();
+            disconnect();
+            getDevices();
           },
         );
         pop();
@@ -131,101 +170,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   disconnect() async {
+    await flutterBluetoothSerial.cancelDiscovery();
+
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
+
     connection?.finish();
     inputStream?.cancel();
+
+    autoConnected = false;
     emit(AppBluetoothState.disconnected);
-  }
-
-  // checkBluetoothStatus() {
-  //   FlutterBluePlus.adapterState.listen((event) async {
-  //     if (event == BluetoothAdapterState.off) {
-  //       emit(AppBluetoothState.off);
-  //       if (Platform.isAndroid) {
-  //         await FlutterBluePlus.turnOn();
-  //         emit(AppBluetoothState.on);
-  //         await startScan();
-  //       } else {
-  //         emit(AppBluetoothState.off);
-  //       }
-  //     } else {
-  //       await startScan();
-  //
-  //       emit(AppBluetoothState.on);
-  //     }
-  //   });
-  // }
-  //
-  // startScan() async {
-  //   FlutterBluePlus.isScanning.listen((event) {
-  //     if (event) {
-  //       scanning = true;
-  //     }
-  //   });
-  //
-  //   if (scanning) {
-  //     await FlutterBluePlus.stopScan();
-  //   }
-  //
-  //   await FlutterBluePlus.startScan(
-  //     timeout: const Duration(seconds: 5),
-  //     oneByOne: false,
-  //     androidUsesFineLocation: false,
-  //     withServices: [],
-  //     removeIfGone: const Duration(seconds: 3),
-  //   );
-  //   emit(AppBluetoothState.scanning);
-  // }
-  //
-  // // getDevices() {
-  // //   subscription = FlutterBluePlus.scanResults.listen((results) {
-  // //     for (ScanResult result in results) {
-  // //       if (!devices.contains(result) && result.device.platformName.isNotEmpty) {
-  // //         devices.add(result);
-  // //       } else {
-  // //         devices.remove(result);
-  // //       }
-  // //     }
-  // //
-  // //     emit(AppBluetoothState.scanned);
-  // //   });
-  // // }
-  //
-  // turnOn() async {
-  //   await FlutterBluePlus.turnOn();
-  //   emit(AppBluetoothState.on);
-  // }
-  //
-  // connect( device) async {
-  //   try {
-  //     emit(AppBluetoothState.connecting);
-  //     await device.connect().then((value) {
-  //       emit(AppBluetoothState.connected);
-  //     });
-  //   } catch (e) {
-  //     log("$e");
-  //     pop();
-  //     emit(AppBluetoothState.error);
-  //     emit(AppBluetoothState.scanned);
-  //   }
-  // }
-  //
-  // disconnect() async {
-  //   final connectedDevices = await FlutterBluePlus.bondedDevices;
-  //   await connectedDevices.first.disconnect();
-  //   emit(AppBluetoothState.disconnected);
-  // }
-
-  snackBar(String msg, BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        content: AppText(
-          text: msg,
-          color: Theme.of(context).textTheme.bodyLarge?.color,
-        ),
-      ),
-    );
   }
 }

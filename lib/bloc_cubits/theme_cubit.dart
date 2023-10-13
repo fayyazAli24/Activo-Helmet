@@ -28,20 +28,7 @@ class AppThemeModeCubit extends Cubit<AppMode> {
   }
 
   ThemeData appTheme() {
-    if (state == AppMode.light) {
-      return ThemeData(
-        appBarTheme: AppBarTheme(color: AppColors.appBarColor),
-        useMaterial3: true,
-        colorScheme: const ColorScheme.light(
-          background: AppColors.white,
-        ),
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
-            color: AppColors.black,
-          ),
-        ),
-      );
-    } else {
+    if (state == AppMode.dark) {
       return ThemeData(
         appBarTheme: AppBarTheme(color: AppColors.appBarColor),
         useMaterial3: true,
@@ -51,6 +38,19 @@ class AppThemeModeCubit extends Cubit<AppMode> {
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             color: AppColors.white,
+          ),
+        ),
+      );
+    } else {
+      return ThemeData(
+        appBarTheme: AppBarTheme(color: AppColors.appBarColor),
+        useMaterial3: true,
+        colorScheme: const ColorScheme.light(
+          background: AppColors.white,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            color: AppColors.black,
           ),
         ),
       );

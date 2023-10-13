@@ -11,6 +11,7 @@ import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
+import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,25 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: AppText(
-                      text: "Auto connect with last paired",
-                      color: theme.textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 0,
-                    child: Switch.adaptive(
-                      value: false,
-                      onChanged: (value) {},
-                    ),
-                  ),
-                ],
-              ),
               AppSpace.vrtSpace(10),
               BlocConsumer<BluetoothCubit, AppBluetoothState>(
                 builder: (context, state) {
@@ -71,66 +53,86 @@ class _HomeScreenState extends State<HomeScreen> {
                   final newCubit = context.read<BluetoothCubit>();
 
                   if (state == AppBluetoothState.off) {
-                    return Lottie.asset(
-                      AssetsPath.powerOn,
-                      frameRate: FrameRate.max,
-                      fit: BoxFit.fill,
-                      height: size.height * 0.2,
+                    return Center(
+                      child: Lottie.asset(
+                        AssetsPath.powerOn,
+                        frameRate: FrameRate.max,
+                        fit: BoxFit.fill,
+                        height: size.height * 0.2,
+                      ),
                     );
                   } else if (state == AppBluetoothState.connected ||
                       state == AppBluetoothState.deviceDataUpdated ||
                       state == AppBluetoothState.newDeviceData) {
                     final batterPer = (newCubit.batteryPercentage ?? 0) / 100;
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            await newCubit.disconnect();
-                          },
-                          child: Lottie.asset(
-                            AssetsPath.powerOff,
-                            frameRate: FrameRate.max,
-                            fit: BoxFit.fill,
-                            height: size.height * 0.2,
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              await newCubit.disconnect();
+                            },
+                            child: Lottie.asset(
+                              AssetsPath.powerOff,
+                              frameRate: FrameRate.max,
+                              fit: BoxFit.fill,
+                              height: size.height * 0.2,
+                            ),
                           ),
-                        ),
-                        Container(
-                          width: size.width * 0.3,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.white),
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: FractionallySizedBox(
-                            widthFactor: batterPer,
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: batterPer <= 0.2 ? Colors.red : Colors.green,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Center(
-                                child: AppText(
-                                  text: "${newCubit.batteryPercentage ?? "0"}%",
-                                  color: AppColors.white,
-                                  fontSize: 12,
+                          Container(
+                            width: size.width * 0.3,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.white),
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: FractionallySizedBox(
+                              widthFactor: batterPer,
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: batterPer <= 0.2 ? Colors.red : Colors.green,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Center(
+                                  child: AppText(
+                                    text: "${newCubit.batteryPercentage ?? "0"}%",
+                                    color: AppColors.white,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        AppSpace.vrtSpace(10),
-                        AppText(
-                          text: newCubit.isWore > 0 ? "Not Weared" : "Weared",
-                          color: AppColors.white,
-                        ),
-                      ],
+                          AppSpace.vrtSpace(10),
+                          AppText(
+                            text: newCubit.isWore > 0 ? "Not Weared" : "Weared",
+                            color: AppColors.white,
+                          ),
+                        ],
+                      ),
                     );
                   }
                   return Expanded(
                     child: Column(
                       children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AppText(
+                              text: "Auto connect with last paired",
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                            Switch.adaptive(
+                              value: newCubit.autoConnected,
+                              onChanged: (value) {
+                                newCubit.autoConnect(value);
+                              },
+                            ),
+                          ],
+                        ),
                         InkWell(
                           onTap: () async {},
                           child: Lottie.asset(
@@ -182,13 +184,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 listener: (context, state) {
                   final cubit = context.read<BluetoothCubit>();
                   if (state == AppBluetoothState.off) {
-                    cubit.snackBar("Bluetooth is turned off", context);
+                    snackBar("Bluetooth is turned off", context);
                   } else if (state == AppBluetoothState.error) {
-                    cubit.snackBar("Can't Connect", context);
+                    snackBar("Can't Connect", context);
                   } else if (state == AppBluetoothState.connecting) {
-                    cubit.snackBar("Connecting to ${cubit.deviceName}", context);
+                    snackBar("Connecting to ${cubit.deviceName}", context);
                   } else if (state == AppBluetoothState.connected) {
-                    cubit.snackBar("Connected to ${cubit.deviceName}  ", context);
+                    snackBar("Connected to ${cubit.deviceName}  ", context);
                   }
                   if (state == AppBluetoothState.connecting) {
                     showAdaptiveDialog(

@@ -41,6 +41,10 @@ dependencies:
   permission_handler: ^11.0.1
   lottie: ^2.6.0
   flutter_bluetooth_serial: ^0.4.0
+  hive: ^2.2.3
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  connectivity_plus: ^5.0.0
 
 dev_dependencies:
   flutter_test:
