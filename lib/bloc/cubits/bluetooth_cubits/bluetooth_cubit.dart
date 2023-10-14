@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
@@ -31,6 +32,7 @@ enum AppBluetoothState {
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState.initial) {
+    checkPermissions();
     checkStatus();
     // getDevices();
   }
@@ -48,8 +50,22 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   FlutterBluetoothSerial flutterBluetoothSerial = FlutterBluetoothSerial.instance;
   BluetoothConnection? bluetoothConnection;
 
+  checkPermissions() async {
+    final bluetoothPermission = await Permission.bluetooth.isGranted;
+    final locationPermission = await Permission.location.isGranted;
+
+    if (!bluetoothPermission) {
+      emit(AppBluetoothState.off);
+      await Permission.bluetooth.request();
+    }
+    if (!locationPermission) {
+      await Permission.location.request();
+    }
+  }
+
   checkStatus() async {
     final bluetoothState = await flutterBluetoothSerial.state;
+
     log("**bluetooth state :  $bluetoothState");
     if (bluetoothState == BluetoothState.STATE_OFF) {
       emit(AppBluetoothState.off);
