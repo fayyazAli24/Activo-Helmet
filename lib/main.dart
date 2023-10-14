@@ -1,26 +1,16 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unilever_activo/app/app.dart';
-import 'package:unilever_activo/bloc_cubits/bluetooth_cubit.dart';
-
-import 'package:unilever_activo/bloc_cubits/home_cubit.dart';
-import 'package:unilever_activo/bloc_cubits/internet_cubit.dart';
-import 'package:unilever_activo/bloc_cubits/location_cubit.dart';
-import 'package:unilever_activo/bloc_cubits/splash_cubit.dart';
-import 'package:unilever_activo/bloc_cubits/theme_cubit.dart';
-
+import 'package:unilever_activo/app/initialize_app.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
 import 'package:unilever_activo/navigations/app_routes.dart';
-import 'package:unilever_activo/services/storage_services.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
-
-import 'utils/widgets/app_text.dart';
 
 permissions() async {
   await [
@@ -67,44 +57,7 @@ class _MyAppState extends State<MyApp> {
           create: (context) => LocationCubit(),
         ),
       ],
-      child: Builder(
-        builder: (context) {
-          return BlocConsumer<AppThemeModeCubit, AppMode>(
-            listener: (context, state) {},
-            builder: (context, state) {
-              final themeCubit = context.read<AppThemeModeCubit>();
-
-              return MaterialApp(
-                theme: themeCubit.appTheme(),
-                themeMode: themeCubit.themeMode(),
-                darkTheme: ThemeData.dark(useMaterial3: true),
-                debugShowCheckedModeBanner: false,
-                navigatorObservers: [
-                  NavigatorObserver(),
-                ],
-                navigatorKey: App.navigatorKey,
-                onGenerateRoute: (settings) {},
-                initialRoute: AppRoutes.splash,
-                routes: AppRoutes.routes,
-                builder: (context, child) {
-                  return BlocConsumer<InternetCubit, InternetState>(
-                    listener: (context, state) {
-                      if (state == InternetState.disconnected) {
-                        snackBar("No internet", context, color: Colors.red, textColor: AppColors.white);
-                      } else if (state == InternetState.connected) {
-                        snackBar("Internet Connected", context, color: Colors.green, textColor: AppColors.white);
-                      }
-                    },
-                    builder: (context, state) {
-                      return child!;
-                    },
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+      child: const InitializeApp(),
     );
   }
 }

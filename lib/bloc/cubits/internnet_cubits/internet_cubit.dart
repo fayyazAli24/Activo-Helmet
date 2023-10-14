@@ -32,4 +32,10 @@ class InternetCubit extends Cubit<InternetState> {
       },
     );
   }
+
+  @override
+  Future<void> close() async {
+    await subscription?.cancel();
+    return super.close();
+  }
 }

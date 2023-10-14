@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:unilever_activo/bloc_cubits/splash_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
 
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
