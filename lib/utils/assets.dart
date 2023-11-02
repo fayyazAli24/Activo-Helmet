@@ -1,5 +1,5 @@
 class AssetsPath {
-  static const appLogo = 'assets/app_icon/helmet.png';
+  static const appLogo = 'assets/app_icon/helmet_icon.png';
 
   //lottie animations
   static const powerOff = 'assets/lottie/power_off.json';

@@ -57,17 +57,20 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/app_icon/helmet.png"
+  image_path: "assets/app_icon/helmet_icon.png"
   min_sdk_android: 21
-
+  remove_alpha_ios: true
 
 
 
 
 flutter_native_splash:
+  color: "#ffffff"
   android_12:
     image: "assets/app_icon/helmet.png"
   image: "assets/app_icon/helmet.png"
+  color_android: "#ffffff"
+  color_dark_android: "#000000"
 
 
 

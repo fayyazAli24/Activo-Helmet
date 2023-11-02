@@ -36,8 +36,6 @@ class InitializeApp extends StatelessWidget {
               listener: (context, state) {
                 if (state == InternetState.disconnected) {
                   snackBar("No internet", context, color: AppColors.red, textColor: AppColors.white);
-                } else if (state == InternetState.connected) {
-                  snackBar("Internet Connected", context, color: AppColors.green, textColor: AppColors.white);
                 }
               },
               child: child!,
