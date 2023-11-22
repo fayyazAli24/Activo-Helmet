@@ -5,9 +5,12 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
+import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/services/storage_services.dart';
 
@@ -21,9 +24,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothConnection? connection;
   List<BluetoothDiscoveryResult> devices = [];
   StreamSubscription<Uint8List>? inputStream;
+  StreamSubscription<Position>? locationStream;
   String? deviceName;
   String? deviceData;
   double? batteryPercentage;
+  double? speed;
   int isWore = 0;
   bool autoConnected = false;
   StreamSubscription<BluetoothState>? bluetoothStateStream;
@@ -114,6 +119,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       connection = await BluetoothConnection.toAddress(device.address);
 
       if (connection?.isConnected ?? false) {
+        final locationService = di.get<LocationService>();
+
         final convertedDevice = jsonEncode(device.toMap());
 
         await StorageService().write(lastDeviceKey, convertedDevice);
@@ -125,18 +132,24 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             if (newData.contains(RegExp(r'[a-zA-Z0-9]'))) {
               if (newData != deviceData) {
                 deviceData = newData;
+                final splitData = deviceData?.split(',');
+                if (splitData?.isNotEmpty ?? false) {
+                  String deviceStatus = splitData![0];
 
-                final splittedData = deviceData?.split(',');
-                if (splittedData?.isNotEmpty ?? false) {
-                  String deviceStatus = splittedData![0] ?? "0";
-                  isWore = int.parse(deviceStatus);
+                  final parsedStatus = int.parse(deviceStatus);
 
-                  if (splittedData.length > 1) {
-                    final batteryValue = splittedData[1].toString();
-                    batteryPercentage = double.tryParse(batteryValue ?? "0");
+                  isWore = parsedStatus == 0 ? 1 : 0;
+                  if (splitData.length > 1) {
+                    final batteryValue = splitData[1].toString();
+                    batteryPercentage = double.tryParse(batteryValue);
+                    speed = double.tryParse(splitData[2]);
                   }
                 }
-                emit(BluetoothConnectedState(batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
+                emit(BluetoothConnectedState(
+                    speed: speed ?? 0.0,
+                    name: deviceName ?? "",
+                    batteryPercentage: batteryPercentage ?? 0.0,
+                    isWore: isWore));
               }
             }
           },
@@ -148,7 +161,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
         ///close connecting dialog
         pop();
-        emit(BluetoothConnectedState(batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
+        emit(BluetoothConnectedState(
+            speed: speed ?? 0.0, name: deviceName ?? "", batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
       } else {
         emit(DisconnectedState());
       }
@@ -164,6 +178,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.close();
     await connection?.finish();
     await inputStream?.cancel();
+    await locationStream?.cancel();
+
     autoConnected = false;
     getDevices();
     emit(DisconnectedState());
@@ -176,6 +192,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.close();
     await bluetoothDiscoveryStream?.cancel();
     await connection?.finish();
+    await locationStream?.cancel();
     await inputStream?.cancel();
     return super.close();
   }

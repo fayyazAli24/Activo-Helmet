@@ -91,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else if (state is BluetoothConnectedState) {
                         return BluetoothConnectedScreen(
                           state: state,
+                          deviceName: state.name,
                           size: size,
                         );
                       }

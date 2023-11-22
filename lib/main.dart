@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:unilever_activo/app/app.dart';
+import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
-import 'package:unilever_activo/navigations/app_routes.dart';
-import 'package:unilever_activo/utils/app_colors.dart';
-import 'package:unilever_activo/utils/widgets/global_method.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
 
 permissions() async {
   await [
@@ -21,9 +20,14 @@ permissions() async {
   ].request();
 }
 
+final di = GetIt.instance;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerServices();
+  await di.get<LocationService>().getLocation();
 
+  di.get<LocationService>().getLocationStream();
   await permissions();
 
   runApp(const MyApp());
