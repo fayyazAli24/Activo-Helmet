@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
@@ -24,11 +25,21 @@ final di = GetIt.instance;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await permissions();
   registerServices();
+
   await di.get<LocationService>().getLocation();
 
   di.get<LocationService>().getLocationStream();
-  await permissions();
+
+  final pref = await SharedPreferences.getInstance();
+
+  final isFirstRun = await pref.getBool('firstRun');
+
+  if (isFirstRun ?? true) {
+    await pref.setBool('firstRun', false);
+    await pref.clear();
+  }
 
   runApp(const MyApp());
 }

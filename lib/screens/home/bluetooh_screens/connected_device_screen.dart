@@ -12,6 +12,7 @@ import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
+import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 class BluetoothConnectedScreen extends StatefulWidget {
   const BluetoothConnectedScreen({
@@ -33,19 +34,31 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   Timer? timer;
 
   initialization() async {
-    final res = await di
-        .get<HelmetService>()
-        .sendData(widget.state.speed, widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
+    try {
+      List? res = await di
+          .get<HelmetService>()
+          .sendData(widget.state.speed, widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
+      log("$res");
 
-    log("$res");
+      if (res != null) {
+        snackBar("Data Synced Successfully", context);
+      } else {
+        snackBar("Data Failed To Synced", context);
+      }
+    } catch (e) {
+      log("ex: $e");
+      snackBar("Data Failed To Synced", context);
+    }
   }
 
   @override
   void initState() {
-    timer = Timer.periodic(Duration(seconds: 15), (timer) async {
-      initialization();
-      log("** success hit ${widget.state.isWore}");
-    });
+    if (mounted) {
+      timer = Timer.periodic(Duration(seconds: 15), (timer) async {
+        initialization();
+        log("** success hit ${widget.state.isWore}");
+      });
+    }
     super.initState();
   }
 

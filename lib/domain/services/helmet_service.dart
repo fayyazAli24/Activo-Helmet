@@ -26,7 +26,10 @@ class HelmetService {
       ];
       final res = await ApiServices().post(api: Api.trJourney, body: body);
 
-      return res;
+      if (res != null) {
+        return res;
+      }
+      return null;
     } catch (e) {
       log("$e failed");
       rethrow;

@@ -9,8 +9,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
-import 'package:unilever_activo/domain/services/location_service.dart';
-import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/services/storage_services.dart';
 
@@ -67,15 +65,19 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
 
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
-      (event) async {
-        if (event == BluetoothState.STATE_OFF) {
-          checkStatus();
-        } else if (bluetoothState == BluetoothState.STATE_ON) {
-          emit(BluetoothStateOn());
-          getDevices();
-        }
-      },
-    );
+          (event) async {
+            if (event == BluetoothState.STATE_OFF) {
+              checkStatus();
+            } else if (event == BluetoothState.STATE_ON) {
+              emit(BluetoothStateOn());
+              getDevices();
+            }
+          },
+          onError: (e) async => await bluetoothStateStream?.cancel(),
+          onDone: () async {
+            await bluetoothStateStream?.cancel();
+          },
+        );
   }
 
   getDevices() async {
@@ -92,6 +94,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             emit(BluetoothScannedState(devices: devices));
           }
         },
+        onError: (e) async => await bluetoothDiscoveryStream?.cancel(),
       );
     }
   }
@@ -108,7 +111,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       autoConnected = true;
     } else {
       autoConnected = false;
-      emit(DisconnectedState());
+      disconnect();
     }
   }
 
@@ -119,10 +122,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       connection = await BluetoothConnection.toAddress(device.address);
 
       if (connection?.isConnected ?? false) {
-        final locationService = di.get<LocationService>();
-
         final convertedDevice = jsonEncode(device.toMap());
-
         await StorageService().write(lastDeviceKey, convertedDevice);
         deviceName = device.name;
         inputStream = connection?.input?.listen(
@@ -145,11 +145,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     speed = double.tryParse(splitData[2]);
                   }
                 }
-                emit(BluetoothConnectedState(
+                emit(
+                  BluetoothConnectedState(
                     speed: speed ?? 0.0,
                     name: deviceName ?? "",
                     batteryPercentage: batteryPercentage ?? 0.0,
-                    isWore: isWore));
+                    isWore: isWore,
+                  ),
+                );
               }
             }
           },
@@ -164,12 +167,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         emit(BluetoothConnectedState(
             speed: speed ?? 0.0, name: deviceName ?? "", batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
       } else {
-        emit(DisconnectedState());
+        disconnect();
       }
     } catch (e) {
       pop();
       log("can't connect: $e");
       emit(BluetoothFailedState(message: "Failed to connect"));
+      disconnect();
     }
   }
 
@@ -179,7 +183,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await connection?.finish();
     await inputStream?.cancel();
     await locationStream?.cancel();
-
     autoConnected = false;
     getDevices();
     emit(DisconnectedState());
@@ -190,6 +193,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await flutterBluetoothSerial.cancelDiscovery();
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
+    await bluetoothStateStream?.cancel();
+
     await bluetoothDiscoveryStream?.cancel();
     await connection?.finish();
     await locationStream?.cancel();
