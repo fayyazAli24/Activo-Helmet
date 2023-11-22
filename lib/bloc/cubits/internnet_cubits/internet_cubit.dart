@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum InternetState {

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:unilever_activo/screens/home/home_screen.dart';
 import 'package:unilever_activo/screens/splash.dart';

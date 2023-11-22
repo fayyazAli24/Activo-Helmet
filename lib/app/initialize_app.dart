@@ -28,7 +28,6 @@ class InitializeApp extends StatelessWidget {
             NavigatorObserver(),
           ],
           navigatorKey: App.navigatorKey,
-          onGenerateRoute: (settings) {},
           initialRoute: AppRoutes.splash,
           routes: AppRoutes.routes,
           builder: (context, child) {

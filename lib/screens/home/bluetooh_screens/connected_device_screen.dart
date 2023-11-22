@@ -103,7 +103,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
                 ),
                 child: Center(
                   child: AppText(
-                    text: "${widget.state.batteryPercentage ?? "0"}%",
+                    text: "${widget.state.batteryPercentage}%",
                     color: AppColors.white,
                     fontSize: 12,
                   ),

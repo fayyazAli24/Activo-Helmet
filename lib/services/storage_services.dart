@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
