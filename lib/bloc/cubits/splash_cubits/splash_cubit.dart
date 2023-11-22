@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
@@ -10,7 +9,7 @@ class SplashCubit extends Cubit<int> {
 
   initState() {
     Future.delayed(
-      const Duration(seconds: 5),
+      const Duration(seconds: 2),
       () {
         pushNamed(AppRoutes.home);
       },

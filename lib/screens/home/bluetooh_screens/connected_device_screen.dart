@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
@@ -9,14 +11,12 @@ import 'package:unilever_activo/utils/widgets/app_text.dart';
 class BluetoothConnectedScreen extends StatelessWidget {
   const BluetoothConnectedScreen({
     super.key,
-    required this.newCubit,
+    required this.state,
     required this.size,
-    required this.batterPer,
   });
 
-  final BluetoothCubit newCubit;
+  final BluetoothConnectedState state;
   final Size size;
-  final double batterPer;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class BluetoothConnectedScreen extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () async {
-              await newCubit.disconnect();
+              await context.read<BluetoothCubit>().disconnect();
             },
             child: Lottie.asset(
               AssetsPath.powerOff,
@@ -44,16 +44,16 @@ class BluetoothConnectedScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
             ),
             child: FractionallySizedBox(
-              widthFactor: batterPer,
+              widthFactor: state.batteryPercentage / 100,
               alignment: Alignment.centerLeft,
               child: Container(
                 decoration: BoxDecoration(
-                  color: batterPer <= 0.2 ? Colors.red : Colors.green,
+                  color: state.batteryPercentage / 100 <= 0.2 ? Colors.red : Colors.green,
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Center(
                   child: AppText(
-                    text: "${newCubit.batteryPercentage ?? "0"}%",
+                    text: "${state.batteryPercentage ?? "0"}%",
                     color: AppColors.white,
                     fontSize: 12,
                   ),
@@ -63,7 +63,7 @@ class BluetoothConnectedScreen extends StatelessWidget {
           ),
           AppSpace.vrtSpace(10),
           AppText(
-            text: newCubit.isWore > 0 ? "Not Weared" : "Weared",
+            text: state.isWore > 0 ? "Not Weared" : "Weared",
             color: AppColors.white,
           ),
         ],

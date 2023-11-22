@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 
-enum AppMode { system, light, dark }
+enum AppThemeMode { system, light, dark }
 
-class AppThemeModeCubit extends Cubit<AppMode> {
-  AppThemeModeCubit() : super(AppMode.system);
+class AppThemeModeCubit extends Cubit<AppThemeMode> {
+  AppThemeModeCubit() : super(AppThemeMode.system);
   bool? darkTheme;
 
   changeTheme(bool newTheme) {
     darkTheme = newTheme;
     if (darkTheme ?? false) {
-      emit(AppMode.dark);
+      emit(AppThemeMode.dark);
     } else {
-      emit(AppMode.light);
+      emit(AppThemeMode.light);
     }
   }
 
   ThemeMode themeMode() {
-    if (state == AppMode.light) {
+    if (state == AppThemeMode.light) {
       return ThemeMode.light;
-    } else if (state == AppMode.dark) {
+    } else if (state == AppThemeMode.dark) {
       return ThemeMode.dark;
     } else {
       return ThemeMode.system;
@@ -28,7 +28,7 @@ class AppThemeModeCubit extends Cubit<AppMode> {
   }
 
   ThemeData appTheme() {
-    if (state == AppMode.dark) {
+    if (state == AppThemeMode.dark) {
       return ThemeData(
         appBarTheme: AppBarTheme(color: AppColors.appBarColor),
         useMaterial3: true,

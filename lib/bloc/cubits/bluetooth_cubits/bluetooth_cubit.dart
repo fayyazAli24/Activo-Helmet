@@ -1,37 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:unilever_activo/app/app_keys.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/services/storage_services.dart';
-import 'package:unilever_activo/utils/widgets/app_text.dart';
-
-enum AppBluetoothState {
-  initial,
-  connecting,
-  scanning,
-  scanned,
-  on,
-  off,
-  disconnected,
-  connected,
-  error,
-  newDeviceData,
-  deviceDataUpdated
-}
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
-  BluetoothCubit() : super(AppBluetoothState.initial) {
+  BluetoothCubit() : super(AppBluetoothState()) {
     checkPermissions();
     checkStatus();
     // getDevices();
@@ -55,7 +36,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     final locationPermission = await Permission.location.isGranted;
 
     if (!bluetoothPermission) {
-      emit(AppBluetoothState.off);
+      emit(BluetoothStateOff());
       await Permission.bluetooth.request();
     }
     if (!locationPermission) {
@@ -68,28 +49,24 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
     log("**bluetooth state :  $bluetoothState");
     if (bluetoothState == BluetoothState.STATE_OFF) {
-      emit(AppBluetoothState.off);
+      emit(BluetoothStateOff());
       final isON = await flutterBluetoothSerial.requestEnable();
       if (isON ?? false) {
-        emit(AppBluetoothState.on);
+        emit(BluetoothStateOn());
         getDevices();
       }
     } else {
-      emit(AppBluetoothState.on);
+      emit(BluetoothStateOn());
+
       getDevices();
     }
 
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
       (event) async {
         if (event == BluetoothState.STATE_OFF) {
-          emit(AppBluetoothState.off);
-          final isON = await flutterBluetoothSerial.requestEnable();
-          if (isON ?? false) {
-            emit(AppBluetoothState.on);
-            getDevices();
-          }
+          checkStatus();
         } else if (bluetoothState == BluetoothState.STATE_ON) {
-          emit(AppBluetoothState.on);
+          emit(BluetoothStateOn());
           getDevices();
         }
       },
@@ -105,11 +82,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
         (newDevice) {
-          emit(AppBluetoothState.scanning);
-
           if (!devices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
             devices.add(newDevice);
-            emit(AppBluetoothState.scanned);
+            emit(BluetoothScannedState(devices: devices));
           }
         },
       );
@@ -128,13 +103,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       autoConnected = true;
     } else {
       autoConnected = false;
-      emit(AppBluetoothState.disconnected);
+      emit(DisconnectedState());
     }
   }
 
   connect(BluetoothDevice device) async {
     try {
-      emit(AppBluetoothState.connecting);
+      emit(BluetoothConnectingState());
       deviceName = device.name;
       connection = await BluetoothConnection.toAddress(device.address);
 
@@ -145,22 +120,23 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         deviceName = device.name;
         inputStream = connection?.input?.listen(
           (event) {
-            log("$event");
             String newData = String.fromCharCodes(event);
-
-            emit(AppBluetoothState.newDeviceData);
 
             if (newData.contains(RegExp(r'[a-zA-Z0-9]'))) {
               if (newData != deviceData) {
                 deviceData = newData;
-                log("$deviceData");
 
-                final batteryValue = deviceData?.split(',')[1].toString();
-                batteryPercentage = double.parse(batteryValue ?? "0");
-                String deviceStatus = deviceData?.split(',')[0] ?? "0";
-                isWore = int.parse(deviceStatus);
+                final splittedData = deviceData?.split(',');
+                if (splittedData?.isNotEmpty ?? false) {
+                  String deviceStatus = splittedData![0] ?? "0";
+                  isWore = int.parse(deviceStatus);
 
-                emit(AppBluetoothState.deviceDataUpdated);
+                  if (splittedData.length > 1) {
+                    final batteryValue = splittedData[1].toString();
+                    batteryPercentage = double.tryParse(batteryValue ?? "0");
+                  }
+                }
+                emit(BluetoothConnectedState(batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
               }
             }
           },
@@ -172,14 +148,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
         ///close connecting dialog
         pop();
-        emit(AppBluetoothState.connected);
+        emit(BluetoothConnectedState(batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
       } else {
-        emit(AppBluetoothState.disconnected);
+        emit(DisconnectedState());
       }
     } catch (e) {
       pop();
       log("can't connect: $e");
-      emit(AppBluetoothState.error);
+      emit(BluetoothFailedState(message: "Failed to connect"));
     }
   }
 
@@ -190,7 +166,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await inputStream?.cancel();
     autoConnected = false;
     getDevices();
-    emit(AppBluetoothState.disconnected);
+    emit(DisconnectedState());
   }
 
   @override

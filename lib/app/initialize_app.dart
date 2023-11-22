@@ -14,10 +14,10 @@ class InitializeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AppThemeModeCubit, AppMode>(
+    return BlocConsumer<AppThemeModeCubit, AppThemeMode>(
       listener: (context, state) {},
       builder: (context, state) {
-        final themeCubit = context.read<AppThemeModeCubit>();
+        final themeCubit = context.watch<AppThemeModeCubit>();
 
         return MaterialApp(
           theme: themeCubit.appTheme(),

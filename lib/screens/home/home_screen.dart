@@ -1,14 +1,12 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/disconnected_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/scan_device_screen.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
-import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
@@ -86,42 +84,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppSpace.vrtSpace(10),
                   BlocConsumer<BluetoothCubit, AppBluetoothState>(
                     builder: (context, state) {
-                      print("${state}");
-                      final newCubit = context.read<BluetoothCubit>();
-
-                      if (state == AppBluetoothState.off) {
+                      if (state is BluetoothStateOff) {
                         return BluetoothOffScreen(
                           size: size,
                         );
-                      } else if (state == AppBluetoothState.connected ||
-                          state == AppBluetoothState.deviceDataUpdated ||
-                          state == AppBluetoothState.newDeviceData) {
-                        final batterPer = (newCubit.batteryPercentage ?? 0) / 100;
+                      } else if (state is BluetoothConnectedState) {
                         return BluetoothConnectedScreen(
-                          newCubit: newCubit,
+                          state: state,
                           size: size,
-                          batterPer: batterPer,
                         );
                       }
                       return BluetoothScanDeviceScreen(
                         theme: theme,
-                        newCubit: newCubit,
                         size: size,
                       );
                     },
                     listener: (context, state) {
                       final cubit = context.read<BluetoothCubit>();
-                      if (state == AppBluetoothState.off) {
+                      if (state is BluetoothStateOff) {
                         snackBar("Bluetooth is turned off", context);
-                      } else if (state == AppBluetoothState.error) {
-                        snackBar("Can't Connect", context);
-                      } else if (state == AppBluetoothState.connecting) {
+                      } else if (state is BluetoothFailedState) {
+                        snackBar(state.message ?? "Failed", context);
+                      } else if (state is BluetoothConnectingState) {
                         snackBar("Connecting to ${cubit.deviceName}", context);
-                      } else if (state == AppBluetoothState.connected) {
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        snackBar("Connected to ${cubit.deviceName}  ", context);
+                      } else if (state is DisconnectedState) {
+                        snackBar("Device Disconnected", context);
                       }
-                      if (state == AppBluetoothState.connecting) {
+                      if (state is BluetoothConnectingState) {
                         showAdaptiveDialog(
                           context: context,
                           builder: (context) {
