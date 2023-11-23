@@ -72,6 +72,28 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.white,
               weight: FontWeight.w500,
             ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  showAdaptiveDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog.adaptive(
+                        alignment: Alignment(0, -0.9),
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AppText(text: "Settings"),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                icon: Icon(Icons.more_vert),
+              ),
+            ],
           ),
           body: SafeArea(
             child: Container(

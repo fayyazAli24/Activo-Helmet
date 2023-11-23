@@ -80,6 +80,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         );
   }
 
+  turnOn() async {
+    try {
+      final isON = await flutterBluetoothSerial.requestEnable();
+      if (isON ?? false) {
+        emit(BluetoothStateOn());
+        getDevices();
+      }
+    } catch (e) {}
+  }
+
   getDevices() async {
     await FlutterBluetoothSerial.instance.cancelDiscovery();
     final blueState = await flutterBluetoothSerial.state;
@@ -111,7 +121,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       autoConnected = true;
     } else {
       autoConnected = false;
-      disconnect();
+
+      emit(
+        BluetoothFailedState(message: "Something went wrong / No Device Found"),
+      );
     }
   }
 
@@ -138,10 +151,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
                   final parsedStatus = int.parse(deviceStatus);
 
+                  ///condition inverted
                   isWore = parsedStatus == 0 ? 1 : 0;
                   if (splitData.length > 1) {
                     final batteryValue = splitData[1].toString();
                     batteryPercentage = double.tryParse(batteryValue);
+
+                    ///pressure
                     speed = double.tryParse(splitData[2]);
                   }
                 }
