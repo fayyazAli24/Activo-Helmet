@@ -87,7 +87,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         emit(BluetoothStateOn());
         getDevices();
       }
-    } catch (e) {}
+    } catch (e) {
+      emit(BluetoothStateOff());
+    }
   }
 
   getDevices() async {
@@ -173,7 +175,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             }
           },
           onDone: () {
-            disconnect();
+            disconnect("Helmet -  444");
           },
           cancelOnError: true,
         );
@@ -196,7 +198,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  disconnect() async {
+  disconnectAlert(String reason) {
+    print("alert api *** $reason");
+  }
+
+  disconnect([String? reason]) async {
+    if (reason != null) {
+      disconnectAlert(reason);
+    }
+
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
     await connection?.finish();
@@ -204,6 +214,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await locationStream?.cancel();
     autoConnected = false;
     getDevices();
+
     emit(DisconnectedState());
   }
 

@@ -35,11 +35,11 @@ Future<void> main() async {
 
   final pref = await SharedPreferences.getInstance();
 
-  final isFirstRun = await pref.getBool('firstRun');
+  final isFirstRun = pref.getBool('firstRun');
 
   if (isFirstRun ?? true) {
-    await pref.setBool('firstRun', false);
     await pref.clear();
+    await pref.setBool('firstRun', false);
   }
 
   runApp(const MyApp());

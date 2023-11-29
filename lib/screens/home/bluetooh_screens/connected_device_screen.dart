@@ -72,13 +72,14 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: () async {
-              await context.read<BluetoothCubit>().disconnect();
+              await context.read<BluetoothCubit>().disconnect("User Disconnect -  555");
             },
             child: Lottie.asset(
               AssetsPath.powerOff,
@@ -117,7 +118,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
           AppText(
             ///condition inverted
             text: widget.state.isWore == 0 ? "Not Weared" : "Weared",
-            color: AppColors.white,
+            weight: FontWeight.w500,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ],
       ),

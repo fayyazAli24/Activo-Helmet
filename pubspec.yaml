@@ -47,6 +47,7 @@ dependencies:
   location: ^5.0.3
   geolocator: ^10.1.0
   get_it: ^7.6.4
+  intl: ^0.18.1
 
 
 dev_dependencies:
