@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final locationCubit = context.read<LocationCubit>();
 
         if (state is LocationOff) {
-          BlocProvider.of<BluetoothCubit>(context).disconnectAlert("GPS - 111");
+          BlocProvider.of<BluetoothCubit>(context).disconnectAlert(111);
 
           showAdaptiveDialog(
             context: context,

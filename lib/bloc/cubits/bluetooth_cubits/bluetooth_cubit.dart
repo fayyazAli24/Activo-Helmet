@@ -9,7 +9,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
+import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
@@ -175,7 +177,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             }
           },
           onDone: () {
-            disconnect("Helmet -  444");
+            disconnect(444);
           },
           cancelOnError: true,
         );
@@ -198,15 +200,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  disconnectAlert(String reason) {
-    print("alert api *** $reason");
+  disconnectAlert(int reason) async {
+    await di.get<HelmetService>().disconnectingReason(deviceName ?? "N/A");
+    await di.get<HelmetService>().disconnectingAlert(deviceName ?? "N/A", reason);
   }
 
-  disconnect([String? reason]) async {
-    if (reason != null) {
-      disconnectAlert(reason);
-    }
-
+  disconnect([int? reason]) async {
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
     await connection?.finish();
@@ -214,7 +213,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await locationStream?.cancel();
     autoConnected = false;
     getDevices();
-
+    if (reason != null) {
+      await disconnectAlert(reason);
+    }
     emit(DisconnectedState());
   }
 

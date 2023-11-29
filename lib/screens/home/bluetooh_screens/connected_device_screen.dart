@@ -38,7 +38,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       if (!mounted) return;
       List? res = await di
           .get<HelmetService>()
-          .sendData(widget.state.speed, widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
+          .sendData(widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
       log("$res");
 
       if (res != null) {
@@ -56,7 +56,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   @override
   void initState() {
     if (mounted) {
-      timer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      timer = Timer.periodic(Duration(seconds: 15), (timer) async {
         initialization();
         log("** success hit ${widget.state.isWore}");
       });
@@ -66,7 +66,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
 
   @override
   void dispose() {
-    timer?.cancel();
+    if (mounted) timer?.cancel();
     super.dispose();
   }
 
@@ -79,7 +79,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
         children: [
           GestureDetector(
             onTap: () async {
-              await context.read<BluetoothCubit>().disconnect("User Disconnect -  555");
+              await context.read<BluetoothCubit>().disconnect(555);
             },
             child: Lottie.asset(
               AssetsPath.powerOff,
