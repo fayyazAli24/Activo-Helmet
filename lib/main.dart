@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
@@ -70,6 +71,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider(
           create: (context) => LocationCubit(),
+        ),
+        BlocProvider(
+          create: (context) => DeviceHistoryCubit(),
         ),
       ],
       child: const InitializeApp(),

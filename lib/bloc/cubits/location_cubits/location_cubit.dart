@@ -5,10 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
-enum LocationStatus { initial, on, off }
+class LocationStatus {}
+
+class LocationOn extends LocationStatus {}
+
+class LocationOff extends LocationStatus {}
 
 class LocationCubit extends Cubit<LocationStatus> {
-  LocationCubit() : super(LocationStatus.initial) {
+  LocationCubit() : super(LocationStatus()) {
     checkLocation();
   }
 
@@ -20,9 +24,9 @@ class LocationCubit extends Cubit<LocationStatus> {
       (newState) async {
         log("${newState} location state");
         if (newState == ServiceStatus.disabled) {
-          emit(LocationStatus.off);
+          emit(LocationOff());
         } else if (newState == ServiceStatus.enabled) {
-          emit(LocationStatus.on);
+          emit(LocationOn());
         }
       },
       onDone: () async {
@@ -35,15 +39,14 @@ class LocationCubit extends Cubit<LocationStatus> {
     final isOn = await Geolocator.openLocationSettings();
     if (isOn) {
       pop();
-      emit(LocationStatus.on);
+      emit(LocationOn());
     } else {
-      emit(LocationStatus.off);
+      emit(LocationOff());
     }
   }
 
   resetState() {
     pop();
-    emit(LocationStatus.off);
   }
 
   @override

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
+import 'package:unilever_activo/navigations/app_routes.dart';
+import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/disconnected_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/scan_device_screen.dart';
@@ -28,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
       listener: (context, state) {
         final locationCubit = context.read<LocationCubit>();
 
-        if (state == LocationStatus.off) {
+        if (state is LocationOff) {
           showAdaptiveDialog(
             context: context,
             builder: (context) {
@@ -37,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 actions: [
                   ElevatedButton(
                     onPressed: () {
-                      locationCubit.resetState();
+                      pop();
                     },
                     child: const AppText(text: "Close"),
                   ),
@@ -55,9 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         }
-        // else if (state == LocationStatus.on) {
-        //   snackBar("Location is turned On", context, color: Colors.green, textColor: AppColors.white);
-        // }
       },
       builder: (context, state) {
         print(state.toString());
@@ -74,25 +73,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             actions: [
               IconButton(
-                onPressed: () {
-                  showAdaptiveDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog.adaptive(
-                        alignment: Alignment(0, -0.9),
-                        content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AppText(text: "Settings"),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-                icon: Icon(Icons.more_vert),
-              ),
+                  onPressed: () => pushNamed(AppRoutes.deviceHistory),
+                  icon: Icon(
+                    Icons.history,
+                    color: AppColors.white,
+                  )),
             ],
           ),
           body: SafeArea(

@@ -35,6 +35,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
 
   initialization() async {
     try {
+      if (!mounted) return;
       List? res = await di
           .get<HelmetService>()
           .sendData(widget.state.speed, widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
@@ -47,6 +48,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       }
     } catch (e) {
       log("ex: $e");
+      if (!mounted) return;
       snackBar("Data Failed To Synced", context);
     }
   }
@@ -54,7 +56,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   @override
   void initState() {
     if (mounted) {
-      timer = Timer.periodic(Duration(seconds: 15), (timer) async {
+      timer = Timer.periodic(Duration(seconds: 5), (timer) async {
         initialization();
         log("** success hit ${widget.state.isWore}");
       });

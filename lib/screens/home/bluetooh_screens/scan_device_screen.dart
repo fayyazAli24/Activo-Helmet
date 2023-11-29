@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -64,7 +62,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
                     itemCount: state.devices.length,
                     itemBuilder: (context, index) {
                       final item = state.devices[index];
-                      log(item.device.name ?? "");
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Card(

@@ -9,8 +9,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
-import 'package:unilever_activo/services/storage_services.dart';
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState()) {
@@ -26,7 +26,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   String? deviceName;
   String? deviceData;
   double? batteryPercentage;
-  double? speed;
+  double? pressure;
   int isWore = 0;
   bool autoConnected = false;
   StreamSubscription<BluetoothState>? bluetoothStateStream;
@@ -112,7 +112,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   autoConnect(bool value) async {
     final convertedDevice = await StorageService().read(lastDeviceKey);
 
-    print("$value");
+    print("$convertedDevice");
 
     if (convertedDevice != null) {
       BluetoothDevice device = BluetoothDevice.fromMap(json.decode(convertedDevice.toString()));
@@ -158,12 +158,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     batteryPercentage = double.tryParse(batteryValue);
 
                     ///pressure
-                    speed = double.tryParse(splitData[2]);
+                    pressure = double.tryParse(splitData[2]);
                   }
                 }
                 emit(
                   BluetoothConnectedState(
-                    speed: speed ?? 0.0,
+                    speed: pressure ?? 0.0,
                     name: deviceName ?? "",
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
@@ -181,7 +181,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         ///close connecting dialog
         pop();
         emit(BluetoothConnectedState(
-            speed: speed ?? 0.0, name: deviceName ?? "", batteryPercentage: batteryPercentage ?? 0.0, isWore: isWore));
+            speed: pressure ?? 0.0,
+            name: deviceName ?? "",
+            batteryPercentage: batteryPercentage ?? 0.0,
+            isWore: isWore));
       } else {
         disconnect();
       }

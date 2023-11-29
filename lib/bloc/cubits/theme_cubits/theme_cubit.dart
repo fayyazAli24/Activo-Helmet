@@ -35,6 +35,7 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
         colorScheme: const ColorScheme.dark(
           background: AppColors.black,
         ),
+        cardTheme: CardTheme(surfaceTintColor: AppColors.black),
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             color: AppColors.white,
@@ -48,6 +49,7 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
         colorScheme: const ColorScheme.light(
           background: AppColors.white,
         ),
+        cardTheme: CardTheme(surfaceTintColor: AppColors.white),
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             color: AppColors.black,
