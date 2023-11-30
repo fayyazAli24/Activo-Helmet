@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,7 +38,6 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       List? res = await di
           .get<HelmetService>()
           .sendData(widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
-      log("$res");
 
       if (res != null) {
         snackBar("Data Synced Successfully", context);
@@ -47,7 +45,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
         snackBar("Data Failed To Synced", context);
       }
     } catch (e) {
-      log("ex: $e");
+      print("ex: $e");
       if (!mounted) return;
       snackBar("Data Failed To Synced", context);
     }
@@ -58,7 +56,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
     if (mounted) {
       timer = Timer.periodic(Duration(seconds: 15), (timer) async {
         initialization();
-        log("** success hit ${widget.state.isWore}");
+        print("** success hit ${widget.state.isWore}");
       });
     }
     super.initState();

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,7 +21,6 @@ class LocationCubit extends Cubit<LocationStatus> {
   checkLocation() async {
     subscription = Geolocator.getServiceStatusStream().listen(
       (newState) async {
-        log("${newState} location state");
         if (newState == ServiceStatus.disabled) {
           emit(LocationOff());
         } else if (newState == ServiceStatus.enabled) {

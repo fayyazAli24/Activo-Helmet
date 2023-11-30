@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/app_keys.dart';
@@ -30,19 +29,17 @@ class DeviceHistoryCubit extends Cubit<DeviceHistoryState> {
   Future<void> devicesList() async {
     try {
       emit(DeviceHistoryLoading());
-
       final list = await StorageService().read(deviceListKey);
-
       if (list != null) {
         List<DeviceReqBodyModel> decodedList =
             jsonDecode(list).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-        log("$decodedList");
+        print("$decodedList");
         emit(DeviceHistorySuccess(decodedList));
       } else {
         emit(DeviceHistoryFailed("Something went wrong"));
       }
     } catch (e) {
-      log("$e");
+      print("$e");
       emit(DeviceHistoryFailed("Something went wrong"));
     }
   }

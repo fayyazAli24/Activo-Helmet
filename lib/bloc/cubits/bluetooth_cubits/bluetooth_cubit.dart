@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,7 +51,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   checkStatus() async {
     final bluetoothState = await flutterBluetoothSerial.state;
 
-    log("**bluetooth state :  $bluetoothState");
+    print("**bluetooth state :  $bluetoothState");
     if (bluetoothState == BluetoothState.STATE_OFF) {
       emit(BluetoothStateOff());
       final isON = await flutterBluetoothSerial.requestEnable();
@@ -194,7 +193,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       }
     } catch (e) {
       pop();
-      log("can't connect: $e");
+      print("can't connect: $e");
       emit(BluetoothFailedState(message: "Failed to connect"));
       disconnect();
     }

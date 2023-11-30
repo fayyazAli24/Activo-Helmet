@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +19,7 @@ abstract class AppService<T> {
           },
         ),
         LogInterceptor(
-          logPrint: (data) => log(
+          logPrint: (data) => print(
             "$data",
           ),
           request: true,
@@ -34,7 +32,7 @@ abstract class AppService<T> {
       ],
     );
 
-  Future<dynamic> login({required String api, Map<String, dynamic>? body}) async {}
+  Future<dynamic> printin({required String api, Map<String, dynamic>? body}) async {}
 
   Future<dynamic> get({required String api, String? id, Map<String, dynamic>? body}) async {}
 
@@ -44,7 +42,7 @@ abstract class AppService<T> {
 
 class ApiServices extends AppService {
   @override
-  login({required String api, Object? body}) async {
+  printin({required String api, Object? body}) async {
     try {
       final response = await dio.post(
         api,
@@ -60,7 +58,7 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      log("login: $e");
+      print("printin: $e");
 
       throw DioException(requestOptions: RequestOptions(data: body), message: "$e");
       // return e;
@@ -83,7 +81,7 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      log(" $api: $e");
+      print(" $api: $e");
       throw DioException(
           requestOptions: RequestOptions(
             data: body,
@@ -114,7 +112,7 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      log("$api: $e");
+      print("$api: $e");
       throw DioException(
         requestOptions: RequestOptions(data: body),
         message: "$e",
