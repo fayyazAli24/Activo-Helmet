@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
-import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
+import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final locationCubit = context.read<LocationCubit>();
 
         if (state is LocationOff) {
-          BlocProvider.of<BluetoothCubit>(context).disconnectAlert(111);
+          // BlocProvider.of<BluetoothCubit>(context).disconnectAlert(111);
 
           showAdaptiveDialog(
             context: context,
@@ -61,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       builder: (context, state) {
-        print(state.toString());
         return Scaffold(
           appBar: AppBar(
             backgroundColor: theme.appBarTheme.backgroundColor,

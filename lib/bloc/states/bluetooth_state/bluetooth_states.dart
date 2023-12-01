@@ -19,8 +19,12 @@ class BluetoothConnectedState extends AppBluetoothState {
   String name = "";
   int isWore = 0;
   double speed = 0.0;
-  BluetoothConnectedState(
-      {required this.name, required this.batteryPercentage, required this.isWore, required this.speed});
+  BluetoothConnectedState({
+    required this.name,
+    required this.batteryPercentage,
+    required this.isWore,
+    required this.speed,
+  });
 }
 
 class DisconnectedState extends AppBluetoothState {}

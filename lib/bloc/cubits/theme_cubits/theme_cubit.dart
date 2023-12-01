@@ -41,7 +41,6 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
             color: AppColors.white,
           ),
         ),
-        useMaterial3: true,
         colorScheme: const ColorScheme.dark(
           background: AppColors.black,
         ),
@@ -52,28 +51,26 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
           ),
         ),
       );
-    } else {
-      return ThemeData(
-        switchTheme: SwitchThemeData(
-          trackColor: MaterialStatePropertyAll<Color>(
-            AppColors.white,
-          ),
-        ),
-        appBarTheme: AppBarTheme(
-          color: AppColors.appBarColor,
-          iconTheme: IconThemeData(color: AppColors.white),
-        ),
-        useMaterial3: true,
-        colorScheme: const ColorScheme.light(
-          background: AppColors.white,
-        ),
-        cardTheme: CardTheme(surfaceTintColor: AppColors.white, elevation: 5),
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
-            color: AppColors.black,
-          ),
-        ),
-      );
     }
+    return ThemeData(
+      switchTheme: SwitchThemeData(
+        trackColor: MaterialStatePropertyAll<Color>(
+          AppColors.white,
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        color: AppColors.appBarColor,
+        iconTheme: IconThemeData(color: AppColors.white),
+      ),
+      colorScheme: const ColorScheme.light(
+        background: AppColors.white,
+      ),
+      cardTheme: CardTheme(surfaceTintColor: AppColors.white, elevation: 5),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          color: AppColors.black,
+        ),
+      ),
+    );
   }
 }

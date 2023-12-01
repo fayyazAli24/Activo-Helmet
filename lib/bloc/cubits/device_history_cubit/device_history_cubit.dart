@@ -2,26 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/app_keys.dart';
+import 'package:unilever_activo/bloc/states/device_history_state/device_history_state.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
-
-class DeviceHistoryState {}
-
-class InitialDeviceHistoryState extends DeviceHistoryState {}
-
-class DeviceHistoryLoading extends DeviceHistoryState {}
-
-class DeviceHistorySuccess extends DeviceHistoryState {
-  List<DeviceReqBodyModel> deviceData = [];
-
-  DeviceHistorySuccess(this.deviceData);
-}
-
-class DeviceHistoryFailed extends DeviceHistoryState {
-  String message = "";
-
-  DeviceHistoryFailed(this.message);
-}
 
 class DeviceHistoryCubit extends Cubit<DeviceHistoryState> {
   DeviceHistoryCubit() : super(InitialDeviceHistoryState());

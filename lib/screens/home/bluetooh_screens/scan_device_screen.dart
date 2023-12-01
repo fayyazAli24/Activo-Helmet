@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
-import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_states.dart';
+import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
@@ -32,6 +32,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
                 color: theme.textTheme.bodyLarge?.color,
               ),
               Switch.adaptive(
+                trackColor: theme.switchTheme.trackColor,
                 value: context.watch<BluetoothCubit>().autoConnected,
                 onChanged: (value) {
                   context.read<BluetoothCubit>().autoConnect(value);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
+import 'package:unilever_activo/bloc/states/device_history_state/device_history_state.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
