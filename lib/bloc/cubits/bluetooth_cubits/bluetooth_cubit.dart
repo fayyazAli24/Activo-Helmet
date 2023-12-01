@@ -192,7 +192,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     } catch (e) {
       pop();
       print("can't connect: $e");
-      emit(BluetoothFailedState(message: "Failed to connect"));
+      emit(
+        BluetoothFailedState(message: "Failed to connect"),
+      );
       disconnect();
     }
   }

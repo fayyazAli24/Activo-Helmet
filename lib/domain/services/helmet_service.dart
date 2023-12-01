@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
@@ -13,16 +12,12 @@ class HelmetService {
   Future<dynamic> sendData(String helmetName, double batterPercent, int inWore) async {
     try {
       final locationService = di.get<LocationService>();
-      double speed = 0.0;
+
       List<DeviceReqBodyModel> deviceDataList = [];
       String? encodedList = await StorageService().read(deviceListKey);
       if (encodedList != null) {
         deviceDataList =
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-
-        ///calculate speed
-        speed = calculateSpeed(deviceDataList.last.latitude!, deviceDataList.last.longitude!, locationService.lat!,
-            locationService.long!, deviceDataList.last.apiDateTime!, DateTime.now());
       }
 
       final body = {
@@ -33,7 +28,7 @@ class HelmetService {
         "Longitude": locationService.long,
         "Is_Wear_Helmet": inWore,
         "Is_Wrong_Way": 0,
-        "speed": speed,
+        "speed": locationService.speed,
         "VehicleType": "",
         "Created_By": "awais",
         "Updated_By": "awais"
@@ -41,8 +36,9 @@ class HelmetService {
 
       final model = DeviceReqBodyModel.fromJson(body);
       deviceDataList.add(model);
+
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
-      final res = await ApiServices().post(api: Api.trJourney, body: [body]);
+      final res = await ApiServices().post(api: Api.trJourney, body: [model.toJson()]);
       if (res != null) {
         return res;
       }
@@ -94,41 +90,5 @@ class HelmetService {
         print("$res");
       }
     } catch (e) {}
-  }
-
-  ///calculate speed
-  double calculateDistance(
-    double startLat,
-    double startLong,
-    double endLat,
-    double endLong,
-  ) {
-    const R = 6371.0; // Radius of the Earth in kilometers
-
-    double dLat = _toRadians(endLat - startLat);
-    double dLon = _toRadians(endLong - startLong);
-
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_toRadians(startLat)) * cos(_toRadians(endLat)) * sin(dLon / 2) * sin(dLon / 2);
-
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    double distance = R * c; // Distance in kilometers
-
-    return distance;
-  }
-
-  double calculateSpeed(
-      double startLat, double startLong, double endLat, double endLong, DateTime startTime, DateTime endTime) {
-    double distance = calculateDistance(startLat, startLong, endLat, endLong);
-    double timeInSeconds = endTime.difference(startTime).inSeconds.toDouble();
-
-    double speed = (distance / timeInSeconds) * 3600.0; // Speed in kilometers per hour
-
-    return speed;
-  }
-
-  double _toRadians(double degree) {
-    return degree * (pi / 180.0);
   }
 }

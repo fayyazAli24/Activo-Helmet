@@ -28,11 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return BlocConsumer<LocationCubit, LocationStatus>(
       listener: (context, state) {
-        final locationCubit = context.read<LocationCubit>();
-
         if (state is LocationOff) {
-          // BlocProvider.of<BluetoothCubit>(context).disconnectAlert(111);
-
           showAdaptiveDialog(
             context: context,
             builder: (context) {
@@ -47,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      locationCubit.openSettings();
+                      context.read<LocationCubit>().openSettings();
                     },
                     child: const AppText(text: "Settings"),
                   ),
@@ -121,11 +117,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                       if (state is BluetoothConnectingState) {
                         showAdaptiveDialog(
+                          barrierDismissible: false,
                           context: context,
                           builder: (context) {
-                            return const AlertDialog.adaptive(
-                              title: AppText(
-                                text: "connecting..",
+                            return PopScope(
+                              canPop: false,
+                              child: const AlertDialog.adaptive(
+                                title: AppText(
+                                  text: "connecting..",
+                                ),
                               ),
                             );
                           },
