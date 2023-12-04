@@ -43,7 +43,7 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                 return Card(
                   shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
                   elevation: 10,
-                  surfaceTintColor: Theme.of(context).cardTheme.surfaceTintColor,
+                  surfaceTintColor: device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : Colors.red,
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     child: Column(
@@ -55,7 +55,7 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                         buildCardRow("Longitude", device.longitude.toString()),
                         buildCardRow("speed", device.speed.toString()),
                         buildCardRow("API DateTime",
-                            DateFormat('dd-MMM-yyyy:hh:mm').format(device.apiDateTime ?? DateTime.now())),
+                            DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.apiDateTime ?? DateTime.now())),
                       ],
                     ),
                   ),

@@ -9,44 +9,76 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 
 class HelmetService {
-  Future<dynamic> sendData(String helmetName, double batterPercent, int inWore) async {
-    try {
-      final locationService = di.get<LocationService>();
-
-      List<DeviceReqBodyModel> deviceDataList = [];
-      String? encodedList = await StorageService().read(deviceListKey);
-      if (encodedList != null) {
-        deviceDataList =
-            jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-      }
-
-      final body = {
-        "Helmet_ID": helmetName,
-        "User_Id": "",
-        "API_DateTime": DateTime.now().toIso8601String(),
-        "Latitude": locationService.lat,
-        "Longitude": locationService.long,
-        "Is_Wear_Helmet": inWore,
-        "Is_Wrong_Way": 0,
-        "speed": locationService.speed,
-        "VehicleType": "",
-        "Created_By": "awais",
-        "Updated_By": "awais"
-      };
-
-      final model = DeviceReqBodyModel.fromJson(body);
-      deviceDataList.add(model);
-
-      await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
-      final res = await ApiServices().post(api: Api.trJourney, body: [model.toJson()]);
-      if (res != null) {
-        return res;
-      }
-      return null;
-    } catch (e) {
-      print("$e failed");
-      rethrow;
+  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
+    final locationService = di.get<LocationService>();
+    List<DeviceReqBodyModel> deviceDataList = [];
+    String? encodedList = await StorageService().read(deviceListKey);
+    if (encodedList != null) {
+      deviceDataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
     }
+
+    final reqModel = DeviceReqBodyModel(
+      helmetId: helmetName,
+      userId: "",
+      latitude: locationService.lat,
+      longitude: locationService.long,
+      isWearHelmet: isWore,
+      apiDateTime: DateTime.now(),
+      isWrongWay: 0,
+      speed: locationService.speed,
+      vehicleType: "",
+      synced: 0,
+      createdBy: "",
+      updatedBy: "",
+    );
+
+    deviceDataList.add(reqModel);
+    await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
+
+    final list = await _syncUnsyncedData();
+    if (list != null)
+      return [];
+    else
+      return null;
+  }
+
+  Future<List<dynamic>?> _syncUnsyncedData() async {
+    List<DeviceReqBodyModel> unsyncedDataList = [];
+    List<DeviceReqBodyModel> dataList = [];
+
+    String? encodedList = await StorageService().read(deviceListKey);
+
+    if (encodedList != null) {
+      dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
+      unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+    }
+
+    if (unsyncedDataList.isEmpty) return [];
+
+    try {
+      final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+
+      if (res != null) {
+        for (var unsyncedModel in unsyncedDataList) {
+          unsyncedModel.synced = 1;
+          print("unsynced got synced");
+        }
+      } else {
+        throw Exception("API call failed during unsynced data sync");
+      }
+    } catch (e) {
+      print("API call failed during unsynced data sync: $e");
+    }
+
+    ///updating local list
+    for (final updatedModel in dataList) {
+      final index = dataList.indexWhere((element) => element == updatedModel);
+      if (index != -1) {
+        dataList[index] = updatedModel;
+      }
+    }
+    await StorageService().write(deviceListKey, jsonEncode(dataList));
+    return [];
   }
 
   Future<void> disconnectingAlert(
