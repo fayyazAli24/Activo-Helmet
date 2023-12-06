@@ -17,7 +17,7 @@ class DeviceHistoryScreen extends StatefulWidget {
 class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
   @override
   void initState() {
-    BlocProvider.of<DeviceHistoryCubit>(context).deviceHistoryList();
+    // BlocProvider.of<DeviceHistoryCubit>(context).deviceHistoryList();
     super.initState();
   }
 
@@ -34,34 +34,47 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
       body: BlocConsumer<DeviceHistoryCubit, DeviceHistoryState>(
         builder: (context, state) {
           if (state is DeviceHistorySuccess) {
-            return ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              itemCount: state.deviceData.length,
-              itemBuilder: (context, index) {
-                var device = state.deviceData[index];
-                return Card(
-                  shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
-                  elevation: 10,
-                  surfaceTintColor: device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : Colors.red,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        buildCardRow('Helmet ID', device.helmetId.toString()),
-                        buildCardRow('Status', device.isWearHelmet == 0 ? 'Not Weared' : 'Weared'),
-                        buildCardRow('Latitude', device.latitude.toString()),
-                        buildCardRow('Longitude', device.longitude.toString()),
-                        buildCardRow('speed', device.speed.toString()),
-                        buildCardRow('API DateTime',
-                            DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.apiDateTime ?? DateTime.now())),
-                      ],
+            return StreamBuilder(
+                stream: context.read<DeviceHistoryCubit>().deviceHistoryList().asStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      itemCount: state.deviceData.length,
+                      itemBuilder: (context, index) {
+                        var device = state.deviceData[index];
+                        return Card(
+                          shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
+                          elevation: 10,
+                          surfaceTintColor:
+                              device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : Colors.red,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildCardRow('Helmet ID', device.helmetId.toString()),
+                                buildCardRow('Status', device.isWearHelmet == 0 ? 'Not Weared' : 'Weared'),
+                                buildCardRow('Latitude', device.latitude.toString()),
+                                buildCardRow('Longitude', device.longitude.toString()),
+                                buildCardRow('speed', device.speed.toString()),
+                                buildCardRow('API DateTime',
+                                    DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.apiDateTime ?? DateTime.now())),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) => AppSpace.vrtSpace(5),
+                    );
+                  }
+                  return const Center(
+                    child: AppText(
+                      text: 'No Records Found',
+                      weight: FontWeight.w500,
                     ),
-                  ),
-                );
-              },
-              separatorBuilder: (context, index) => AppSpace.vrtSpace(5),
-            );
+                  );
+                });
           } else if (state is DeviceHistoryLoading) {
             return const Center(
               child: CircularProgressIndicator(

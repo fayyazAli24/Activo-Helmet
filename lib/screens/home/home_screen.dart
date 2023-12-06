@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
@@ -22,6 +24,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
@@ -29,31 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocConsumer<LocationCubit, LocationStatus>(
       listener: (context, state) {
         if (state is LocationOff) {
-          showAdaptiveDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog.adaptive(
-                actionsAlignment: MainAxisAlignment.spaceEvenly,
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      pop();
-                    },
-                    child: const AppText(text: 'Close'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<LocationCubit>().openSettings();
-                    },
-                    child: const AppText(text: 'Settings'),
-                  ),
-                ],
-                title: const AppText(
-                  text: 'Location is closed please open settings to turn on location',
-                ),
-              );
-            },
-          );
+          locationOffDialog(context);
         }
       },
       builder: (context, state) {
@@ -106,37 +94,66 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     listener: (context, state) {
-                      final cubit = context.read<BluetoothCubit>();
                       if (state is BluetoothStateOff) {
                         snackBar('Bluetooth is turned off', context);
                       } else if (state is BluetoothFailedState) {
                         snackBar(state.message ?? 'Failed', context);
-                      } else if (state is BluetoothConnectingState) {
-                        snackBar('Connecting to ${cubit.deviceName}', context);
                       } else if (state is DisconnectedState) {
                         snackBar('Device Disconnected', context);
                       }
                       if (state is BluetoothConnectingState) {
-                        showAdaptiveDialog(
-                          barrierDismissible: false,
-                          context: context,
-                          builder: (context) {
-                            return const PopScope(
-                              canPop: false,
-                              child: AlertDialog.adaptive(
-                                title: AppText(
-                                  text: 'connecting..',
-                                ),
-                              ),
-                            );
-                          },
-                        );
+                        connectingDialog(context);
                       }
                     },
                   ),
                 ],
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> connectingDialog(BuildContext context) {
+    return showAdaptiveDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return const PopScope(
+          canPop: false,
+          child: AlertDialog.adaptive(
+            title: AppText(
+              text: 'connecting..',
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> locationOffDialog(BuildContext context) {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                pop();
+              },
+              child: const AppText(text: 'Close'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<LocationCubit>().openSettings();
+              },
+              child: const AppText(text: 'Settings'),
+            ),
+          ],
+          title: const AppText(
+            text: 'Location is closed please open settings to turn on location',
           ),
         );
       },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
 void snackBar(String msg, BuildContext context, {Color? color, Color? textColor}) {
+  ScaffoldMessenger.of(context).clearSnackBars();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       backgroundColor: color ?? Theme.of(context).colorScheme.background,

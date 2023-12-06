@@ -15,11 +15,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState()) {
     checkPermissions();
     checkStatus();
-    // getDevices();
   }
 
   BluetoothConnection? connection;
-  List<BluetoothDiscoveryResult> devices = [];
+
+  List<BluetoothDiscoveryResult> scannedDevices = [];
   StreamSubscription<Uint8List>? inputStream;
   StreamSubscription<Position>? locationStream;
   String? deviceName;
@@ -59,7 +59,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       }
     } else {
       emit(BluetoothStateOn());
-
       await getDevices();
     }
 
@@ -96,16 +95,26 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     final blueState = await flutterBluetoothSerial.state;
 
     if (blueState == BluetoothState.STATE_ON) {
-      devices = [];
+      scannedDevices = [];
 
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
-        (newDevice) {
-          if (!devices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
-            devices.add(newDevice);
-            emit(BluetoothScannedState(devices: devices));
+        (newDevice) async {
+          if (!scannedDevices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
+            final encodedDevice = await StorageService().read(lastDeviceKey);
+            if (encodedDevice != null) {
+              var device = BluetoothDevice.fromMap(json.decode(encodedDevice.toString()));
+              if (newDevice.device == device) {
+                await connect(device);
+                return;
+              }
+            }
+            scannedDevices.add(newDevice);
+            emit(BluetoothScannedState(devices: scannedDevices));
           }
         },
-        onError: (e) async => await bluetoothDiscoveryStream?.cancel(),
+        onError: (e) async {
+          await bluetoothDiscoveryStream?.cancel();
+        },
       );
     }
   }
@@ -212,6 +221,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await locationStream?.cancel();
     autoConnected = false;
     await getDevices();
+
     // if (reason != null) {
     // await disconnectAlert(reason);
     // }
@@ -224,11 +234,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
     await bluetoothStateStream?.cancel();
-
     await bluetoothDiscoveryStream?.cancel();
     await connection?.finish();
     await locationStream?.cancel();
     await inputStream?.cancel();
+
     return super.close();
   }
 }

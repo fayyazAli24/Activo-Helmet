@@ -35,7 +35,7 @@ class HelmetService {
     deviceDataList.add(reqModel);
     await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
 
-    final list = await _syncUnsyncedData();
+    final list = await syncUnsyncedData();
     if (list != null) {
       return [];
     } else {
@@ -43,7 +43,7 @@ class HelmetService {
     }
   }
 
-  Future<List<dynamic>?> _syncUnsyncedData() async {
+  Future<List<dynamic>?> syncUnsyncedData() async {
     var unsyncedDataList = <DeviceReqBodyModel>[];
     var dataList = <DeviceReqBodyModel>[];
 
@@ -54,7 +54,7 @@ class HelmetService {
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
 
-    if (unsyncedDataList.isEmpty) return [];
+    if (unsyncedDataList.isEmpty) return null;
 
     try {
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
@@ -62,13 +62,14 @@ class HelmetService {
       if (res != null) {
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
-          print('unsynced got synced');
         }
       } else {
         throw Exception('API call failed during unsynced data sync');
       }
     } catch (e) {
       print('API call failed during unsynced data sync: $e');
+
+      throw Exception('API call failed during unsynced data sync');
     }
 
     ///updating local list
