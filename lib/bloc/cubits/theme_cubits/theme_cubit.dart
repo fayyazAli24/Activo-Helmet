@@ -30,6 +30,7 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
   ThemeData appTheme() {
     if (state == AppThemeMode.dark) {
       return ThemeData(
+        dialogTheme: const DialogTheme(surfaceTintColor: AppColors.white, backgroundColor: AppColors.white),
         switchTheme: const SwitchThemeData(
           trackColor: MaterialStatePropertyAll<Color>(
             AppColors.white,
@@ -53,6 +54,7 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
       );
     }
     return ThemeData(
+      dialogTheme: const DialogTheme(surfaceTintColor: AppColors.white, backgroundColor: AppColors.white),
       switchTheme: const SwitchThemeData(
         trackColor: MaterialStatePropertyAll<Color>(
           AppColors.white,

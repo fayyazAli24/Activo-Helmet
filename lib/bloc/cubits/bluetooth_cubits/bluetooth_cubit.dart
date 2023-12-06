@@ -27,6 +27,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   double? batteryPercentage;
   double? pressure;
   int isWore = 0;
+  int disconnectReason = 0;
   bool autoConnected = false;
   StreamSubscription<BluetoothState>? bluetoothStateStream;
   StreamSubscription<BluetoothDiscoveryResult>? bluetoothDiscoveryStream;
@@ -100,12 +101,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
         (newDevice) async {
           if (!scannedDevices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
-            final encodedDevice = await StorageService().read(lastDeviceKey);
-            if (encodedDevice != null) {
-              var device = BluetoothDevice.fromMap(json.decode(encodedDevice.toString()));
-              if (newDevice.device == device) {
-                await connect(device);
-                return;
+            if (disconnectReason != 555) {
+              final encodedDevice = await StorageService().read(lastDeviceKey);
+              if (encodedDevice != null) {
+                var device = BluetoothDevice.fromMap(json.decode(encodedDevice.toString()));
+                if (newDevice.device == device) {
+                  await connect(device);
+                  return;
+                }
               }
             }
             scannedDevices.add(newDevice);
@@ -122,8 +125,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   Future<void> autoConnect(bool value) async {
     final convertedDevice = await StorageService().read(lastDeviceKey);
 
-    print('$convertedDevice');
-
     if (convertedDevice != null) {
       var device = BluetoothDevice.fromMap(json.decode(convertedDevice.toString()));
 
@@ -133,7 +134,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       autoConnected = false;
 
       emit(
-        BluetoothFailedState(message: 'Something went wrong / No Device Found'),
+        BluetoothFailedState(message: 'No Device Found'),
       );
     }
   }
@@ -171,6 +172,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     pressure = double.tryParse(splitData[2]);
                   }
                 }
+                disconnectReason = 0;
                 emit(
                   BluetoothConnectedState(
                     speed: pressure ?? 0.0,
@@ -219,6 +221,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await connection?.finish();
     await inputStream?.cancel();
     await locationStream?.cancel();
+    disconnectReason = reason ?? 0;
     autoConnected = false;
     await getDevices();
 

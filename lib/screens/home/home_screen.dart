@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (state is BluetoothStateOff) {
                         snackBar('Bluetooth is turned off', context);
                       } else if (state is BluetoothFailedState) {
-                        snackBar(state.message ?? 'Failed', context);
+                        noDeviceFoundDialog(state);
                       } else if (state is DisconnectedState) {
                         snackBar('Device Disconnected', context);
                       }
@@ -110,6 +110,32 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> noDeviceFoundDialog(BluetoothFailedState state) {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          title: Center(
+            child: AppText(
+              text: '${state.message}',
+              weight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  pop();
+                },
+                child: const Center(child: AppText(text: 'Close')),
+              ),
+            ),
+          ],
         );
       },
     );

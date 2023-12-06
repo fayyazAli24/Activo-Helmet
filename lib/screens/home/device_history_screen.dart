@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
 import 'package:unilever_activo/bloc/states/device_history_state/device_history_state.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
+import 'package:unilever_activo/utils/widgets/app_loader.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
@@ -17,7 +18,7 @@ class DeviceHistoryScreen extends StatefulWidget {
 class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
   @override
   void initState() {
-    // BlocProvider.of<DeviceHistoryCubit>(context).deviceHistoryList();
+    context.read<DeviceHistoryCubit>().deviceHistoryList();
     super.initState();
   }
 
@@ -40,14 +41,14 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                   if (snapshot.hasData) {
                     return ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      itemCount: state.deviceData.length,
+                      itemCount: snapshot.data?.length ?? 0,
                       itemBuilder: (context, index) {
-                        var device = state.deviceData[index];
+                        var device = snapshot.data![index];
                         return Card(
                           shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
                           elevation: 10,
                           surfaceTintColor:
-                              device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : Colors.red,
+                              device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : AppColors.red,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             child: Column(
@@ -67,6 +68,8 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                       },
                       separatorBuilder: (context, index) => AppSpace.vrtSpace(5),
                     );
+                  } else if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const AppLoader();
                   }
                   return const Center(
                     child: AppText(
@@ -76,11 +79,7 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                   );
                 });
           } else if (state is DeviceHistoryLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            );
+            return const AppLoader();
           }
           return const Center(
             child: AppText(
