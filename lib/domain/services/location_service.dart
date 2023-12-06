@@ -6,12 +6,17 @@ class LocationService {
   double? speed;
 
   Future<void> getLocation() async {
-    final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    try {
+      final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
-    speed = loc.speed * 3.6;
-    lat = loc.latitude;
+      speed = loc.speed * 3.6;
+      lat = loc.latitude;
+      long = loc.longitude;
+    } catch (e) {
+      print('$e)))');
 
-    long = loc.longitude;
+      rethrow;
+    }
   }
 
   Stream<Position> getLocationStream() {

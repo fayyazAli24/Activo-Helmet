@@ -43,26 +43,33 @@ Future<void> permissions() async {
 final di = GetIt.instance;
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await permissions();
-  registerServices();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    await permissions();
+    registerServices();
 
-  await di.get<LocationService>().getLocation();
+    await di.get<LocationService>().getLocation();
+    di.get<LocationService>().getLocationStream();
 
-  di.get<LocationService>().getLocationStream();
+    final pref = await SharedPreferences.getInstance();
 
-  final pref = await SharedPreferences.getInstance();
+    final isFirstRun = pref.getBool('firstRun');
 
-  final isFirstRun = pref.getBool('firstRun');
+    if (isFirstRun ?? true) {
+      await pref.clear();
+      await pref.setBool('firstRun', false);
+    }
 
-  if (isFirstRun ?? true) {
+    await clearPreviousRecords();
+
+    runApp(const MyApp());
+  } catch (e) {
+    final pref = await SharedPreferences.getInstance();
+
     await pref.clear();
-    await pref.setBool('firstRun', false);
+
+    print('$e (*)(*)');
   }
-
-  await clearPreviousRecords();
-
-  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/switch_cubit/switch_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
@@ -31,11 +32,16 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
                 text: 'Auto connect with last paired',
                 color: theme.textTheme.bodyLarge?.color,
               ),
-              Switch.adaptive(
-                trackColor: theme.switchTheme.trackColor,
-                value: context.watch<BluetoothCubit>().autoConnected,
-                onChanged: (value) {
-                  context.read<BluetoothCubit>().autoConnect(value);
+              BlocConsumer<SwitchCubit, bool>(
+                listener: (context, state) {},
+                builder: (context, state) {
+                  return Switch.adaptive(
+                    trackColor: theme.switchTheme.trackColor,
+                    value: state,
+                    onChanged: (value) {
+                      context.read<SwitchCubit>().updateValue(value);
+                    },
+                  );
                 },
               ),
             ],

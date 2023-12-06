@@ -123,20 +123,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   Future<void> autoConnect(bool value) async {
-    final convertedDevice = await StorageService().read(lastDeviceKey);
-
-    if (convertedDevice != null) {
-      var device = BluetoothDevice.fromMap(json.decode(convertedDevice.toString()));
-
-      await connect(device);
-      autoConnected = true;
-    } else {
-      autoConnected = false;
-
-      emit(
-        BluetoothFailedState(message: 'No Device Found'),
-      );
-    }
+    autoConnected = value;
   }
 
   Future<void> connect(BluetoothDevice device) async {
