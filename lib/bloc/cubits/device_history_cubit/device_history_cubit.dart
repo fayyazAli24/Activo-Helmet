@@ -9,21 +9,21 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 class DeviceHistoryCubit extends Cubit<DeviceHistoryState> {
   DeviceHistoryCubit() : super(InitialDeviceHistoryState());
 
-  Future<void> devicesList() async {
+  Future<void> deviceHistoryList() async {
     try {
       emit(DeviceHistoryLoading());
       final list = await StorageService().read(deviceListKey);
       if (list != null) {
         List<DeviceReqBodyModel> decodedList =
             jsonDecode(list).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-        print("$decodedList");
+        print('$decodedList');
         emit(DeviceHistorySuccess(decodedList));
       } else {
-        emit(DeviceHistoryFailed("Something went wrong"));
+        emit(DeviceHistoryFailed('Something went wrong'));
       }
     } catch (e) {
-      print("$e");
-      emit(DeviceHistoryFailed("Something went wrong"));
+      print('$e');
+      emit(DeviceHistoryFailed('Something went wrong'));
     }
   }
 }

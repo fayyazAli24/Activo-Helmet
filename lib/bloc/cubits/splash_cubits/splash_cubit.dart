@@ -5,7 +5,7 @@ import 'package:unilever_activo/navigations/navigation_helper.dart';
 class SplashCubit extends Cubit<int> {
   SplashCubit() : super(0);
 
-  initState() {
+  void initState() {
     Future.delayed(
       const Duration(seconds: 2),
       () {

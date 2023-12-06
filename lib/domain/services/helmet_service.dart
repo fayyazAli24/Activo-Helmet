@@ -11,7 +11,7 @@ import 'package:unilever_activo/main.dart';
 class HelmetService {
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     final locationService = di.get<LocationService>();
-    List<DeviceReqBodyModel> deviceDataList = [];
+    var deviceDataList = <DeviceReqBodyModel>[];
     String? encodedList = await StorageService().read(deviceListKey);
     if (encodedList != null) {
       deviceDataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
@@ -19,32 +19,33 @@ class HelmetService {
 
     final reqModel = DeviceReqBodyModel(
       helmetId: helmetName,
-      userId: "",
+      userId: '',
       latitude: locationService.lat,
       longitude: locationService.long,
       isWearHelmet: isWore,
       apiDateTime: DateTime.now(),
       isWrongWay: 0,
       speed: locationService.speed,
-      vehicleType: "",
+      vehicleType: '',
       synced: 0,
-      createdBy: "",
-      updatedBy: "",
+      createdBy: '',
+      updatedBy: '',
     );
 
     deviceDataList.add(reqModel);
     await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
 
     final list = await _syncUnsyncedData();
-    if (list != null)
+    if (list != null) {
       return [];
-    else
+    } else {
       return null;
+    }
   }
 
   Future<List<dynamic>?> _syncUnsyncedData() async {
-    List<DeviceReqBodyModel> unsyncedDataList = [];
-    List<DeviceReqBodyModel> dataList = [];
+    var unsyncedDataList = <DeviceReqBodyModel>[];
+    var dataList = <DeviceReqBodyModel>[];
 
     String? encodedList = await StorageService().read(deviceListKey);
 
@@ -61,13 +62,13 @@ class HelmetService {
       if (res != null) {
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
-          print("unsynced got synced");
+          print('unsynced got synced');
         }
       } else {
-        throw Exception("API call failed during unsynced data sync");
+        throw Exception('API call failed during unsynced data sync');
       }
     } catch (e) {
-      print("API call failed during unsynced data sync: $e");
+      print('API call failed during unsynced data sync: $e');
     }
 
     ///updating local list
@@ -89,38 +90,42 @@ class HelmetService {
       final locationService = di.get<LocationService>();
 
       final body = {
-        "Helmet_ID": helmetName,
-        "Disconnect_Reason_Code": reasonCode.toString(),
-        "Disconect_Time": DateTime.now().toIso8601String(),
-        "Latitude": locationService.lat,
-        "Longitude": locationService.long,
-        "User_Id": "awais",
-        "Vehicle_Type": "NA",
-        "Created_By": "awais",
-        "Updated_By": "awais",
+        'Helmet_ID': helmetName,
+        'Disconnect_Reason_Code': reasonCode.toString(),
+        'Disconect_Time': DateTime.now().toIso8601String(),
+        'Latitude': locationService.lat,
+        'Longitude': locationService.long,
+        'User_Id': 'awais',
+        'Vehicle_Type': 'NA',
+        'Created_By': 'awais',
+        'Updated_By': 'awais',
       };
 
       final res = await ApiServices().post(api: Api.disconnectingAlert, body: body);
 
       if (res != null) {
-        print("$res");
+        print('$res');
       }
-    } catch (e) {}
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> disconnectingReason(String helmetName) async {
     try {
       final body = {
-        "Helmet_ID": helmetName,
-        "USER_ID": "awais",
-        "Disconect_Time": DateTime.now().toIso8601String(),
+        'Helmet_ID': helmetName,
+        'USER_ID': 'awais',
+        'Disconect_Time': DateTime.now().toIso8601String(),
       };
 
       final res = await ApiServices().post(api: Api.disconnectReason, body: body);
 
       if (res != null) {
-        print("$res");
+        print('$res');
       }
-    } catch (e) {}
+    } catch (e) {
+      rethrow;
+    }
   }
 }

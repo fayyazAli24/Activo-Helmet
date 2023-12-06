@@ -13,7 +13,7 @@ class DeviceHistorySuccess extends DeviceHistoryState {
 }
 
 class DeviceHistoryFailed extends DeviceHistoryState {
-  String message = "";
+  String message = '';
 
   DeviceHistoryFailed(this.message);
 }

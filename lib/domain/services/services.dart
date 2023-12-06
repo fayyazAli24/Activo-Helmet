@@ -20,7 +20,7 @@ abstract class AppService<T> {
         ),
         LogInterceptor(
           logPrint: (data) => print(
-            "$data",
+            '$data',
           ),
           request: true,
           responseHeader: false,
@@ -42,13 +42,13 @@ abstract class AppService<T> {
 
 class ApiServices extends AppService {
   @override
-  printin({required String api, Object? body}) async {
+  Future printin({required String api, Object? body}) async {
     try {
       final response = await dio.post(
         api,
         data: body,
         options: Options(headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         }),
       );
 
@@ -58,21 +58,22 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      print("printin: $e");
+      print('printin: $e');
 
-      throw DioException(requestOptions: RequestOptions(data: body), message: "$e");
+      throw DioException(requestOptions: RequestOptions(data: body), message: '$e');
       // return e;
     }
   }
 
   @override
-  get({required String api, String? id, Map<String, dynamic>? body, Map<String, dynamic>? queryParameters}) async {
+  Future get(
+      {required String api, String? id, Map<String, dynamic>? body, Map<String, dynamic>? queryParameters}) async {
     try {
       final response = await dio.get(api,
           data: body,
           queryParameters: queryParameters,
           options: Options(headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           }));
 
       if (response.statusCode == 200) {
@@ -81,18 +82,18 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      print(" $api: $e");
+      print(' $api: $e');
       throw DioException(
           requestOptions: RequestOptions(
             data: body,
             queryParameters: queryParameters,
           ),
-          message: "$e");
+          message: '$e');
     }
   }
 
   @override
-  post({
+  Future post({
     required String api,
     String? id,
     Object? body,
@@ -103,7 +104,7 @@ class ApiServices extends AppService {
           data: body,
           queryParameters: queryParameters,
           options: Options(headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           }));
 
       if (response.statusCode == 200) {
@@ -112,10 +113,10 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-      print("$api: $e");
+      print('$api: $e');
       throw DioException(
         requestOptions: RequestOptions(data: body),
-        message: "$e",
+        message: '$e',
         error: e,
       );
     }

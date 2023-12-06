@@ -39,17 +39,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       pop();
                     },
-                    child: const AppText(text: "Close"),
+                    child: const AppText(text: 'Close'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       context.read<LocationCubit>().openSettings();
                     },
-                    child: const AppText(text: "Settings"),
+                    child: const AppText(text: 'Settings'),
                   ),
                 ],
                 title: const AppText(
-                  text: "Location is closed please open settings to turn on location",
+                  text: 'Location is closed please open settings to turn on location',
                 ),
               );
             },
@@ -63,18 +63,19 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: AppSpace.noSpace,
             leadingWidth: 0,
             title: const AppText(
-              text: "Smart Helmet (Activo)",
+              text: 'Smart Helmet (Activo)',
               fontSize: 18,
               color: AppColors.white,
               weight: FontWeight.w500,
             ),
             actions: [
               IconButton(
-                  onPressed: () => pushNamed(AppRoutes.deviceHistory),
-                  icon: Icon(
-                    Icons.history,
-                    color: AppColors.white,
-                  )),
+                onPressed: () => pushNamed(AppRoutes.deviceHistory),
+                icon: const Icon(
+                  Icons.history,
+                  color: AppColors.white,
+                ),
+              ),
             ],
           ),
           body: SafeArea(
@@ -107,24 +108,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     listener: (context, state) {
                       final cubit = context.read<BluetoothCubit>();
                       if (state is BluetoothStateOff) {
-                        snackBar("Bluetooth is turned off", context);
+                        snackBar('Bluetooth is turned off', context);
                       } else if (state is BluetoothFailedState) {
-                        snackBar(state.message ?? "Failed", context);
+                        snackBar(state.message ?? 'Failed', context);
                       } else if (state is BluetoothConnectingState) {
-                        snackBar("Connecting to ${cubit.deviceName}", context);
+                        snackBar('Connecting to ${cubit.deviceName}', context);
                       } else if (state is DisconnectedState) {
-                        snackBar("Device Disconnected", context);
+                        snackBar('Device Disconnected', context);
                       }
                       if (state is BluetoothConnectingState) {
                         showAdaptiveDialog(
                           barrierDismissible: false,
                           context: context,
                           builder: (context) {
-                            return PopScope(
+                            return const PopScope(
                               canPop: false,
-                              child: const AlertDialog.adaptive(
+                              child: AlertDialog.adaptive(
                                 title: AppText(
-                                  text: "connecting..",
+                                  text: 'connecting..',
                                 ),
                               ),
                             );

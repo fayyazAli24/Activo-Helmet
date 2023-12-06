@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   AppSpace.vrtSpace(15),
                   AppText(
-                    text: "Smart Helmet (Activo)",
+                    text: 'Smart Helmet (Activo)',
                     color: Theme.of(context).textTheme.displayLarge?.color,
                     fontSize: 18,
                   ),

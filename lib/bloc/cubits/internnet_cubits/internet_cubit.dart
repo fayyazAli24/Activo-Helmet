@@ -16,7 +16,7 @@ class InternetCubit extends Cubit<InternetState> {
 
   StreamSubscription<ConnectivityResult>? subscription;
 
-  checkConnectivity() {
+  void checkConnectivity() {
     subscription = Connectivity().onConnectivityChanged.listen(
       (event) {
         if (event == ConnectivityResult.none) {

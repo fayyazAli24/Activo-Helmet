@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
 import 'package:unilever_activo/bloc/states/device_history_state/device_history_state.dart';
-import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
@@ -18,7 +17,7 @@ class DeviceHistoryScreen extends StatefulWidget {
 class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
   @override
   void initState() {
-    BlocProvider.of<DeviceHistoryCubit>(context).devicesList();
+    BlocProvider.of<DeviceHistoryCubit>(context).deviceHistoryList();
     super.initState();
   }
 
@@ -26,8 +25,8 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: AppText(
-          text: "Device History",
+        title: const AppText(
+          text: 'Device History',
           color: AppColors.white,
           weight: FontWeight.w500,
         ),
@@ -36,25 +35,25 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
         builder: (context, state) {
           if (state is DeviceHistorySuccess) {
             return ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               itemCount: state.deviceData.length,
               itemBuilder: (context, index) {
-                DeviceReqBodyModel device = state.deviceData[index];
+                var device = state.deviceData[index];
                 return Card(
                   shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
                   elevation: 10,
                   surfaceTintColor: device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : Colors.red,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        buildCardRow("Helmet ID", device.helmetId.toString()),
-                        buildCardRow("Status", device.isWearHelmet == 0 ? "Not Weared" : "Weared"),
-                        buildCardRow("Latitude", device.latitude.toString()),
-                        buildCardRow("Longitude", device.longitude.toString()),
-                        buildCardRow("speed", device.speed.toString()),
-                        buildCardRow("API DateTime",
+                        buildCardRow('Helmet ID', device.helmetId.toString()),
+                        buildCardRow('Status', device.isWearHelmet == 0 ? 'Not Weared' : 'Weared'),
+                        buildCardRow('Latitude', device.latitude.toString()),
+                        buildCardRow('Longitude', device.longitude.toString()),
+                        buildCardRow('speed', device.speed.toString()),
+                        buildCardRow('API DateTime',
                             DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.apiDateTime ?? DateTime.now())),
                       ],
                     ),
@@ -64,15 +63,15 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
               separatorBuilder: (context, index) => AppSpace.vrtSpace(5),
             );
           } else if (state is DeviceHistoryLoading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(
                 color: AppColors.primaryColor,
               ),
             );
           }
-          return Center(
+          return const Center(
             child: AppText(
-              text: "No Records Found",
+              text: 'No Records Found',
               weight: FontWeight.w500,
             ),
           );

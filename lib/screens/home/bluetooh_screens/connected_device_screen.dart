@@ -32,25 +32,25 @@ class BluetoothConnectedScreen extends StatefulWidget {
 class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   Timer? timer;
 
-  initialization() async {
+  Future<void> initialization() async {
     try {
       if (!mounted) return;
 
       List? res = await di
           .get<HelmetService>()
-          .sendData(widget.deviceName ?? "", widget.state.batteryPercentage, widget.state.isWore);
+          .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore);
 
       if (res != null) {
-        snackBar("Data Synced Successfully", context);
+        snackBar('Data Synced Successfully', context);
       } else {
-        snackBar("Data Failed To Synced", context);
+        snackBar('Data Failed To Synced', context);
       }
     } catch (e) {
       if (!mounted) return;
 
-      print("ex: $e");
+      print('ex: $e');
 
-      snackBar("Data Failed To Synced", context);
+      snackBar('Data Failed To Synced', context);
     }
   }
 
@@ -61,8 +61,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
     initialization();
 
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      initialization();
-      print("** success hit ${widget.state.isWore}");
+      await initialization();
+      print('** success hit ${widget.state.isWore}');
     });
   }
 
@@ -108,7 +108,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
                 ),
                 child: Center(
                   child: AppText(
-                    text: "${widget.state.batteryPercentage}%",
+                    text: '${widget.state.batteryPercentage}%',
                     color: AppColors.white,
                     fontSize: 12,
                   ),
@@ -119,7 +119,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
           AppSpace.vrtSpace(10),
           AppText(
             ///condition inverted
-            text: widget.state.isWore == 0 ? "Not Weared" : "Weared",
+            text: widget.state.isWore == 0 ? 'Not Weared' : 'Weared',
             weight: FontWeight.w500,
             color: theme.textTheme.bodyLarge?.color,
           ),

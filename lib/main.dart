@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
@@ -13,7 +14,24 @@ import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 
-permissions() async {
+Future<void> clearPreviousRecords() async {
+  final pref = await SharedPreferences.getInstance();
+
+  final savedDate = pref.getString('date');
+  if (savedDate != null) {
+    final parsedDate = DateTime.parse(savedDate);
+    final currentDate = DateTime.now();
+
+    if (parsedDate.day != currentDate.day) {
+      await pref.remove(deviceListKey);
+      await pref.setString('date', DateTime.now().toIso8601String());
+    }
+  } else {
+    await pref.setString('date', DateTime.now().toIso8601String());
+  }
+}
+
+Future<void> permissions() async {
   await [
     Permission.location,
     Permission.bluetooth,
@@ -41,6 +59,8 @@ Future<void> main() async {
     await pref.clear();
     await pref.setBool('firstRun', false);
   }
+
+  await clearPreviousRecords();
 
   runApp(const MyApp());
 }

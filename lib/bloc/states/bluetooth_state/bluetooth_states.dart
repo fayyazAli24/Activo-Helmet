@@ -16,7 +16,7 @@ class BluetoothScannedState extends AppBluetoothState {
 
 class BluetoothConnectedState extends AppBluetoothState {
   double batteryPercentage = 0.0;
-  String name = "";
+  String name = '';
   int isWore = 0;
   double speed = 0.0;
   BluetoothConnectedState({

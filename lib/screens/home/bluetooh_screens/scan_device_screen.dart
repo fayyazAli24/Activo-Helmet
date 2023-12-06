@@ -28,7 +28,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               AppText(
-                text: "Auto connect with last paired",
+                text: 'Auto connect with last paired',
                 color: theme.textTheme.bodyLarge?.color,
               ),
               Switch.adaptive(
@@ -42,7 +42,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
           ),
           InkWell(
             onTap: () async {
-              context.read<BluetoothCubit>().getDevices();
+              await context.read<BluetoothCubit>().getDevices();
             },
             child: Lottie.asset(
               AssetsPath.bluetoothLoading,
@@ -56,7 +56,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
               // TODO: implement listener
             },
             builder: (context, state) {
-              if (state is BluetoothScannedState)
+              if (state is BluetoothScannedState) {
                 return Expanded(
                   child: ListView.builder(
                     shrinkWrap: true,
@@ -78,7 +78,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
                               size: 30,
                             ),
                             title: AppText(
-                              text: item.device.name ?? "",
+                              text: item.device.name ?? '',
                               fontSize: 15,
                             ),
                             subtitle: AppText(
@@ -91,6 +91,7 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
                     },
                   ),
                 );
+              }
               return AppSpace.noSpace;
             },
           ),

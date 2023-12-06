@@ -18,7 +18,7 @@ class LocationCubit extends Cubit<LocationStatus> {
   StreamSubscription<ServiceStatus>? subscription;
   Geolocator? geolocator;
   StreamSubscription<Geolocator>? geoLocationStream;
-  checkLocation() async {
+  Future<void> checkLocation() async {
     subscription = Geolocator.getServiceStatusStream().listen(
       (newState) async {
         if (newState == ServiceStatus.disabled) {
@@ -33,7 +33,7 @@ class LocationCubit extends Cubit<LocationStatus> {
     );
   }
 
-  openSettings() async {
+  void openSettings() async {
     final isOn = await Geolocator.openLocationSettings();
     if (isOn) {
       pop();
@@ -41,10 +41,6 @@ class LocationCubit extends Cubit<LocationStatus> {
     } else {
       emit(LocationOff());
     }
-  }
-
-  resetState() {
-    pop();
   }
 
   @override

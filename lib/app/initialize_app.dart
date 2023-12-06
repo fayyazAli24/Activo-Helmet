@@ -34,7 +34,7 @@ class InitializeApp extends StatelessWidget {
             return BlocListener<InternetCubit, InternetState>(
               listener: (context, state) {
                 if (state == InternetState.disconnected) {
-                  snackBar("No internet", context, color: AppColors.red, textColor: AppColors.white);
+                  snackBar('No internet', context, color: AppColors.red, textColor: AppColors.white);
                 }
               },
               child: child!,

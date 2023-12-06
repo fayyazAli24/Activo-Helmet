@@ -33,7 +33,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   FlutterBluetoothSerial flutterBluetoothSerial = FlutterBluetoothSerial.instance;
   BluetoothConnection? bluetoothConnection;
 
-  checkPermissions() async {
+  Future<void> checkPermissions() async {
     final bluetoothPermission = await Permission.bluetooth.isGranted;
     final locationPermission = await Permission.location.isGranted;
 
@@ -46,30 +46,30 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  checkStatus() async {
+  Future<void> checkStatus() async {
     final bluetoothState = await flutterBluetoothSerial.state;
 
-    print("**bluetooth state :  $bluetoothState");
+    print('**bluetooth state :  $bluetoothState');
     if (bluetoothState == BluetoothState.STATE_OFF) {
       emit(BluetoothStateOff());
       final isON = await flutterBluetoothSerial.requestEnable();
       if (isON ?? false) {
         emit(BluetoothStateOn());
-        getDevices();
+        await getDevices();
       }
     } else {
       emit(BluetoothStateOn());
 
-      getDevices();
+      await getDevices();
     }
 
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
           (event) async {
             if (event == BluetoothState.STATE_OFF) {
-              checkStatus();
+              await checkStatus();
             } else if (event == BluetoothState.STATE_ON) {
               emit(BluetoothStateOn());
-              getDevices();
+              await getDevices();
             }
           },
           onError: (e) async => await bluetoothStateStream?.cancel(),
@@ -79,19 +79,19 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         );
   }
 
-  turnOn() async {
+  Future<void> turnOn() async {
     try {
       final isON = await flutterBluetoothSerial.requestEnable();
       if (isON ?? false) {
         emit(BluetoothStateOn());
-        getDevices();
+        await getDevices();
       }
     } catch (e) {
       emit(BluetoothStateOff());
     }
   }
 
-  getDevices() async {
+  Future<void> getDevices() async {
     await FlutterBluetoothSerial.instance.cancelDiscovery();
     final blueState = await flutterBluetoothSerial.state;
 
@@ -110,13 +110,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  autoConnect(bool value) async {
+  Future<void> autoConnect(bool value) async {
     final convertedDevice = await StorageService().read(lastDeviceKey);
 
-    print("$convertedDevice");
+    print('$convertedDevice');
 
     if (convertedDevice != null) {
-      BluetoothDevice device = BluetoothDevice.fromMap(json.decode(convertedDevice.toString()));
+      var device = BluetoothDevice.fromMap(json.decode(convertedDevice.toString()));
 
       await connect(device);
       autoConnected = true;
@@ -124,12 +124,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       autoConnected = false;
 
       emit(
-        BluetoothFailedState(message: "Something went wrong / No Device Found"),
+        BluetoothFailedState(message: 'Something went wrong / No Device Found'),
       );
     }
   }
 
-  connect(BluetoothDevice device) async {
+  Future<void> connect(BluetoothDevice device) async {
     try {
       emit(BluetoothConnectingState());
       deviceName = device.name;
@@ -141,14 +141,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         deviceName = device.name;
         inputStream = connection?.input?.listen(
           (event) {
-            String newData = String.fromCharCodes(event);
+            var newData = String.fromCharCodes(event);
 
             if (newData.contains(RegExp(r'[a-zA-Z0-9]'))) {
               if (newData != deviceData) {
                 deviceData = newData;
                 final splitData = deviceData?.split(',');
                 if (splitData?.isNotEmpty ?? false) {
-                  String deviceStatus = splitData![0];
+                  var deviceStatus = splitData![0];
 
                   final parsedStatus = int.parse(deviceStatus);
 
@@ -165,7 +165,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                 emit(
                   BluetoothConnectedState(
                     speed: pressure ?? 0.0,
-                    name: deviceName ?? "",
+                    name: deviceName ?? '',
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
                   ),
@@ -183,19 +183,19 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         pop();
         emit(BluetoothConnectedState(
             speed: pressure ?? 0.0,
-            name: deviceName ?? "",
+            name: deviceName ?? '',
             batteryPercentage: batteryPercentage ?? 0.0,
             isWore: isWore));
       } else {
-        disconnect();
+        await disconnect();
       }
     } catch (e) {
       pop();
       print("can't connect: $e");
       emit(
-        BluetoothFailedState(message: "Failed to connect"),
+        BluetoothFailedState(message: 'Failed to connect'),
       );
-      disconnect();
+      await disconnect();
     }
   }
 
@@ -204,14 +204,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   //   await di.get<HelmetService>().disconnectingAlert(deviceName ?? "N/A", reason);
   // }
 
-  disconnect([int? reason]) async {
+  Future<void> disconnect([int? reason]) async {
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
     await connection?.finish();
     await inputStream?.cancel();
     await locationStream?.cancel();
     autoConnected = false;
-    getDevices();
+    await getDevices();
     // if (reason != null) {
     // await disconnectAlert(reason);
     // }

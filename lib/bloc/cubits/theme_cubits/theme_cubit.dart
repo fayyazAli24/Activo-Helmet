@@ -8,7 +8,7 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
   AppThemeModeCubit() : super(AppThemeMode.system);
   bool? darkTheme;
 
-  changeTheme(bool newTheme) {
+  void changeTheme(bool newTheme) {
     darkTheme = newTheme;
     if (darkTheme ?? false) {
       emit(AppThemeMode.dark);
@@ -30,21 +30,21 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
   ThemeData appTheme() {
     if (state == AppThemeMode.dark) {
       return ThemeData(
-        switchTheme: SwitchThemeData(
+        switchTheme: const SwitchThemeData(
           trackColor: MaterialStatePropertyAll<Color>(
             AppColors.white,
           ),
         ),
         appBarTheme: AppBarTheme(
           color: AppColors.appBarColor,
-          iconTheme: IconThemeData(
+          iconTheme: const IconThemeData(
             color: AppColors.white,
           ),
         ),
         colorScheme: const ColorScheme.dark(
           background: AppColors.black,
         ),
-        cardTheme: CardTheme(surfaceTintColor: AppColors.black),
+        cardTheme: const CardTheme(surfaceTintColor: AppColors.black),
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             color: AppColors.white,
@@ -53,19 +53,19 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
       );
     }
     return ThemeData(
-      switchTheme: SwitchThemeData(
+      switchTheme: const SwitchThemeData(
         trackColor: MaterialStatePropertyAll<Color>(
           AppColors.white,
         ),
       ),
       appBarTheme: AppBarTheme(
         color: AppColors.appBarColor,
-        iconTheme: IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       colorScheme: const ColorScheme.light(
         background: AppColors.white,
       ),
-      cardTheme: CardTheme(surfaceTintColor: AppColors.white, elevation: 5),
+      cardTheme: const CardTheme(surfaceTintColor: AppColors.white, elevation: 5),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           color: AppColors.black,
