@@ -7,7 +7,7 @@ class StorageService {
     await prefs.setString(key, value);
   }
 
-  Future<dynamic> read(String key) async {
+  Future<dynamic>? read(String key) async {
     final prefs = await SharedPreferences.getInstance();
 
     final value = prefs.get(key);

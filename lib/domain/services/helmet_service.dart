@@ -68,7 +68,6 @@ class HelmetService {
       }
     } catch (e) {
       print('API call failed during unsynced data sync: $e');
-
       throw Exception('API call failed during unsynced data sync');
     }
 

@@ -45,10 +45,14 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                       itemBuilder: (context, index) {
                         var device = snapshot.data![index];
                         return Card(
-                          shadowColor: device.isWearHelmet == 0 ? AppColors.red : AppColors.green,
-                          elevation: 10,
-                          surfaceTintColor:
-                              device.synced == 1 ? Theme.of(context).cardTheme.surfaceTintColor : AppColors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                                width: 0.8, color: device.synced == 1 ? AppColors.primaryColor : AppColors.red),
+                          ),
+                          shadowColor: device.synced == 1 ? AppColors.cyan : AppColors.red,
+                          elevation: device.synced == 1 ? 20 : 10,
+                          color: Theme.of(context).cardColor,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             child: Column(
@@ -59,6 +63,11 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                                 buildCardRow('Latitude', device.latitude.toString()),
                                 buildCardRow('Longitude', device.longitude.toString()),
                                 buildCardRow('speed', device.speed.toString()),
+                                buildCardRow(
+                                  'Sync Status',
+                                  device.synced == 1 ? 'Synced' : 'UnSynced',
+                                  device.synced == 0 ? Colors.red : AppColors.green,
+                                ),
                                 buildCardRow('API DateTime',
                                     DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.apiDateTime ?? DateTime.now())),
                               ],
@@ -66,7 +75,7 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                           ),
                         );
                       },
-                      separatorBuilder: (context, index) => AppSpace.vrtSpace(5),
+                      separatorBuilder: (context, index) => AppSpace.vrtSpace(10),
                     );
                   } else if (snapshot.connectionState == ConnectionState.waiting) {
                     return const AppLoader();
@@ -93,12 +102,19 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
     );
   }
 
-  Row buildCardRow(String heading, String value) {
+  Row buildCardRow(String heading, String value, [Color? color]) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        AppText(text: heading),
-        AppText(text: value),
+        AppText(
+          text: heading,
+          weight: FontWeight.w500,
+        ),
+        AppText(
+          text: value,
+          weight: FontWeight.w500,
+          color: color,
+        ),
       ],
     );
   }

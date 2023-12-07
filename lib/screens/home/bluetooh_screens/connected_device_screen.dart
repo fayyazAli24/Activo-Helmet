@@ -106,11 +106,15 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
                   color: widget.state.batteryPercentage / 100 <= 0.2 ? Colors.red : Colors.green,
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.center,
                   child: AppText(
-                    text: '${widget.state.batteryPercentage}%',
+                    text: '${widget.state.batteryPercentage.toInt()}%',
                     color: AppColors.white,
                     fontSize: 12,
+                    textAlign: TextAlign.center,
+                    weight: FontWeight.w500,
                   ),
                 ),
               ),

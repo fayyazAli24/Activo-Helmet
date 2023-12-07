@@ -27,6 +27,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   double? batteryPercentage;
   double? pressure;
   int isWore = 0;
+  bool isStreamClosed = false;
   int disconnectReason = 0;
   bool autoConnected = false;
   StreamSubscription<BluetoothState>? bluetoothStateStream;
@@ -94,14 +95,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   Future<void> getDevices() async {
     await FlutterBluetoothSerial.instance.cancelDiscovery();
     final blueState = await flutterBluetoothSerial.state;
-
     if (blueState == BluetoothState.STATE_ON) {
       scannedDevices = [];
+      isStreamClosed = false;
+
+      emit(BluetoothScannedState(devices: scannedDevices));
 
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
         (newDevice) async {
           if (!scannedDevices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
-            if (disconnectReason != 555) {
+            if (disconnectReason != 555 && autoConnected) {
               final encodedDevice = await StorageService().read(lastDeviceKey);
               if (encodedDevice != null) {
                 var device = BluetoothDevice.fromMap(json.decode(encodedDevice.toString()));
@@ -112,18 +115,24 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               }
             }
             scannedDevices.add(newDevice);
+
             emit(BluetoothScannedState(devices: scannedDevices));
           }
         },
-        onError: (e) async {
+        onDone: () async {
+          isStreamClosed = true;
+          emit(BluetoothScannedState(devices: scannedDevices));
           await bluetoothDiscoveryStream?.cancel();
         },
+        onError: (e) async {
+          isStreamClosed = true;
+          emit(BluetoothScannedState(devices: scannedDevices));
+
+          await bluetoothDiscoveryStream?.cancel();
+        },
+        cancelOnError: true,
       );
     }
-  }
-
-  Future<void> autoConnect(bool value) async {
-    autoConnected = value;
   }
 
   Future<void> connect(BluetoothDevice device) async {
@@ -209,7 +218,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await inputStream?.cancel();
     await locationStream?.cancel();
     disconnectReason = reason ?? 0;
-    autoConnected = false;
+
     await getDevices();
 
     // if (reason != null) {

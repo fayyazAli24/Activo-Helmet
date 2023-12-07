@@ -9,7 +9,7 @@ import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
-class BluetoothScanDeviceScreen extends StatelessWidget {
+class BluetoothScanDeviceScreen extends StatefulWidget {
   const BluetoothScanDeviceScreen({
     super.key,
     required this.theme,
@@ -21,6 +21,21 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
   final Size size;
 
   @override
+  State<BluetoothScanDeviceScreen> createState() => _BluetoothScanDeviceScreenState();
+}
+
+class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
@@ -30,15 +45,20 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
             children: [
               AppText(
                 text: 'Auto connect with last paired',
-                color: theme.textTheme.bodyLarge?.color,
+                color: widget.theme.textTheme.bodyLarge?.color,
               ),
               BlocConsumer<SwitchCubit, bool>(
                 listener: (context, state) {},
                 builder: (context, state) {
+                  context.read<BluetoothCubit>().autoConnected = state;
                   return Switch.adaptive(
-                    trackColor: theme.switchTheme.trackColor,
+                    trackColor: widget.theme.switchTheme.trackColor,
+                    activeTrackColor: AppColors.white,
+                    activeColor: AppColors.black,
                     value: state,
                     onChanged: (value) {
+                      context.read<BluetoothCubit>().autoConnected = value;
+                      context.read<BluetoothCubit>().disconnectReason = 0;
                       context.read<SwitchCubit>().updateValue(value);
                     },
                   );
@@ -53,8 +73,9 @@ class BluetoothScanDeviceScreen extends StatelessWidget {
             child: Lottie.asset(
               AssetsPath.bluetoothLoading,
               frameRate: FrameRate.max,
+              animate: !context.watch<BluetoothCubit>().isStreamClosed,
               fit: BoxFit.fill,
-              height: size.height * 0.2,
+              height: widget.size.height * 0.2,
             ),
           ),
           BlocConsumer<BluetoothCubit, AppBluetoothState>(
