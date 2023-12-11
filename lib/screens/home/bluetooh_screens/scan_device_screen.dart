@@ -79,9 +79,7 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
             ),
           ),
           BlocConsumer<BluetoothCubit, AppBluetoothState>(
-            listener: (context, state) {
-              // TODO: implement listener
-            },
+            listener: (context, state) {},
             builder: (context, state) {
               if (state is BluetoothScannedState) {
                 return Expanded(

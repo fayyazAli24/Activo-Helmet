@@ -62,6 +62,7 @@ class HelmetService {
       if (res != null) {
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
+          unsyncedModel.apiDateTime = DateTime.now();
         }
       } else {
         throw Exception('API call failed during unsynced data sync');

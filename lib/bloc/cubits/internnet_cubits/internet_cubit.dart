@@ -20,11 +20,11 @@ class InternetCubit extends Cubit<InternetState> {
 
   void checkConnectivity() {
     subscription = Connectivity().onConnectivityChanged.listen(
-      (event) {
+      (event) async {
         if (event == ConnectivityResult.none) {
           emit(InternetState.disconnected);
         } else {
-          if (event != ConnectivityResult.none) di.get<HelmetService>().syncUnsyncedData();
+          if (event != ConnectivityResult.none) await di.get<HelmetService>().syncUnsyncedData();
           emit(InternetState.connected);
         }
       },

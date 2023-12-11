@@ -38,6 +38,10 @@
 		<string>Need Location permission</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Need Location permission</string>
+		<key>BGTaskSchedulerPermittedIdentifiers</key>
+        <array>
+            <string>dev.flutter.background.refresh</string>
+        </array>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>

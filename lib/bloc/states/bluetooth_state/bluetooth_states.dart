@@ -29,6 +29,8 @@ class BluetoothConnectedState extends AppBluetoothState {
 
 class DisconnectedState extends AppBluetoothState {}
 
+class AutoDisconnectedState extends AppBluetoothState {}
+
 class BluetoothFailedState extends AppBluetoothState {
   String? message;
   BluetoothFailedState({required this.message});

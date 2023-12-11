@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
+import 'package:unilever_activo/utils/assets.dart';
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState()) {
@@ -22,6 +24,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   List<BluetoothDiscoveryResult> scannedDevices = [];
   StreamSubscription<Uint8List>? inputStream;
   StreamSubscription<Position>? locationStream;
+  AudioPlayer audioPlayer = AudioPlayer();
   String? deviceName;
   String? deviceData;
   double? batteryPercentage;
@@ -98,12 +101,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     if (blueState == BluetoothState.STATE_ON) {
       scannedDevices = [];
       isStreamClosed = false;
-
       emit(BluetoothScannedState(devices: scannedDevices));
-
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
         (newDevice) async {
-          if (!scannedDevices.contains(newDevice) && (newDevice.device.name?.isNotEmpty ?? false)) {
+          final alreadyExists = scannedDevices.indexWhere((element) => element.device.name == newDevice.device.name);
+          if ((alreadyExists == -1) && (newDevice.device.name?.isNotEmpty ?? false)) {
             if (disconnectReason != 555 && autoConnected) {
               final encodedDevice = await StorageService().read(lastDeviceKey);
               if (encodedDevice != null) {
@@ -145,6 +147,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         final convertedDevice = jsonEncode(device.toMap());
         await StorageService().write(lastDeviceKey, convertedDevice);
         deviceName = device.name;
+        await StorageService().write(connectTimeKey, DateTime.now().toIso8601String());
+
         inputStream = connection?.input?.listen(
           (event) {
             var newData = String.fromCharCodes(event);
@@ -216,15 +220,33 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.close();
     await connection?.finish();
     await inputStream?.cancel();
+
     await locationStream?.cancel();
     disconnectReason = reason ?? 0;
-
+    await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
     await getDevices();
 
     // if (reason != null) {
     // await disconnectAlert(reason);
     // }
     emit(DisconnectedState());
+    await alarmSettings();
+  }
+
+  Future<void> alarmSettings() async {
+    await Future.delayed(
+      const Duration(seconds: 15),
+      () async {
+        if ((connection?.isConnected ?? false)) return;
+        emit(AutoDisconnectedState());
+        await playAlarm();
+      },
+    );
+  }
+
+  Future<void> playAlarm() async {
+    await audioPlayer.setAsset(AssetsPath.alarmSound);
+    await audioPlayer.play();
   }
 
   @override
@@ -234,6 +256,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.close();
     await bluetoothStateStream?.cancel();
     await bluetoothDiscoveryStream?.cancel();
+    audioPlayer.dispose();
     await connection?.finish();
     await locationStream?.cancel();
     await inputStream?.cancel();

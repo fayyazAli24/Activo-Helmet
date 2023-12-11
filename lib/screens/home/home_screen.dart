@@ -11,6 +11,7 @@ import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_s
 import 'package:unilever_activo/screens/home/bluetooh_screens/disconnected_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/scan_device_screen.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
+import 'package:unilever_activo/utils/widgets/app_button.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
@@ -98,7 +99,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         snackBar('Bluetooth is turned off', context);
                       } else if (state is BluetoothFailedState) {
                         noDeviceFoundDialog(state);
-                      } else if (state is DisconnectedState) {
+                      } else if (state is AutoDisconnectedState) {
+                        showAdaptiveDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog.adaptive(
+                              actions: [
+                                AppButton(
+                                  onPressed: () async {
+                                    await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
+                                    pop();
+                                  },
+                                )
+                              ],
+                              title: const AppText(
+                                text: 'Helmet Disconnected',
+                              ),
+                            );
+                          },
+                        );
+
                         snackBar('Device Disconnected', context);
                       }
                       if (state is BluetoothConnectingState) {

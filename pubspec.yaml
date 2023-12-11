@@ -48,6 +48,8 @@ dependencies:
   geolocator: ^10.1.0
   get_it: ^7.6.4
   intl: ^0.18.1
+  flutter_background_service: ^5.0.5
+  just_audio: ^0.9.36
 
 
 dev_dependencies:
@@ -101,6 +103,7 @@ flutter:
     - assets/app_icon/
     - assets/
     - assets/lottie/
+    - assets/audio/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

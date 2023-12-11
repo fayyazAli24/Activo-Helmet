@@ -6,4 +6,5 @@ class AssetsPath {
   static const powerOn = 'assets/lottie/power_on.json';
   static const success = 'assets/lottie/success.json';
   static const bluetoothLoading = 'assets/lottie/bluetooth_loading.json';
+  static const alarmSound = 'assets/audio/alarm_sound.mp3';
 }

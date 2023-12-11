@@ -31,8 +31,6 @@ Future<void> clearPreviousRecords() async {
       } catch (e) {
         print('$e');
       }
-      await StorageService().delete(lastDeviceKey);
-      await StorageService().delete(autoConnectKey);
 
       await StorageService().write('date', DateTime.now().toIso8601String());
     }
@@ -43,7 +41,6 @@ Future<void> clearPreviousRecords() async {
 
 Future<void> permissions() async {
   await [
-    Permission.location,
     Permission.bluetooth,
     Permission.bluetoothConnect,
     Permission.bluetoothScan,

@@ -6,6 +6,7 @@ import 'package:unilever_activo/screens/splash.dart';
 class AppRoutes {
   static const splash = '/splash';
   static const home = '/home';
+
   static const deviceHistory = '/device_history_screen';
   static Map<String, Widget Function(BuildContext _)> routes = {
     splash: (_) => const SplashScreen(),
