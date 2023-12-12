@@ -9,7 +9,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
+import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/utils/assets.dart';
 
@@ -129,7 +131,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         onError: (e) async {
           isStreamClosed = true;
           emit(BluetoothScannedState(devices: scannedDevices));
-
           await bluetoothDiscoveryStream?.cancel();
         },
         cancelOnError: true,
@@ -172,6 +173,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     pressure = double.tryParse(splitData[2]);
                   }
                 }
+
                 disconnectReason = 0;
                 emit(
                   BluetoothConnectedState(
@@ -186,6 +188,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           },
           onDone: () {
             disconnect(444);
+
+            ///Helmet Disconnect
           },
           cancelOnError: true,
         );
@@ -210,11 +214,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  // disconnectAlert(int reason) async {
-  //   await di.get<HelmetService>().disconnectingReason(deviceName ?? "N/A");
-  //   await di.get<HelmetService>().disconnectingAlert(deviceName ?? "N/A", reason);
-  // }
-
   Future<void> disconnect([int? reason]) async {
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
@@ -226,9 +225,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
     await getDevices();
 
-    // if (reason != null) {
-    // await disconnectAlert(reason);
-    // }
+    await di.get<HelmetService>().disconnectingAlert(deviceName ?? 'N/A', disconnectReason);
+
     emit(DisconnectedState());
     await alarmSettings();
   }
@@ -238,7 +236,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       const Duration(seconds: 15),
       () async {
         if ((connection?.isConnected ?? false)) return;
-        emit(AutoDisconnectedState());
+        emit(AutoDisconnectedState(deviceName ?? ''));
         await playAlarm();
       },
     );

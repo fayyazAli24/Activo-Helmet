@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
@@ -23,10 +24,10 @@ class HelmetService {
       latitude: locationService.lat,
       longitude: locationService.long,
       isWearHelmet: isWore,
-      apiDateTime: DateTime.now(),
       isWrongWay: 0,
       speed: locationService.speed,
       vehicleType: '',
+      savedTime: DateTime.now(),
       synced: 0,
       createdBy: '',
       updatedBy: '',
@@ -35,12 +36,13 @@ class HelmetService {
     deviceDataList.add(reqModel);
     await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
 
-    final list = await syncUnsyncedData();
-    if (list != null) {
-      return [];
-    } else {
-      return null;
-    }
+    // final list = await syncUnsyncedData();
+    // if (list != null) {
+    //   return [];
+    // } else {
+    //   return null;
+    // }
+    return null;
   }
 
   Future<List<dynamic>?> syncUnsyncedData() async {
@@ -96,13 +98,13 @@ class HelmetService {
         'Disconect_Time': DateTime.now().toIso8601String(),
         'Latitude': locationService.lat,
         'Longitude': locationService.long,
-        'User_Id': 'awais',
+        'User_Id': '',
         'Vehicle_Type': 'NA',
-        'Created_By': 'awais',
-        'Updated_By': 'awais',
+        'Created_By': '',
+        'Updated_By': '',
       };
 
-      final res = await ApiServices().post(api: Api.disconnectingAlert, body: body);
+      final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
 
       if (res != null) {
         print('$res');
@@ -112,18 +114,37 @@ class HelmetService {
     }
   }
 
-  Future<void> disconnectingReason(String helmetName) async {
+  Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
     try {
-      final body = {
+      var body = <String, dynamic>{
         'Helmet_ID': helmetName,
-        'USER_ID': 'awais',
-        'Disconect_Time': DateTime.now().toIso8601String(),
+        'USER_ID': '',
+        'DATE': DateTime.now().toIso8601String(),
+        'REASON': reason,
+        'STATUS_DESC': desc,
       };
 
-      final res = await ApiServices().post(api: Api.disconnectReason, body: body);
+      final isInternetAvailable = await Connectivity().checkConnectivity();
+      if (isInternetAvailable == ConnectivityResult.none) {
+        body['sync'] = false;
 
-      if (res != null) {
-        print('$res');
+        final reasonDataList = await StorageService().read(unSyncedReasonData);
+
+        if (reasonDataList != null) {
+          var list =
+              List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e)))
+                  .toList();
+
+          list.add(body);
+          await StorageService().write(unSyncedReasonData, jsonEncode(list));
+        } else {
+          await StorageService().write(unSyncedReasonData, jsonEncode([body]));
+        }
+      } else {
+        final res = await ApiServices().post(api: Api.disconnectReason, body: [body]);
+        if (res != null) {
+          print('$res');
+        }
       }
     } catch (e) {
       rethrow;

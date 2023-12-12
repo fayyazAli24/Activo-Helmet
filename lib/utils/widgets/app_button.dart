@@ -6,18 +6,20 @@ import 'package:unilever_activo/utils/widgets/app_text.dart';
 class AppButton extends StatelessWidget {
   const AppButton({
     required this.onPressed,
+    this.backgroundColor,
     this.child,
     super.key,
   });
 
   final Function()? onPressed;
+  final Color? backgroundColor;
   final Widget? child;
   @override
   Widget build(BuildContext context) {
     return FractionallySizedBox(
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.red,
+          backgroundColor: backgroundColor,
         ),
         onPressed: onPressed ??
             () {

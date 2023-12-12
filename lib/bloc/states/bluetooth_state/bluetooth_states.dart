@@ -29,7 +29,10 @@ class BluetoothConnectedState extends AppBluetoothState {
 
 class DisconnectedState extends AppBluetoothState {}
 
-class AutoDisconnectedState extends AppBluetoothState {}
+class AutoDisconnectedState extends AppBluetoothState {
+  String name = '';
+  AutoDisconnectedState(this.name);
+}
 
 class BluetoothFailedState extends AppBluetoothState {
   String? message;

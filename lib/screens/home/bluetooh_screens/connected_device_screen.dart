@@ -62,7 +62,6 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
 
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       await initialization();
-      print('** success hit ${widget.state.isWore}');
     });
   }
 
@@ -82,6 +81,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
           GestureDetector(
             onTap: () async {
               await context.read<BluetoothCubit>().disconnect(555);
+
+              ///User Disconnect
             },
             child: Lottie.asset(
               AssetsPath.powerOff,

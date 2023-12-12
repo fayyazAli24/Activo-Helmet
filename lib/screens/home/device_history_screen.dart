@@ -68,7 +68,8 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
                                   device.synced == 1 ? 'Synced' : 'UnSynced',
                                   device.synced == 0 ? Colors.red : AppColors.green,
                                 ),
-                                buildCardRow('Saved Time', DateFormat('dd-MMM-yyyy:hh:mm:ss').format(DateTime.now())),
+                                buildCardRow(
+                                    'Saved Time', DateFormat('dd-MMM-yyyy:hh:mm:ss').format(device.savedTime!)),
                                 buildCardRow(
                                     'API DateTime',
                                     device.apiDateTime != null

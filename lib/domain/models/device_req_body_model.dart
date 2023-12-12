@@ -16,6 +16,7 @@ class DeviceReqBodyModel {
   double? longitude;
   int? isWearHelmet;
   int? isWrongWay;
+  DateTime? savedTime;
   double? speed;
   int? synced;
   String? vehicleType;
@@ -32,6 +33,7 @@ class DeviceReqBodyModel {
     this.isWearHelmet,
     this.isWrongWay,
     this.speed,
+    this.savedTime,
     this.vehicleType,
     this.createdBy,
     this.updatedBy,
@@ -46,6 +48,7 @@ class DeviceReqBodyModel {
         synced: json['synced'],
         isWearHelmet: json['Is_Wear_Helmet'],
         isWrongWay: json['Is_Wrong_Way'],
+        savedTime: DateTime.parse(json['savedTime']),
         speed: json['speed'],
         vehicleType: json['VehicleType'],
         createdBy: json['Created_By'],
@@ -59,6 +62,7 @@ class DeviceReqBodyModel {
         'Latitude': latitude,
         'Longitude': longitude,
         'Is_Wear_Helmet': isWearHelmet,
+        'savedTime': savedTime?.toIso8601String(),
         'Is_Wrong_Way': isWrongWay,
         'speed': speed,
         'synced': synced,

@@ -76,6 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
           actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: [
             const AppButton(
+              backgroundColor: AppColors.red,
               onPressed: pop,
               child: AppText(
                 text: 'NO',
@@ -83,6 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             AppButton(
+              backgroundColor: AppColors.green,
               onPressed: () async {
                 await [
                   Permission.locationWhenInUse,

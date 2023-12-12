@@ -3,7 +3,7 @@ class Api {
 
   static const trJourney = '${_baseUrl}TrJourney/TrJourney?';
 
-  static const disconnectReason = '${_baseUrl}DisconnectingReason/DisconnectingReason?g';
+  static const disconnectReason = '${_baseUrl}DisconnectingReason/DisconnectingReason?';
 
   static const disconnectingAlert = '${_baseUrl}DisconnectingAlert/DisconnectingAlert?';
 }

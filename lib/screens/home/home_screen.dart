@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
@@ -24,6 +26,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController statusDescController = TextEditingController();
+  String? selectedReason;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    statusDescController.dispose();
     super.dispose();
   }
 
@@ -100,24 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else if (state is BluetoothFailedState) {
                         noDeviceFoundDialog(state);
                       } else if (state is AutoDisconnectedState) {
-                        showAdaptiveDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog.adaptive(
-                              actions: [
-                                AppButton(
-                                  onPressed: () async {
-                                    await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
-                                    pop();
-                                  },
-                                )
-                              ],
-                              title: const AppText(
-                                text: 'Helmet Disconnected',
-                              ),
-                            );
-                          },
-                        );
+                        disconnectedDialog(state);
 
                         snackBar('Device Disconnected', context);
                       }
@@ -131,6 +121,102 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Future<dynamic> disconnectedDialog(AutoDisconnectedState state) {
+    return showAdaptiveDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, Function(void Function()) setState) {
+          return AlertDialog.adaptive(
+            scrollable: true,
+            content: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AppText(
+                      text: 'Status Description',
+                      weight: FontWeight.w500,
+                    ),
+                    AppSpace.vrtSpace(5),
+                    StatusDescTextField(),
+                    AppSpace.vrtSpace(5),
+                    ...['Internet', 'User Disconnect', 'Helmet', 'Bluetooth']
+                        .map(
+                          (e) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              RadioListTile<String>(
+                                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                                dense: true,
+                                value: e,
+                                title: AppText(
+                                  text: e,
+                                ),
+                                groupValue: selectedReason,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedReason = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                        .toList()
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              AppButton(
+                child: const AppText(
+                  text: 'Submit',
+                ),
+                onPressed: () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    await di
+                        .get<HelmetService>()
+                        .disconnectingReason(state.name, selectedReason ?? '', statusDescController.text);
+
+                    await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
+                    selectedReason = null;
+                    pop();
+                  }
+                },
+              )
+            ],
+            title: const Center(
+              child: AppText(
+                text: 'Helmet Disconnected',
+                weight: FontWeight.w500,
+                fontSize: 18,
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  TextFormField StatusDescTextField() {
+    return TextFormField(
+      decoration: const InputDecoration(hintText: 'Description'),
+      controller: statusDescController,
+      validator: (value) {
+        return value == null || value.isEmpty ? "Field can't be empty" : null;
+      },
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      onTapOutside: (event) {
+        final focus = FocusScope.of(context);
+        focus.unfocus();
       },
     );
   }
