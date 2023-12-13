@@ -16,11 +16,11 @@ class BluetoothScannedState extends AppBluetoothState {
 
 class BluetoothConnectedState extends AppBluetoothState {
   double batteryPercentage = 0.0;
-  String name = '';
+  String deviceName = '';
   int isWore = 0;
   double speed = 0.0;
   BluetoothConnectedState({
-    required this.name,
+    required this.deviceName,
     required this.batteryPercentage,
     required this.isWore,
     required this.speed,
@@ -30,7 +30,8 @@ class BluetoothConnectedState extends AppBluetoothState {
 class DisconnectedState extends AppBluetoothState {}
 
 class AutoDisconnectedState extends AppBluetoothState {
-  String name = '';
+  String? name;
+
   AutoDisconnectedState(this.name);
 }
 

@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
 class LocationStatus {}
@@ -14,23 +17,33 @@ class LocationCubit extends Cubit<LocationStatus> {
   LocationCubit() : super(LocationStatus()) {
     checkLocation();
   }
-
+  String? deviceName;
   StreamSubscription<ServiceStatus>? subscription;
   Geolocator? geolocator;
-  StreamSubscription<Geolocator>? geoLocationStream;
-  Future<void> checkLocation() async {
-    subscription = Geolocator.getServiceStatusStream().listen(
-      (newState) async {
-        if (newState == ServiceStatus.disabled) {
-          emit(LocationOff());
-        } else if (newState == ServiceStatus.enabled) {
-          emit(LocationOn());
-        }
-      },
-      onDone: () async {
-        await subscription?.cancel();
-      },
-    );
+
+  void checkLocation() {
+    try {
+      subscription = Geolocator.getServiceStatusStream().listen(
+        (locationState) async {
+          if (locationState == ServiceStatus.disabled) {
+            if (deviceName != null) await di.get<HelmetService>().disconnectingAlert(deviceName ?? '', 111);
+
+            ///GPS Code
+
+            emit(LocationOff());
+          } else if (locationState == ServiceStatus.enabled) {
+            emit(LocationOn());
+          }
+        },
+        cancelOnError: true,
+        onDone: () async {
+          await subscription?.cancel();
+        },
+      );
+    } catch (e) {
+      log('$e');
+      subscription?.cancel();
+    }
   }
 
   void openSettings() async {
@@ -46,7 +59,6 @@ class LocationCubit extends Cubit<LocationStatus> {
   @override
   Future<void> close() async {
     await subscription?.cancel();
-
     return super.close();
   }
 }

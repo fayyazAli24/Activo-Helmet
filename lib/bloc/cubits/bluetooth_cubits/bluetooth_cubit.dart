@@ -34,7 +34,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   String? deviceData;
   double? batteryPercentage;
   double? pressure;
-  int rssi = 0;
+
   int isWore = 0;
   bool isDiscovering = false;
   int disconnectReasonCode = 0;
@@ -97,8 +97,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       (event) {
         locationService.long = event.longitude;
         locationService.lat = event.latitude;
-
-        log('${locationService.lat}');
+        locationService.speed = event.speed;
       },
       onDone: () async {
         await locationStream?.cancel();
@@ -196,12 +195,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     pressure = double.tryParse(splitData[2]);
                   }
                 }
-
                 disconnectReasonCode = 0;
                 emit(
                   BluetoothConnectedState(
                     speed: pressure ?? 0.0,
-                    name: deviceName ?? '',
+                    deviceName: deviceName ?? '',
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
                   ),
@@ -214,9 +212,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
             ///Helmet Disconnect
           },
-          onError: (e) {
-            log('${e.id}  errrrorr');
-          },
+          onError: (e) {},
           cancelOnError: true,
         );
 
@@ -224,7 +220,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         pop();
         emit(BluetoothConnectedState(
             speed: pressure ?? 0.0,
-            name: deviceName ?? '',
+            deviceName: deviceName ?? '',
             batteryPercentage: batteryPercentage ?? 0.0,
             isWore: isWore));
       } else {
@@ -232,7 +228,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       }
     } catch (e) {
       pop();
-      print("can't connect: $e");
+
       emit(
         BluetoothFailedState(message: 'Failed to connect'),
       );
@@ -247,13 +243,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await bluetoothConnection?.close();
     await connection?.finish();
     await inputStream?.cancel();
-    log('$rssi rssi on disconnect');
+
     await locationStream?.cancel();
     disconnectReasonCode = reason ?? 0;
     await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
     await getDevices();
     await disconnectAlert(reason);
-    log('');
+
     emit(DisconnectedState());
     await alarmSettings();
   }

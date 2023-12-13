@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -74,27 +75,33 @@ final di = GetIt.instance;
 StreamSubscription? connectionStream;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await permissions();
-  registerServices();
-  final pref = await SharedPreferences.getInstance();
+  try {
+    await permissions();
+    registerServices();
+    final pref = await SharedPreferences.getInstance();
 
-  final isFirstRun = pref.getBool('firstRun');
-
-  if (isFirstRun ?? true) {
+    final isFirstRun = pref.getBool('firstRun');
     await pref.clear();
-    await pref.setBool('firstRun', false);
+
+    if (isFirstRun ?? true) {
+      await pref.clear();
+      await pref.setBool('firstRun', false);
+    }
+
+    connectionStream = Connectivity().onConnectivityChanged.listen(
+      (event) async {
+        if (event != ConnectivityResult.none) {
+          await clearPreviousRecords();
+          await clearUnsyncedReasonRecord();
+        }
+      },
+      onDone: () async {
+        await connectionStream?.cancel();
+      },
+    );
+  } catch (e) {
+    log('$e');
   }
-  connectionStream = Connectivity().onConnectivityChanged.listen(
-    (event) async {
-      if (event != ConnectivityResult.none) {
-        await clearPreviousRecords();
-        await clearUnsyncedReasonRecord();
-      }
-    },
-    onDone: () async {
-      await connectionStream?.cancel();
-    },
-  );
 
   runApp(const MyApp());
 }

@@ -47,12 +47,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final size = MediaQuery.sizeOf(context);
 
     return BlocConsumer<LocationCubit, LocationStatus>(
-      listener: (context, state) {
-        if (state is LocationOff) {
+      listener: (context, locationState) {
+        if (locationState is LocationOff) {
+          final bluetoothState = context.read<BluetoothCubit>().state;
+
+          if (bluetoothState is BluetoothConnectedState) {
+            context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+          }
           locationOffDialog(context);
         }
       },
-      builder: (context, state) {
+      builder: (context, locationState) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: theme.appBarTheme.backgroundColor,
@@ -92,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else if (state is BluetoothConnectedState) {
                         return BluetoothConnectedScreen(
                           state: state,
-                          deviceName: state.name,
+                          deviceName: state.deviceName,
                           size: size,
                         );
                       }
@@ -107,8 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else if (state is BluetoothFailedState) {
                         noDeviceFoundDialog(state);
                       } else if (state is AutoDisconnectedState) {
-                        disconnectedDialog(state);
-
+                        stopAlarmDialog();
                         snackBar('Device Disconnected', context);
                       }
                       if (state is BluetoothConnectingState) {
@@ -187,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                     await di
                         .get<HelmetService>()
-                        .disconnectingReason(state.name, selectedReason ?? '', statusDescController.text);
+                        .disconnectingReason(state.name ?? '', selectedReason ?? '', statusDescController.text);
 
                     await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
                     selectedReason = null;
@@ -221,6 +225,34 @@ class _HomeScreenState extends State<HomeScreen> {
       onTapOutside: (event) {
         final focus = FocusScope.of(context);
         focus.unfocus();
+      },
+    );
+  }
+
+  Future<dynamic> stopAlarmDialog() {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          title: const Center(
+            child: AppText(
+              text: 'Helmet Disconnected',
+              weight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
+
+                  pop();
+                },
+                child: const Center(child: AppText(text: 'Close')),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

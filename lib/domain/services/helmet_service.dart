@@ -98,6 +98,7 @@ class HelmetService {
     try {
       final locationService = di.get<LocationService>();
 
+      log('$reasonCode code');
       final body = {
         'Helmet_ID': helmetName,
         'Disconnect_Reason_Code': reasonCode.toString(),
@@ -110,7 +111,6 @@ class HelmetService {
         'Updated_By': '',
       };
 
-      log('${[body]}');
       final connection = await Connectivity().checkConnectivity();
       if (connection != ConnectivityResult.none) {
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
@@ -119,7 +119,7 @@ class HelmetService {
         }
       }
     } catch (e) {
-      rethrow;
+      log('$e');
     }
   }
 
@@ -156,7 +156,7 @@ class HelmetService {
         }
       }
     } catch (e) {
-      rethrow;
+      log('$e');
     }
   }
 }
