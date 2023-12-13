@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, Function(void Function()) setState) {
+        return StatefulBuilder(builder: (BuildContext context, Function(void Function()) setState) {
           return AlertDialog.adaptive(
             scrollable: true,
             content: Form(
@@ -182,12 +182,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
+                    if (selectedReason == null) {
+                      return invalidDialog();
+                    }
                     await di
                         .get<HelmetService>()
                         .disconnectingReason(state.name, selectedReason ?? '', statusDescController.text);
 
                     await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
                     selectedReason = null;
+                    statusDescController.clear();
                     pop();
                   }
                 },
@@ -217,6 +221,32 @@ class _HomeScreenState extends State<HomeScreen> {
       onTapOutside: (event) {
         final focus = FocusScope.of(context);
         focus.unfocus();
+      },
+    );
+  }
+
+  Future<dynamic> invalidDialog() {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog.adaptive(
+          title: const Center(
+            child: AppText(
+              text: 'Please select a reason',
+              weight: FontWeight.w500,
+            ),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  pop();
+                },
+                child: const Center(child: AppText(text: 'Close')),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

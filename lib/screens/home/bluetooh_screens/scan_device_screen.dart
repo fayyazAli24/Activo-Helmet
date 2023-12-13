@@ -58,7 +58,7 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
                     value: state,
                     onChanged: (value) {
                       context.read<BluetoothCubit>().autoConnected = value;
-                      context.read<BluetoothCubit>().disconnectReason = 0;
+                      context.read<BluetoothCubit>().disconnectReasonCode = 0;
                       context.read<SwitchCubit>().updateValue(value);
                     },
                   );
@@ -73,7 +73,7 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
             child: Lottie.asset(
               AssetsPath.bluetoothLoading,
               frameRate: FrameRate.max,
-              animate: !context.watch<BluetoothCubit>().isStreamClosed,
+              animate: !context.watch<BluetoothCubit>().isDiscovering,
               fit: BoxFit.fill,
               height: widget.size.height * 0.2,
             ),

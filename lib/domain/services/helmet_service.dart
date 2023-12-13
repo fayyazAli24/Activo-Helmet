@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
@@ -10,6 +13,7 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 
 class HelmetService {
+  StreamSubscription<Position>? locationStream;
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     final locationService = di.get<LocationService>();
     var deviceDataList = <DeviceReqBodyModel>[];
@@ -35,13 +39,15 @@ class HelmetService {
 
     deviceDataList.add(reqModel);
     await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
-
-    // final list = await syncUnsyncedData();
-    // if (list != null) {
-    //   return [];
-    // } else {
-    //   return null;
-    // }
+    final isInternetAvailable = await Connectivity().checkConnectivity();
+    if (isInternetAvailable != ConnectivityResult.none) {
+      final list = await syncUnsyncedData();
+      if (list != null) {
+        return [];
+      } else {
+        return null;
+      }
+    }
     return null;
   }
 
@@ -104,10 +110,13 @@ class HelmetService {
         'Updated_By': '',
       };
 
-      final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
-
-      if (res != null) {
-        print('$res');
+      log('${[body]}');
+      final connection = await Connectivity().checkConnectivity();
+      if (connection != ConnectivityResult.none) {
+        final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
+        if (res != null) {
+          return res;
+        }
       }
     } catch (e) {
       rethrow;

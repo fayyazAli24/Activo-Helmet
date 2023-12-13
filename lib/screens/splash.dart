@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -20,10 +23,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      locationPermissionDialog().then(
-        (value) => BlocProvider.of<SplashCubit>(context).initState(),
-      );
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      try {
+        await internetOffDialog();
+        await locationPermissionDialog().then(
+          (value) => BlocProvider.of<SplashCubit>(context).initState(),
+        );
+      } catch (e) {
+        log('$e');
+      }
     });
   }
 
@@ -61,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> locationPermissionDialog() async {
-    if (await Permission.location.isGranted) return;
+    if (await Permission.locationWhenInUse.isGranted) return;
 
     await showAdaptiveDialog(
       context: context,
@@ -99,5 +107,32 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       },
     );
+  }
+
+  Future<dynamic> internetOffDialog() async {
+    final connection = await Connectivity().checkConnectivity();
+    if (connection == ConnectivityResult.none) {
+      return showAdaptiveDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog.adaptive(
+            actionsAlignment: MainAxisAlignment.spaceEvenly,
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  pop();
+                },
+                child: const AppText(text: 'Close'),
+              ),
+            ],
+            title: const AppText(
+              text: 'Internet is off. Please connect to a Network.',
+            ),
+          );
+        },
+      );
+    } else {
+      return;
+    }
   }
 }

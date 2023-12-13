@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
@@ -19,6 +21,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothCubit() : super(AppBluetoothState()) {
     checkPermissions();
     checkStatus();
+    getLocation();
   }
 
   BluetoothConnection? connection;
@@ -31,9 +34,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   String? deviceData;
   double? batteryPercentage;
   double? pressure;
+  int rssi = 0;
   int isWore = 0;
-  bool isStreamClosed = false;
-  int disconnectReason = 0;
+  bool isDiscovering = false;
+  int disconnectReasonCode = 0;
   bool autoConnected = false;
   StreamSubscription<BluetoothState>? bluetoothStateStream;
   StreamSubscription<BluetoothDiscoveryResult>? bluetoothDiscoveryStream;
@@ -72,6 +76,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
           (event) async {
             if (event == BluetoothState.STATE_OFF) {
+              disconnect(222);
               await checkStatus();
             } else if (event == BluetoothState.STATE_ON) {
               emit(BluetoothStateOn());
@@ -85,9 +90,26 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         );
   }
 
+  void getLocation() {
+    final locationService = di.get<LocationService>();
+
+    locationStream = di.get<LocationService>().getLocationStream().listen(
+      (event) {
+        locationService.long = event.longitude;
+        locationService.lat = event.latitude;
+
+        log('${locationService.lat}');
+      },
+      onDone: () async {
+        await locationStream?.cancel();
+      },
+    );
+  }
+
   Future<void> turnOn() async {
     try {
       final isON = await flutterBluetoothSerial.requestEnable();
+
       if (isON ?? false) {
         emit(BluetoothStateOn());
         await getDevices();
@@ -102,13 +124,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     final blueState = await flutterBluetoothSerial.state;
     if (blueState == BluetoothState.STATE_ON) {
       scannedDevices = [];
-      isStreamClosed = false;
+      isDiscovering = false;
       emit(BluetoothScannedState(devices: scannedDevices));
       bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
         (newDevice) async {
           final alreadyExists = scannedDevices.indexWhere((element) => element.device.name == newDevice.device.name);
           if ((alreadyExists == -1) && (newDevice.device.name?.isNotEmpty ?? false)) {
-            if (disconnectReason != 555 && autoConnected) {
+            ///555 = user has voluntarily disconnected
+            if (disconnectReasonCode != 555 && autoConnected) {
               final encodedDevice = await StorageService().read(lastDeviceKey);
               if (encodedDevice != null) {
                 var device = BluetoothDevice.fromMap(json.decode(encodedDevice.toString()));
@@ -124,12 +147,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           }
         },
         onDone: () async {
-          isStreamClosed = true;
+          isDiscovering = true;
           emit(BluetoothScannedState(devices: scannedDevices));
           await bluetoothDiscoveryStream?.cancel();
         },
         onError: (e) async {
-          isStreamClosed = true;
+          isDiscovering = true;
           emit(BluetoothScannedState(devices: scannedDevices));
           await bluetoothDiscoveryStream?.cancel();
         },
@@ -174,7 +197,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   }
                 }
 
-                disconnectReason = 0;
+                disconnectReasonCode = 0;
                 emit(
                   BluetoothConnectedState(
                     speed: pressure ?? 0.0,
@@ -190,6 +213,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             disconnect(444);
 
             ///Helmet Disconnect
+          },
+          onError: (e) {
+            log('${e.id}  errrrorr');
           },
           cancelOnError: true,
         );
@@ -215,20 +241,27 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   Future<void> disconnect([int? reason]) async {
+    log('$reason *******');
+
     await bluetoothConnection?.finish();
     await bluetoothConnection?.close();
     await connection?.finish();
     await inputStream?.cancel();
-
+    log('$rssi rssi on disconnect');
     await locationStream?.cancel();
-    disconnectReason = reason ?? 0;
+    disconnectReasonCode = reason ?? 0;
     await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
     await getDevices();
-
-    await di.get<HelmetService>().disconnectingAlert(deviceName ?? 'N/A', disconnectReason);
-
+    await disconnectAlert(reason);
+    log('');
     emit(DisconnectedState());
     await alarmSettings();
+  }
+
+  Future<void> disconnectAlert([int? reason]) async {
+    if (reason != null) {
+      await di.get<HelmetService>().disconnectingAlert(deviceName ?? 'N/A', disconnectReasonCode);
+    }
   }
 
   Future<void> alarmSettings() async {
