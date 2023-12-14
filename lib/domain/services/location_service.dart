@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -5,15 +7,18 @@ class LocationService {
   double? long;
   double? speed;
 
-  Future<void> getLocation() async {
-    final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    speed = loc.speed * 3.6;
-    lat = loc.latitude;
-    long = loc.longitude;
-  }
-
-  Stream<Position> getLocationStream() {
-    final loc = Geolocator.getPositionStream();
-    return loc;
+  Future<Position> getLocation() async {
+    try {
+      final loc = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      speed = loc.speed * 3.6;
+      lat = loc.latitude;
+      long = loc.longitude;
+      return loc;
+    } catch (e) {
+      log('get location : $e');
+      throw Exception('$e');
+    }
   }
 }

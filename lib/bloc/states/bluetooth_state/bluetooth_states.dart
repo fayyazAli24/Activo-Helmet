@@ -2,6 +2,8 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 class AppBluetoothState {}
 
+class BluetoothStateInitial extends AppBluetoothState {}
+
 class BluetoothStateOn extends AppBluetoothState {}
 
 class BluetoothStateOff extends AppBluetoothState {}

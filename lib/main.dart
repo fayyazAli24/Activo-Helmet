@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -8,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
@@ -18,50 +16,7 @@ import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart'
 import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/switch_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
-import 'package:unilever_activo/domain/api.dart';
-import 'package:unilever_activo/domain/services/helmet_service.dart';
-import 'package:unilever_activo/domain/services/services.dart';
-import 'package:unilever_activo/domain/services/storage_services.dart';
-
-Future<void> clearUnsyncedReasonRecord() async {
-  try {
-    final reasonDataList = await StorageService().read(unSyncedReasonData);
-    if (reasonDataList != null) {
-      var list =
-          List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e))).toList();
-
-      final res = await ApiServices().post(api: Api.disconnectReason, body: list);
-      if (res != null) {
-        await StorageService().delete(unSyncedReasonData);
-        print('$res');
-      }
-    }
-  } catch (e) {
-    print('e $e');
-  }
-}
-
-Future<void> clearPreviousRecords() async {
-  final savedDate = await StorageService().read('date');
-  if (savedDate != null) {
-    final parsedDate = DateTime.parse(savedDate);
-    final currentDate = DateTime.now();
-    if (parsedDate.day != currentDate.day) {
-      try {
-        final list = await di.get<HelmetService>().syncUnsyncedData();
-        if (list != null) {
-          await StorageService().delete(deviceListKey);
-        }
-      } catch (e) {
-        print('$e');
-      }
-
-      await StorageService().write('date', DateTime.now().toIso8601String());
-    }
-  } else {
-    await StorageService().write('date', DateTime.now().toIso8601String());
-  }
-}
+import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
 
 Future<void> permissions() async {
   await [
@@ -91,8 +46,11 @@ Future<void> main() async {
     connectionStream = Connectivity().onConnectivityChanged.listen(
       (event) async {
         if (event != ConnectivityResult.none) {
-          await clearPreviousRecords();
-          await clearUnsyncedReasonRecord();
+          final unSyncService = di.get<UnSyncRecordService>();
+
+          await unSyncService.clearPreviousRecords();
+          await unSyncService.clearUnsyncedReasonRecord();
+          await unSyncService.clearUnsyncedAlertRecord();
         }
       },
       onDone: () async {

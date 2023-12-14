@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
@@ -13,41 +12,49 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 
 class HelmetService {
-  StreamSubscription<Position>? locationStream;
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
-    final locationService = di.get<LocationService>();
-    var deviceDataList = <DeviceReqBodyModel>[];
-    String? encodedList = await StorageService().read(deviceListKey);
-    if (encodedList != null) {
-      deviceDataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-    }
+    try {
+      final locationService = await di.get<LocationService>().getLocation();
 
-    final reqModel = DeviceReqBodyModel(
-      helmetId: helmetName,
-      userId: '',
-      latitude: locationService.lat,
-      longitude: locationService.long,
-      isWearHelmet: isWore,
-      isWrongWay: 0,
-      speed: locationService.speed,
-      vehicleType: '',
-      savedTime: DateTime.now(),
-      synced: 0,
-      createdBy: '',
-      updatedBy: '',
-    );
-
-    deviceDataList.add(reqModel);
-    await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
-    final isInternetAvailable = await Connectivity().checkConnectivity();
-    if (isInternetAvailable != ConnectivityResult.none) {
-      final list = await syncUnsyncedData();
-      if (list != null) {
-        return [];
-      } else {
-        return null;
+      var deviceDataList = <DeviceReqBodyModel>[];
+      String? encodedList = await StorageService().read(deviceListKey);
+      if (encodedList != null) {
+        deviceDataList =
+            jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
+
+      final reqModel = DeviceReqBodyModel(
+        helmetId: helmetName,
+        userId: '',
+        latitude: locationService.latitude,
+        longitude: locationService.longitude,
+        isWearHelmet: isWore,
+        isWrongWay: 0,
+        speed: locationService.speed,
+        vehicleType: '',
+        savedTime: DateTime.now(),
+        synced: 0,
+        createdBy: '',
+        updatedBy: '',
+      );
+
+      deviceDataList.add(reqModel);
+      await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
+      final isInternetAvailable = await Connectivity().checkConnectivity();
+      if (isInternetAvailable != ConnectivityResult.none) {
+        final list = await syncUnsyncedData();
+        if (list != null) {
+          return [];
+        } else {
+          return null;
+        }
+      }
+    } catch (e) {
+      log('$e');
+
+      return null;
     }
+
     return null;
   }
 
@@ -96,15 +103,15 @@ class HelmetService {
     int reasonCode,
   ) async {
     try {
-      final locationService = di.get<LocationService>();
+      final locationService = await di.get<LocationService>().getLocation();
 
       log('$reasonCode code');
       final body = {
         'Helmet_ID': helmetName,
         'Disconnect_Reason_Code': reasonCode.toString(),
         'Disconect_Time': DateTime.now().toIso8601String(),
-        'Latitude': locationService.lat,
-        'Longitude': locationService.long,
+        'Latitude': locationService.latitude,
+        'Longitude': locationService.longitude,
         'User_Id': '',
         'Vehicle_Type': 'NA',
         'Created_By': '',
@@ -116,6 +123,18 @@ class HelmetService {
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
         if (res != null) {
           return res;
+        }
+      } else {
+        final alertList = await StorageService().read(unSyncedAlertData);
+
+        if (alertList != null) {
+          var list =
+              List<Map<String, dynamic>>.from(jsonDecode(alertList).map((e) => Map<String, dynamic>.from(e))).toList();
+
+          list.add(body);
+          await StorageService().write(unSyncedAlertData, jsonEncode(list));
+        } else {
+          await StorageService().write(unSyncedAlertData, jsonEncode([body]));
         }
       }
     } catch (e) {
