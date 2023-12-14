@@ -27,7 +27,7 @@ class _DeviceHistoryScreenState extends State<DeviceHistoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const AppText(
-          text: 'Device History',
+          text: 'Connection History',
           color: AppColors.white,
           weight: FontWeight.w500,
         ),

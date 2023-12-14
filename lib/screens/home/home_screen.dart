@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/location_history_cubit/location_history_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/main.dart';
@@ -50,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
       listener: (context, locationState) {
         if (locationState is LocationOff) {
           final bluetoothState = context.read<BluetoothCubit>().state;
-
           if (bluetoothState is BluetoothConnectedState) {
             context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
           }
@@ -71,9 +71,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             actions: [
               IconButton(
-                onPressed: () => pushNamed(AppRoutes.deviceHistory),
+                onPressed: () {
+                  optionsDialogBox();
+                },
                 icon: const Icon(
-                  Icons.history,
+                  Icons.more_vert_rounded,
                   color: AppColors.white,
                 ),
               ),
@@ -115,13 +117,77 @@ class _HomeScreenState extends State<HomeScreen> {
                         stopAlarmDialog();
                         snackBar('Device Disconnected', context);
                       }
+                      if (state is DisconnectedState) {
+                        BlocProvider.of<LocationHistoryCubit>(context).maintainLocationHistory(state.code);
+                      }
                       if (state is BluetoothConnectingState) {
-                        connectingDialog(context);
+                        connectingDialog();
                       }
                     },
                   ),
                 ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> optionsDialogBox() {
+    return showAdaptiveDialog(
+      barrierColor: AppColors.black.withOpacity(0.4),
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 150),
+          child: AlertDialog.adaptive(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            alignment: Alignment.topRight,
+            titlePadding: EdgeInsets.zero,
+            iconPadding: EdgeInsets.zero,
+            actionsPadding: EdgeInsets.zero,
+            buttonPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            insetPadding: const EdgeInsets.only(
+              right: 10,
+              top: kToolbarHeight,
+            ),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InkWell(
+                  onTap: () {
+                    pushNamed(AppRoutes.deviceHistory);
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: AppText(
+                      text: 'Connection History',
+                      fontSize: 16,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                AppSpace.vrtSpace(10),
+                InkWell(
+                  onTap: () {
+                    pushNamed(AppRoutes.locationHistory);
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: AppText(
+                      text: 'Location History',
+                      fontSize: 16,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -309,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<dynamic> connectingDialog(BuildContext context) {
+  Future<dynamic> connectingDialog() {
     return showAdaptiveDialog(
       barrierDismissible: false,
       context: context,

@@ -10,4 +10,5 @@ class AppColors {
   static const grey = Colors.grey;
   static Color appBarColor = Colors.black.withOpacity(0.8);
   static const cyan = Colors.cyan;
+  static const transparent = Colors.transparent;
 }

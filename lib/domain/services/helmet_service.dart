@@ -23,6 +23,7 @@ class HelmetService {
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
 
+      final speed = (locationService.speed * 3.6);
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
         userId: '',
@@ -30,7 +31,7 @@ class HelmetService {
         longitude: locationService.longitude,
         isWearHelmet: isWore,
         isWrongWay: 0,
-        speed: locationService.speed,
+        speed: speed,
         vehicleType: '',
         savedTime: DateTime.now(),
         synced: 0,

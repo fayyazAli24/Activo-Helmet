@@ -37,7 +37,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   bool isDiscovering = false;
   int disconnectReasonCode = 0;
   bool autoConnected = false;
-
   StreamSubscription<BluetoothState>? bluetoothStateStream;
   StreamSubscription<BluetoothDiscoveryResult>? bluetoothDiscoveryStream;
   FlutterBluetoothSerial flutterBluetoothSerial = FlutterBluetoothSerial.instance;
@@ -150,11 +149,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> connect(BluetoothDevice device) async {
     try {
-      final savedDevice = await checkSavedDevice();
-
-      if (savedDevice != null) {
-        final connections = await checkConnections();
-        if (!connections) return;
+      final connections = await checkConnections();
+      if (connections != null && connections.isNotEmpty) {
+        emit(BluetoothFailedState(
+            message: 'Please turn on the '
+                '$connections'));
+        return;
       }
 
       emit(BluetoothConnectingState());
@@ -231,22 +231,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  Future<bool> checkConnections() async {
+  Future<String?> checkConnections() async {
     final internet = await Connectivity().checkConnectivity();
     final locationService = await Geolocator.isLocationServiceEnabled();
     if (!locationService) {
-      emit(BluetoothFailedState(
-          message: 'Please turn on the '
-              'Location'));
-      return false;
+      return 'Location';
     }
     if (internet == ConnectivityResult.none) {
-      emit(BluetoothFailedState(
-          message: 'Please turn on the '
-              'Internet'));
-      return false;
+      return 'Internet';
     }
-    return true;
+    return null;
   }
 
   Future<BluetoothDevice?> checkSavedDevice() async {
@@ -267,11 +261,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await inputStream?.cancel();
 
     disconnectReasonCode = reason ?? 0;
-    await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
+
     await getDevices();
     await disconnectAlert(reason);
 
-    emit(DisconnectedState());
+    emit(DisconnectedState(reason ?? 0));
     await alarmSettings();
   }
 
