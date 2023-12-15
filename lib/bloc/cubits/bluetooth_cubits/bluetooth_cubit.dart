@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
@@ -264,7 +265,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
     await getDevices();
     await disconnectAlert(reason);
-
+    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     emit(DisconnectedState(reason ?? 0));
     await alarmSettings();
   }

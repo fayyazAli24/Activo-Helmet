@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
-import 'package:unilever_activo/bloc/cubits/location_history_cubit/location_history_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/main.dart';
@@ -117,9 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         stopAlarmDialog();
                         snackBar('Device Disconnected', context);
                       }
-                      if (state is DisconnectedState) {
-                        BlocProvider.of<LocationHistoryCubit>(context).maintainLocationHistory(state.code);
-                      }
+
                       if (state is BluetoothConnectingState) {
                         connectingDialog();
                       }
@@ -162,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 InkWell(
                   onTap: () {
+                    pop();
                     pushNamed(AppRoutes.deviceHistory);
                   },
                   child: const Padding(
@@ -176,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 AppSpace.vrtSpace(10),
                 InkWell(
                   onTap: () {
+                    pop();
                     pushNamed(AppRoutes.locationHistory);
                   },
                   child: const Padding(
