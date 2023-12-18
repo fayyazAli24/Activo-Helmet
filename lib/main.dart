@@ -50,12 +50,11 @@ Future<void> main() async {
     final pref = await SharedPreferences.getInstance();
 
     final isFirstRun = pref.getBool('firstRun');
-    await pref.clear();
 
-    // if (isFirstRun ?? true) {
-    //   await pref.clear();
-    //   await pref.setBool('firstRun', false);
-    // }
+    if (isFirstRun ?? true) {
+      await pref.clear();
+      await pref.setBool('firstRun', false);
+    }
 
     connectionStream = Connectivity().onConnectivityChanged.listen(
       (event) async {
