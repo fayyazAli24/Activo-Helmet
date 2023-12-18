@@ -34,6 +34,7 @@ Future<void> permissions() async {
   await [
     Permission.bluetooth,
     Permission.bluetoothConnect,
+    Permission.bluetoothAdvertise,
     Permission.bluetoothScan,
     Permission.storage,
   ].request();

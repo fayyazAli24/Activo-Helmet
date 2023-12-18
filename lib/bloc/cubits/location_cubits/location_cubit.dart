@@ -29,7 +29,6 @@ class LocationCubit extends Cubit<LocationStatus> {
             if (deviceName != null) await di.get<HelmetService>().disconnectingAlert(deviceName ?? '', 111);
 
             ///GPS Code
-
             emit(LocationOff());
           } else if (locationState == ServiceStatus.enabled) {
             emit(LocationOn());
