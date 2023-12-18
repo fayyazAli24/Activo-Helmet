@@ -45,7 +45,7 @@ class LocationService {
     if (record != null) {
       list = List<Map<String, dynamic>>.from(jsonDecode(record).map((e) => Map<String, dynamic>.from(e))).toList();
       list.add(body);
-      await StorageService().write(disconnectTimeKey, DateTime.now().toIso8601String());
+      await StorageService().write(disconnectTimeKey, jsonEncode(list));
     } else {
       list.add(body);
       await StorageService().write(disconnectTimeKey, jsonEncode(list));

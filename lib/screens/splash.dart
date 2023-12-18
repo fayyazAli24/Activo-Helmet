@@ -127,6 +127,8 @@ class _SplashScreenState extends State<SplashScreen> {
             ],
             title: const AppText(
               text: 'Internet is off. Please connect to a Network.',
+              weight: FontWeight.w500,
+              textAlign: TextAlign.center,
             ),
           );
         },

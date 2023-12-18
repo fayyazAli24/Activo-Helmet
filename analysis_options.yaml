@@ -43,7 +43,7 @@ linter:
     library_prefixes: true
     no_duplicate_case_values: true
     null_closures: true
-    omit_local_variable_types: true
+
     prefer_adjacent_string_concatenation: true
     prefer_collection_literals: true
     prefer_conditional_assignment: true

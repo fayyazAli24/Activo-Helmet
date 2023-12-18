@@ -73,7 +73,7 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
             child: Lottie.asset(
               AssetsPath.bluetoothLoading,
               frameRate: FrameRate.max,
-              animate: !context.watch<BluetoothCubit>().isDiscovering,
+              animate: context.watch<BluetoothCubit>().isDiscovering,
               fit: BoxFit.fill,
               height: widget.size.height * 0.2,
             ),

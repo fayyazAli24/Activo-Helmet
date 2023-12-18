@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.18.1
   flutter_background_service: ^5.0.5
   just_audio: ^0.9.36
+  device_info_plus: ^9.1.1
 
 
 dev_dependencies:

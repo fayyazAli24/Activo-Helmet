@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/main.dart';
@@ -31,6 +32,8 @@ class BluetoothConnectedScreen extends StatefulWidget {
 
 class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   Timer? timer;
+  Timer? counter;
+  late DateTime connectedTime;
 
   Future<void> initialization() async {
     try {
@@ -57,6 +60,12 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   @override
   void initState() {
     super.initState();
+    connectedTime = DateTime.now();
+    context.read<TimerCubit>().updateTimer(connectedTime);
+
+    counter = Timer.periodic(const Duration(seconds: 1), (value) {
+      context.read<TimerCubit>().updateTimer(connectedTime);
+    });
 
     initialization();
 
@@ -68,6 +77,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   @override
   void dispose() {
     timer?.cancel();
+    counter?.cancel();
+    connectedTime = DateTime.now();
     super.dispose();
   }
 
@@ -91,6 +102,19 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
               height: widget.size.height * 0.2,
             ),
           ),
+          BlocConsumer<TimerCubit, TimerState>(
+            builder: (context, state) {
+              if (state is TimerCountingState) {
+                return AppText(
+                  text: '${state.connectedTime}',
+                  weight: FontWeight.w500,
+                );
+              }
+              return const AppText(text: '0:00:00:00', weight: FontWeight.w500);
+            },
+            listener: (context, state) {},
+          ),
+          AppSpace.vrtSpace(5),
           Container(
             width: widget.size.width * 0.3,
             height: 30,

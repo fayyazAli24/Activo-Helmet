@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -17,13 +18,24 @@ import 'package:unilever_activo/bloc/cubits/location_history_cubit/location_hist
 import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/switch_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
 
 Future<void> permissions() async {
+  var androidInfo = await DeviceInfoPlugin().androidInfo;
+  // var release = androidInfo.version.release; // Version number, example: Android 12
+  var sdkInt = androidInfo.version.sdkInt; // SDK, example: 31
+  // var manufacturer = androidInfo.manufacturer;
+  // var model = androidInfo.model;
+  if (sdkInt >= 30) {
+    await Permission.manageExternalStorage.request();
+  }
+
   await [
     Permission.bluetooth,
     Permission.bluetoothConnect,
     Permission.bluetoothScan,
+    Permission.storage,
   ].request();
 }
 
@@ -39,10 +51,10 @@ Future<void> main() async {
     final isFirstRun = pref.getBool('firstRun');
     await pref.clear();
 
-    if (isFirstRun ?? true) {
-      await pref.clear();
-      await pref.setBool('firstRun', false);
-    }
+    // if (isFirstRun ?? true) {
+    //   await pref.clear();
+    //   await pref.setBool('firstRun', false);
+    // }
 
     connectionStream = Connectivity().onConnectivityChanged.listen(
       (event) async {
@@ -79,6 +91,9 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider(
           create: (context) => AppThemeModeCubit(),
+        ),
+        BlocProvider(
+          create: (context) => TimerCubit(),
         ),
         BlocProvider(
           create: (context) => SplashCubit(),
