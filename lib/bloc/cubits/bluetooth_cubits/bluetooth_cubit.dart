@@ -81,8 +81,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
           (event) async {
             if (event == BluetoothState.STATE_OFF) {
-              if (connection?.isConnected ?? false) await disconnect(222);
-              await checkStatus();
+              emit(BluetoothStateOn());
+
+              if (connection?.isConnected ?? false) {
+                emit(BluetoothStateOff());
+                disconnectReasonCode = 222;
+                await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+                await disconnectAlert(disconnectReasonCode);
+                await alarmSettings();
+              }
             } else if (event == BluetoothState.STATE_ON) {
               emit(BluetoothStateOn());
               await getDevices();
@@ -158,6 +165,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             cancelOnError: true,
           );
         } else {
+          isDiscovering = false;
           await flutterBluetoothSerial.requestEnable();
         }
       }
@@ -281,10 +289,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await connection?.finish();
     await inputStream?.cancel();
     disconnectReasonCode = reason ?? 0;
+    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     emit(DisconnectedState(reason ?? 0));
     await getDevices();
     await disconnectAlert(reason);
-    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
 
     await alarmSettings();
   }
@@ -300,7 +308,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       const Duration(seconds: 15),
       () async {
         if ((connection?.isConnected ?? false) || isAlarmPlayed) return;
-        emit(AutoDisconnectedState(deviceName ?? ''));
+        if (await flutterBluetoothSerial.state == BluetoothState.STATE_ON) {
+          emit(AutoDisconnectedState(deviceName ?? ''));
+        }
+
         isAlarmPlayed = true;
         await playAlarm();
       },

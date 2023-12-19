@@ -58,12 +58,12 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                         elevation: 2,
                         color: Theme.of(context).cardColor,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Expanded(
-                                flex: 5,
+                                flex: 8,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -80,6 +80,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                                 ),
                               ),
                               Expanded(
+                                flex: 2,
                                 child: AppText(
                                   text: '${device['reason']}',
                                   weight: FontWeight.w500,

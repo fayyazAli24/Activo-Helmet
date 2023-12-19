@@ -24,8 +24,12 @@ class LocationService {
       return 'Bluetooth';
     } else if (code == 333) {
       return 'Helmet Permission';
+    } else if (code == 444) {
+      return 'Helmet Disconnect';
+    } else if (code == 555) {
+      return 'User Disconnect';
     }
-    return 'Helmet';
+    return '';
   }
 
   Future<void> maintainLocationHistory(int reasonCode) async {
