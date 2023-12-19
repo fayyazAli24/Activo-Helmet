@@ -12,8 +12,9 @@ class BluetoothConnectingState extends AppBluetoothState {}
 
 class BluetoothScannedState extends AppBluetoothState {
   List<BluetoothDiscoveryResult> devices = [];
+  bool isDiscovering = false;
 
-  BluetoothScannedState({required this.devices});
+  BluetoothScannedState({required this.devices, required this.isDiscovering});
 }
 
 class BluetoothConnectedState extends AppBluetoothState {

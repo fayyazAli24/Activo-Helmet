@@ -84,6 +84,8 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                                 child: AppText(
                                   text: '${device['reason']}',
                                   weight: FontWeight.w500,
+                                  textAlign: TextAlign.center,
+                                  fontSize: 12,
                                 ),
                               )
                             ],

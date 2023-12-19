@@ -81,10 +81,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     bluetoothStateStream = flutterBluetoothSerial.onStateChanged().listen(
           (event) async {
             if (event == BluetoothState.STATE_OFF) {
-              emit(BluetoothStateOn());
+              emit(BluetoothStateOff());
 
               if (connection?.isConnected ?? false) {
-                emit(BluetoothStateOff());
                 disconnectReasonCode = 222;
                 await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
                 await disconnectAlert(disconnectReasonCode);
@@ -120,17 +119,17 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> getDevices() async {
     try {
-      if (await flutterBluetoothSerial.isDiscovering ?? false) {
+      if (isDiscovering) {
         await FlutterBluetoothSerial.instance.cancelDiscovery();
         isDiscovering = false;
         scannedDevices = [];
-        emit(BluetoothScannedState(devices: scannedDevices));
+        emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
       } else {
         final blueState = await flutterBluetoothSerial.state;
         if (blueState == BluetoothState.STATE_ON) {
           isDiscovering = true;
           scannedDevices = [];
-          emit(BluetoothScannedState(devices: scannedDevices));
+          emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
 
           bluetoothDiscoveryStream = flutterBluetoothSerial.startDiscovery().listen(
             (newDevice) async {
@@ -148,18 +147,19 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   }
                 }
                 scannedDevices.add(newDevice);
-                emit(BluetoothScannedState(devices: scannedDevices));
+                isDiscovering = true;
+                emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
               }
             },
             onDone: () async {
               isDiscovering = false;
-              emit(BluetoothScannedState(devices: scannedDevices));
+              emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
               await bluetoothDiscoveryStream?.cancel();
             },
             onError: (e) async {
               isDiscovering = false;
 
-              emit(BluetoothScannedState(devices: scannedDevices));
+              emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
               await bluetoothDiscoveryStream?.cancel();
             },
             cancelOnError: true,
@@ -174,7 +174,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       await FlutterBluetoothSerial.instance.cancelDiscovery();
       isDiscovering = false;
       scannedDevices = [];
-      emit(BluetoothScannedState(devices: scannedDevices));
+      emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
     }
   }
 
@@ -310,10 +310,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         if ((connection?.isConnected ?? false) || isAlarmPlayed) return;
         if (await flutterBluetoothSerial.state == BluetoothState.STATE_ON) {
           emit(AutoDisconnectedState(deviceName ?? ''));
+          emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
         }
 
         isAlarmPlayed = true;
         await playAlarm();
+        // }
       },
     );
   }

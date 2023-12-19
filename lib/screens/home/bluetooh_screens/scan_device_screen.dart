@@ -66,54 +66,58 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
               ),
             ],
           ),
-          InkWell(
-            onTap: () async {
-              await context.read<BluetoothCubit>().getDevices();
-            },
-            child: Lottie.asset(
-              AssetsPath.bluetoothLoading,
-              frameRate: FrameRate.max,
-              animate: context.watch<BluetoothCubit>().isDiscovering,
-              fit: BoxFit.fill,
-              height: widget.size.height * 0.2,
-            ),
-          ),
           BlocConsumer<BluetoothCubit, AppBluetoothState>(
             listener: (context, state) {},
             builder: (context, state) {
               if (state is BluetoothScannedState) {
                 return Expanded(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: state.devices.length,
-                    itemBuilder: (context, index) {
-                      final item = state.devices[index];
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Card(
-                          child: ListTile(
-                            onTap: () async {
-                              await context.read<BluetoothCubit>().connect(item.device);
-                            },
-                            dense: true,
-                            leading: const Icon(
-                              Icons.bluetooth,
-                              color: AppColors.blueAccent,
-                              size: 30,
-                            ),
-                            title: AppText(
-                              text: item.device.name ?? '',
-                              fontSize: 15,
-                            ),
-                            subtitle: AppText(
-                              text: item.device.address,
-                              fontSize: 12,
-                            ),
-                          ),
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () async {
+                          await context.read<BluetoothCubit>().getDevices();
+                        },
+                        child: Lottie.asset(
+                          AssetsPath.bluetoothLoading,
+                          frameRate: FrameRate.max,
+                          animate: state.isDiscovering,
+                          fit: BoxFit.fill,
+                          height: widget.size.height * 0.2,
                         ),
-                      );
-                    },
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: state.devices.length,
+                        itemBuilder: (context, index) {
+                          final item = state.devices[index];
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Card(
+                              child: ListTile(
+                                onTap: () async {
+                                  await context.read<BluetoothCubit>().connect(item.device);
+                                },
+                                dense: true,
+                                leading: const Icon(
+                                  Icons.bluetooth,
+                                  color: AppColors.blueAccent,
+                                  size: 30,
+                                ),
+                                title: AppText(
+                                  text: item.device.name ?? '',
+                                  fontSize: 15,
+                                ),
+                                subtitle: AppText(
+                                  text: item.device.address,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 );
               }
