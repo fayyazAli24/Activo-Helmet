@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -261,14 +260,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   Future<String?> checkConnections() async {
-    final internet = await Connectivity().checkConnectivity();
+    // final internet = await Connectivity().checkConnectivity();
     final locationService = await Geolocator.isLocationServiceEnabled();
     if (!locationService) {
       return 'Location';
     }
-    if (internet == ConnectivityResult.none) {
-      return 'Internet';
-    }
+    // if (internet == ConnectivityResult.none) {
+    //   return 'Internet';
+    // }
     return null;
   }
 
