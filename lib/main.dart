@@ -48,7 +48,6 @@ Future<void> main() async {
     await permissions();
     registerServices();
     final pref = await SharedPreferences.getInstance();
-    await pref.clear();
 
     final isFirstRun = pref.getBool('firstRun');
 
