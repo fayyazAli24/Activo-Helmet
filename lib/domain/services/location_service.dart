@@ -44,6 +44,7 @@ class LocationService {
       'time': DateTime.now().toIso8601String(),
       'long': location.longitude,
       'lat': location.latitude,
+      'speed': location.speed,
     };
 
     if (record != null) {

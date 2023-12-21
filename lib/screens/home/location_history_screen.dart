@@ -76,6 +76,11 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                                       'Longitude',
                                       device['long'].toString(),
                                     ),
+                                    AppSpace.vrtSpace(5),
+                                    buildCardRow(
+                                      'Speed',
+                                      device['speed'].toString(),
+                                    ),
                                   ],
                                 ),
                               ),

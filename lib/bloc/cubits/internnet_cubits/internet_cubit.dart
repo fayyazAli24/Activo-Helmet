@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
 import 'package:unilever_activo/main.dart';
 
 enum InternetState {
@@ -27,6 +28,9 @@ class InternetCubit extends Cubit<InternetState> {
       (event) async {
         if (event != ConnectivityResult.none) {
           await di.get<HelmetService>().syncUnsyncedData();
+          await di.get<UnSyncRecordService>().syncUnsyncedAlertRecord(false);
+          await di.get<UnSyncRecordService>().syncUnsyncedReasonRecord(false);
+
           emit(InternetState.connected);
         } else {
           emit(InternetState.disconnected);

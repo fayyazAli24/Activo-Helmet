@@ -8,7 +8,7 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 
 class UnSyncRecordService {
-  Future<void> clearUnsyncedReasonRecord() async {
+  Future<void> syncUnsyncedReasonRecord(bool shouldDelete) async {
     try {
       final reasonDataList = await StorageService().read(unSyncedReasonData);
       if (reasonDataList != null) {
@@ -17,8 +17,9 @@ class UnSyncRecordService {
 
         final res = await ApiServices().post(api: Api.disconnectReason, body: list);
         if (res != null) {
-          await StorageService().delete(unSyncedReasonData);
-          print('$res');
+          if (shouldDelete) {
+            await StorageService().delete(unSyncedReasonData);
+          }
         }
       }
     } catch (e) {
@@ -26,7 +27,7 @@ class UnSyncRecordService {
     }
   }
 
-  Future<void> clearUnsyncedAlertRecord() async {
+  Future<void> syncUnsyncedAlertRecord(bool shouldDelete) async {
     try {
       final alertDataList = await StorageService().read(unSyncedAlertData);
       if (alertDataList != null) {
@@ -35,8 +36,9 @@ class UnSyncRecordService {
 
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: list);
         if (res != null) {
-          await StorageService().delete(unSyncedAlertData);
-          print('$res');
+          if (shouldDelete) {
+            await StorageService().delete(unSyncedAlertData);
+          }
         }
       }
     } catch (e) {
@@ -51,9 +53,13 @@ class UnSyncRecordService {
       final currentDate = DateTime.now();
       if (parsedDate.day != currentDate.day) {
         try {
+          await syncUnsyncedAlertRecord(true);
+          await syncUnsyncedReasonRecord(true);
+
           final list = await di.get<HelmetService>().syncUnsyncedData();
           if (list != null) {
             await StorageService().delete(deviceListKey);
+            await StorageService().delete(lastDeviceKey);
           }
         } catch (e) {
           print('$e');

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -260,14 +261,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   Future<String?> checkConnections() async {
-    // final internet = await Connectivity().checkConnectivity();
+    final internet = await Connectivity().checkConnectivity();
     final locationService = await Geolocator.isLocationServiceEnabled();
     if (!locationService) {
       return 'Location';
     }
-    // if (internet == ConnectivityResult.none) {
-    //   return 'Internet';
-    // }
+    final device = await checkSavedDevice();
+    if (internet == ConnectivityResult.none && device == null) {
+      return 'Internet';
+    }
     return null;
   }
 
@@ -288,9 +290,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await connection?.finish();
     await inputStream?.cancel();
     disconnectReasonCode = reason ?? 0;
-    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     emit(DisconnectedState(reason ?? 0));
-    await getDevices();
+    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+    if (reason != null) await getDevices();
     await disconnectAlert(reason);
 
     await alarmSettings();

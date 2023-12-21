@@ -40,6 +40,30 @@ Future<void> permissions() async {
   ].request();
 }
 
+Future<void> checkIsFirstRun() async {
+  final pref = await SharedPreferences.getInstance();
+
+  final isFirstRun = pref.getBool('firstRun');
+
+  if (isFirstRun ?? true) {
+    await pref.clear();
+    await pref.setBool('firstRun', false);
+  }
+}
+
+Future<void> clearPreviousRecord() async {
+  connectionStream = Connectivity().onConnectivityChanged.listen(
+    (event) async {
+      if (event != ConnectivityResult.none) {
+        await di.get<UnSyncRecordService>().clearPreviousRecords();
+      }
+    },
+    onDone: () async {
+      await connectionStream?.cancel();
+    },
+  );
+}
+
 final di = GetIt.instance;
 StreamSubscription? connectionStream;
 Future<void> main() async {
@@ -47,29 +71,8 @@ Future<void> main() async {
   try {
     await permissions();
     registerServices();
-    final pref = await SharedPreferences.getInstance();
-
-    final isFirstRun = pref.getBool('firstRun');
-
-    if (isFirstRun ?? true) {
-      await pref.clear();
-      await pref.setBool('firstRun', false);
-    }
-
-    connectionStream = Connectivity().onConnectivityChanged.listen(
-      (event) async {
-        if (event != ConnectivityResult.none) {
-          final unSyncService = di.get<UnSyncRecordService>();
-
-          await unSyncService.clearPreviousRecords();
-          await unSyncService.clearUnsyncedReasonRecord();
-          await unSyncService.clearUnsyncedAlertRecord();
-        }
-      },
-      onDone: () async {
-        await connectionStream?.cancel();
-      },
-    );
+    await checkIsFirstRun();
+    await clearPreviousRecord();
   } catch (e) {
     log('$e');
   }
