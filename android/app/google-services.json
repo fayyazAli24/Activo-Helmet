@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "726797624977",
+    "project_id": "unilever-activo",
+    "storage_bucket": "unilever-activo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726797624977:android:3404a57a42de3838ca8130",
+        "android_client_info": {
+          "package_name": "com.unilever.unilever_activo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8RdnYxv38DTQGawruuBKogSRSzq4cY40"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

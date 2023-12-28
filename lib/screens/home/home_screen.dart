@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
@@ -30,8 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController statusDescController = TextEditingController();
   String? selectedReason;
 
+  Future<void> initialization() async {
+    await context.read<AlarmCubit>().setAlarm();
+  }
+
   @override
   void initState() {
+    initialization();
     super.initState();
   }
 
@@ -46,82 +54,89 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
 
-    return BlocListener<LocationCubit, LocationStatus>(
-      listener: (context, locationState) {
-        if (locationState is LocationOff) {
-          final bluetoothState = context.read<BluetoothCubit>().state;
-          if (bluetoothState is BluetoothConnectedState) {
-            context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
-          }
-          locationOffDialog(context);
+    return BlocListener<AlarmCubit, AlarmState>(
+      listener: (context, state) {
+        if (state is AlarmRingingState) {
+          disconnectedDialog();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: theme.appBarTheme.backgroundColor,
-          leading: AppSpace.noSpace,
-          leadingWidth: 0,
-          title: const AppText(
-            text: 'Smart Helmet (Activo)',
-            fontSize: 18,
-            color: AppColors.white,
-            weight: FontWeight.w500,
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                optionsDialogBox();
-              },
-              icon: const Icon(
-                Icons.more_vert_rounded,
-                color: AppColors.white,
-              ),
+      child: BlocListener<LocationCubit, LocationStatus>(
+        listener: (context, locationState) {
+          if (locationState is LocationOff) {
+            final bluetoothState = context.read<BluetoothCubit>().state;
+            if (bluetoothState is BluetoothConnectedState) {
+              context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+            }
+            locationOffDialog(context);
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: theme.appBarTheme.backgroundColor,
+            leading: AppSpace.noSpace,
+            leadingWidth: 0,
+            title: const AppText(
+              text: 'Smart Helmet (Activo)',
+              fontSize: 18,
+              color: AppColors.white,
+              weight: FontWeight.w500,
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.background,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              children: [
-                AppSpace.vrtSpace(10),
-                BlocConsumer<BluetoothCubit, AppBluetoothState>(
-                  builder: (context, state) {
-                    if (state is BluetoothStateOff) {
-                      return BluetoothOffScreen(
-                        size: size,
-                      );
-                    } else if (state is BluetoothConnectedState) {
-                      return BluetoothConnectedScreen(
-                        state: state,
-                        deviceName: state.deviceName,
-                        size: size,
-                      );
-                    }
-                    return BluetoothScanDeviceScreen(
-                      theme: theme,
-                      size: size,
-                    );
-                  },
-                  listener: (context, state) {
-                    if (state is BluetoothStateOff) {
-                      snackBar('Bluetooth is turned off', context);
-                    } else if (state is BluetoothFailedState) {
-                      noDeviceFoundDialog(state);
-                    } else if (state is AutoDisconnectedState) {
-                      stopAlarmDialog();
-                      snackBar('Device Disconnected', context);
-                    }
-
-                    if (state is BluetoothConnectingState) {
-                      connectingDialog();
-                    }
-                  },
+            actions: [
+              IconButton(
+                onPressed: () {
+                  optionsDialogBox();
+                },
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppColors.white,
                 ),
-              ],
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.background,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: [
+                  AppSpace.vrtSpace(10),
+                  BlocConsumer<BluetoothCubit, AppBluetoothState>(
+                    builder: (context, state) {
+                      if (state is BluetoothStateOff) {
+                        return BluetoothOffScreen(
+                          size: size,
+                        );
+                      } else if (state is BluetoothConnectedState) {
+                        return BluetoothConnectedScreen(
+                          state: state,
+                          deviceName: state.deviceName,
+                          size: size,
+                        );
+                      }
+                      return BluetoothScanDeviceScreen(
+                        theme: theme,
+                        size: size,
+                      );
+                    },
+                    listener: (context, state) {
+                      if (state is BluetoothStateOff) {
+                        snackBar('Bluetooth is turned off', context);
+                      } else if (state is BluetoothFailedState) {
+                        noDeviceFoundDialog(state);
+                      } else if (state is AutoDisconnectedState) {
+                        stopAlarmDialog();
+                        snackBar('Device Disconnected', context);
+                      }
+
+                      if (state is BluetoothConnectingState) {
+                        connectingDialog();
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -192,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<dynamic> disconnectedDialog(AutoDisconnectedState state) {
+  Future<dynamic> disconnectedDialog() {
     return showAdaptiveDialog(
       barrierDismissible: false,
       context: context,
@@ -249,24 +264,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 onPressed: () async {
                   if (_formKey.currentState?.validate() ?? false) {
-                    if (selectedReason == null) {
-                      return invalidDialog();
-                    }
-                    await di
-                        .get<HelmetService>()
-                        .disconnectingReason(state.name ?? '', selectedReason ?? '', statusDescController.text);
+                    try {
+                      if (selectedReason == null) {
+                        return invalidDialog();
+                      }
 
-                    await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
-                    selectedReason = null;
-                    statusDescController.clear();
-                    pop();
+                      final device = await context.read<BluetoothCubit>().checkSavedDevice();
+
+                      await di
+                          .get<HelmetService>()
+                          .disconnectingReason(device?.name ?? '', selectedReason ?? '', statusDescController.text);
+
+                      context.read<AlarmCubit>().stopAlarm();
+                      selectedReason = null;
+                      statusDescController.clear();
+                      pop();
+                      log('popped popeed');
+                    } catch (e) {
+                      log('alarm Exc: $e ');
+                      pop();
+                    }
                   }
                 },
               )
             ],
             title: const Center(
               child: AppText(
-                text: 'Helmet Disconnected',
+                text: 'Helmet Disconnected!',
                 weight: FontWeight.w500,
                 fontSize: 18,
               ),

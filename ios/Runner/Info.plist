@@ -55,6 +55,10 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>BGTaskSchedulerPermittedIdentifiers</key>
+        	<array>
+        		<string>com.gdelataillade.fetch</string>
+        	</array>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>

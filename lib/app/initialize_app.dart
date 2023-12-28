@@ -7,18 +7,22 @@ import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
 
-class InitializeApp extends StatelessWidget {
+class InitializeApp extends StatefulWidget {
   const InitializeApp({
     super.key,
   });
 
+  @override
+  State<InitializeApp> createState() => _InitializeAppState();
+}
+
+class _InitializeAppState extends State<InitializeApp> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AppThemeModeCubit, AppThemeMode>(
       listener: (context, state) {},
       builder: (context, state) {
         final themeCubit = context.watch<AppThemeModeCubit>();
-
         return MaterialApp(
           theme: themeCubit.appTheme(),
           themeMode: themeCubit.themeMode(),
