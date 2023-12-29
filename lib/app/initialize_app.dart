@@ -19,8 +19,7 @@ class InitializeApp extends StatefulWidget {
 class _InitializeAppState extends State<InitializeApp> {
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AppThemeModeCubit, AppThemeMode>(
-      listener: (context, state) {},
+    return BlocBuilder<AppThemeModeCubit, AppThemeMode>(
       builder: (context, state) {
         final themeCubit = context.watch<AppThemeModeCubit>();
         return MaterialApp(

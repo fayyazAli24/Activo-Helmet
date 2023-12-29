@@ -1,5 +1,6 @@
 
 <manifest xmlns:tools="http://schemas.android.com/tools"
+    package="com.unilever.unilever_activo"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />

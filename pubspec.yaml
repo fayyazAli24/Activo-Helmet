@@ -51,10 +51,10 @@ dependencies:
   flutter_background_service: ^5.0.5
   just_audio: ^0.9.36
   alarm: ^3.0.2
-#  flutter_local_notifications: ^16.2.0
+  flutter_local_notifications: ^16.2.0
 #  firebase_messaging: ^14.7.9
 #  firebase_core: ^2.24.2
-  awesome_notifications: ^0.8.3
+#  awesome_notifications: ^0.8.3
 
 
 dev_dependencies:
@@ -62,7 +62,7 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
 
-#  flutter_native_splash: ^2.3.3
+
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -72,16 +72,6 @@ flutter_launcher_icons:
   remove_alpha_ios: true
 
 
-
-#
-#flutter_native_splash:
-#  color: "#ffffff"
-#  android_12:
-#    image: "assets/app_icon/helmet.png"
-#  image: "assets/app_icon/helmet.png"
-#  color_android: "#ffffff"
-#  color_dark_android: "#000000"
-#
 
 
 

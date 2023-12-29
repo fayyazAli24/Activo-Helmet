@@ -10,7 +10,6 @@ class AlarmCubit extends Cubit<AlarmState> {
     sortAlarms();
     // ringAlarm();
   }
-  StreamSubscription<AlarmSettings>? alarmStream;
 
   List<AlarmSettings> alarms = [];
   Future<void> sortAlarms() async {
@@ -23,7 +22,7 @@ class AlarmCubit extends Cubit<AlarmState> {
   Future<void> setAlarm() async {
     final alarmSettings = AlarmSettings(
       id: 1,
-      dateTime: DateTime(2023, 12, 27, 18, 38),
+      dateTime: DateTime(2023, 12, 29, 18, 38),
       loopAudio: false,
       volume: 0.1,
       vibrate: false,
@@ -36,19 +35,9 @@ class AlarmCubit extends Cubit<AlarmState> {
     await Alarm.set(alarmSettings: alarmSettings);
   }
 
-  // void ringAlarm() {
-  //   alarmStream ??= Alarm.ringStream.stream.listen(
-  //     (settings) async {
-  //       //     debugPrint('notifications_ringing');
-  //       //     await setUpNotifications();
-  //       emit(AlarmRingingState());
-  //     },
-  //     cancelOnError: true,
-  //     onDone: () {
-  //       alarmStream?.cancel();
-  //     },
-  //   );
-  // }
+  void ringAlarm() {
+    emit(AlarmRingingState());
+  }
 
   Future<void> stopAlarm() async {
     await Alarm.stop(1);
