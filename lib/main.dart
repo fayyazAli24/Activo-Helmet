@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,7 +30,7 @@ import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 final di = GetIt.instance;
 StreamSubscription<ConnectivityResult>? connectionStream;
-BluetoothConnection? bluetoothConnection;
+
 StreamSubscription<AlarmSettings>? alarmStream;
 final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -49,7 +48,8 @@ Future<void> permissions() async {
 Future<void> manageAlarmTIme() async {
   final pref = await SharedPreferences.getInstance();
 
-  final dateTime = DateTime(2024, 1, 1, 17, 25);
+  final dateNow = DateTime.now();
+  final dateTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 19, 00);
   final savedTime = pref.getString(savedAlarmTimeKey);
   if (savedTime != null) {
     final parsedTime = DateTime.parse(savedAlarmTimeKey);
@@ -117,17 +117,20 @@ Future<bool> onNotifications() async {
       ?.createNotificationChannel(channel);
 
   try {
-    await _localNotifications.zonedSchedule(
-      1, // Notification ID
-      title, // Notification Title
-      body,
-      tz.TZDateTime(
-          tz.local, appAlarmTime.year, appAlarmTime.month, appAlarmTime.day, appAlarmTime.hour, appAlarmTime.minute),
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      // Notification Body
-      platformChannelSpecifics,
-      payload: 'item x',
-    );
+    final dateNow = DateTime.now();
+    if (appAlarmTime.isAfter(dateNow)) {
+      await _localNotifications.zonedSchedule(
+        1, // Notification ID
+        title, // Notification Title
+        body,
+        tz.TZDateTime(
+            tz.local, appAlarmTime.year, appAlarmTime.month, appAlarmTime.day, appAlarmTime.hour, appAlarmTime.minute),
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        // Notification Body
+        platformChannelSpecifics,
+        payload: 'item x',
+      );
+    }
   } catch (e, s) {
     print(s);
     print(e);
@@ -144,7 +147,6 @@ Future<void> main() async {
     registerServices();
     initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Karachi'));
-    manageAlarmTIme();
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -157,8 +159,9 @@ Future<void> main() async {
     );
 
     await Alarm.init();
-
     await checkIsFirstRun();
+    manageAlarmTIme();
+
     await clearPreviousRecord();
     await onNotifications();
   } catch (e) {
