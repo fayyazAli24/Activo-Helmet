@@ -296,7 +296,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     if (reason != null) await getDevices();
     await disconnectAlert(reason);
-
     await alarmSettings();
   }
 

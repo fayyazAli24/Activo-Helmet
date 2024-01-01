@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedReason;
 
   Future<void> initialization() async {
-    // await context.read<AlarmCubit>().setAlarm();
+    await context.read<AlarmCubit>().setAlarm(appAlarmTime);
   }
 
   @override
@@ -270,11 +270,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
 
                       final device = await context.read<BluetoothCubit>().checkSavedDevice();
-
                       await di
                           .get<HelmetService>()
                           .disconnectingReason(device?.name ?? '', selectedReason ?? '', statusDescController.text);
-
                       context.read<AlarmCubit>().stopAlarm();
                       selectedReason = null;
                       statusDescController.clear();

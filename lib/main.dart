@@ -6,12 +6,14 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
@@ -25,9 +27,11 @@ import 'package:unilever_activo/bloc/cubits/switch_cubit/switch_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
+import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 final di = GetIt.instance;
-StreamSubscription? connectionStream;
+StreamSubscription<ConnectivityResult>? connectionStream;
+BluetoothConnection? bluetoothConnection;
 StreamSubscription<AlarmSettings>? alarmStream;
 final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -40,6 +44,20 @@ Future<void> permissions() async {
     Permission.notification,
     Permission.storage,
   ].request();
+}
+
+Future<void> manageAlarmTIme() async {
+  final pref = await SharedPreferences.getInstance();
+
+  final dateTime = DateTime(2024, 1, 1, 17, 25);
+  final savedTime = pref.getString(savedAlarmTimeKey);
+  if (savedTime != null) {
+    final parsedTime = DateTime.parse(savedAlarmTimeKey);
+    appAlarmTime = parsedTime;
+  } else {
+    appAlarmTime = dateTime;
+    await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
+  }
 }
 
 Future<void> checkIsFirstRun() async {
@@ -68,11 +86,6 @@ Future<void> clearPreviousRecord() async {
 }
 
 Future<bool> onNotifications() async {
-  // Only available for flutter 3.0.0 and later
-  // DartPluginRegistrant.ensureInitialized();
-
-  // bring to foreground
-
   final String title = 'Connect Helmet Alert';
   final String body = 'Please enter helmet';
 
@@ -103,28 +116,18 @@ Future<bool> onNotifications() async {
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  //only this one
-  print('before stream');
-
   try {
-    // alarmStream = Alarm.ringStream.stream.listen((event) async {
-    // Is this running in background?
-
-    final detroit = tz.getLocation('Asia/Karachi');
-    print('${detroit.name}');
     await _localNotifications.zonedSchedule(
       1, // Notification ID
       title, // Notification Title
-      'Please Wear Helmet',
-
-      tz.TZDateTime(detroit, 2024, 01, 01, 13, 20),
+      body,
+      tz.TZDateTime(
+          tz.local, appAlarmTime.year, appAlarmTime.month, appAlarmTime.day, appAlarmTime.hour, appAlarmTime.minute),
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       // Notification Body
       platformChannelSpecifics,
       payload: 'item x',
     );
-    print('stream listening');
-    // });
   } catch (e, s) {
     print(s);
     print(e);
@@ -141,7 +144,7 @@ Future<void> main() async {
     registerServices();
     initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Karachi'));
-
+    manageAlarmTIme();
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -152,6 +155,7 @@ Future<void> main() async {
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {},
     );
+
     await Alarm.init();
 
     await checkIsFirstRun();
