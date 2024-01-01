@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedReason;
 
   Future<void> initialization() async {
-    await context.read<AlarmCubit>().setAlarm();
+    // await context.read<AlarmCubit>().setAlarm();
   }
 
   @override

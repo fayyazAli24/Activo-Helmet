@@ -22,7 +22,7 @@ class AlarmCubit extends Cubit<AlarmState> {
   Future<void> setAlarm() async {
     final alarmSettings = AlarmSettings(
       id: 1,
-      dateTime: DateTime(2023, 12, 29, 18, 38),
+      dateTime: DateTime(2024, 01, 01, 13, 20),
       loopAudio: false,
       volume: 0.1,
       vibrate: false,

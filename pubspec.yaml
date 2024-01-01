@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.2 <4.0.0'
+  sdk: '>=3.2.3 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -48,13 +48,14 @@ dependencies:
   geolocator: ^10.1.0
   get_it: ^7.6.4
   intl: ^0.19.0
-  flutter_background_service: ^5.0.5
+
   just_audio: ^0.9.36
   alarm: ^3.0.2
   flutter_local_notifications: ^16.2.0
-#  firebase_messaging: ^14.7.9
-#  firebase_core: ^2.24.2
-#  awesome_notifications: ^0.8.3
+  workmanager: ^0.5.2
+  flutter_background_service: ^5.0.5
+  timezone: ^0.9.2
+
 
 
 dev_dependencies:

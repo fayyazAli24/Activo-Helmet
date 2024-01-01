@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.BLUETOOTH" tools:remove="android:maxSdkVersion" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:remove="android:maxSdkVersion"/>
     <uses-permission
@@ -29,7 +29,6 @@
         android:name="${applicationName}"
 
         android:icon="@mipmap/launcher_icon">
-        <service android:name="com.gdelataillade.alarm.services.NotificationOnKillService" />
 
         <activity
             android:name=".MainActivity"
@@ -70,13 +69,29 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <service android:name="com.gdelataillade.alarm.services.NotificationOnKillService" />
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:foregroundServiceType="location"
-            />
-        <!-- A custom Android Notification Channel to deliver FCM notifications on a non-default channel -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="high_importance_channel" />
+            android:exported="true"
+
+            android:foregroundServiceType="location">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </service>
+<!--        &lt;!&ndash; A custom Android Notification Channel to deliver FCM notifications on a non-default channel &ndash;&gt;-->
+<!--        <meta-data-->
+<!--            android:name="com.google.firebase.messaging.default_notification_channel_id"-->
+<!--            android:value="high_importance_channel" />-->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

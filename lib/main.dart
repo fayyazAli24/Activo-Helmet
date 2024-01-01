@@ -10,6 +10,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:unilever_activo/app/get_it.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
@@ -65,127 +67,71 @@ Future<void> clearPreviousRecord() async {
   );
 }
 
-Future<void> handleBackgroundMessage() async {
-  try {} catch (e) {
-    print('$e notifications***');
-  }
-}
+Future<bool> onNotifications() async {
+  // Only available for flutter 3.0.0 and later
+  // DartPluginRegistrant.ensureInitialized();
 
-void ringAlarm() {
-  print('notifications_triggered');
-  alarmStream = Alarm.ringStream.stream.listen(
-    (settings) async {
-      if (settings.id == 1) {
-        // Display a local notification
-        AndroidNotificationDetails androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-          'channel_id',
-          'channel_name',
-          channelDescription: 'Time to wear helmet',
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: '@mipmap/launcher_icon',
-        );
-        DarwinNotificationDetails iosPlatformChanelSpecifics = const DarwinNotificationDetails(
-          presentAlert: true,
-          presentSound: true,
-        );
-        NotificationDetails platformChannelSpecifics = NotificationDetails(
-          android: androidPlatformChannelSpecifics,
-          iOS: iosPlatformChanelSpecifics,
-        );
+  // bring to foreground
 
-        print('notifications_ringing $settings');
-        await _localNotifications.show(
-          1, // Notification ID
-          'Alarm ringing', // Notification Title
-          'Please Wear Helmet', // Notification Body
-          platformChannelSpecifics,
-          payload: 'item x',
-        );
-      }
-    },
-    cancelOnError: true,
+  final String title = 'Connect Helmet Alert';
+  final String body = 'Please enter helmet';
+
+  // Display a local notification
+  AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    'channel_id',
+    'channel_name',
+    channelDescription: body,
+    importance: Importance.max,
+    priority: Priority.high,
+    icon: '@mipmap/launcher_icon',
   );
+  DarwinNotificationDetails iosPlatformChanelSpecifics = const DarwinNotificationDetails(
+    presentAlert: true,
+    presentSound: true,
+  );
+  NotificationDetails platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+    iOS: iosPlatformChanelSpecifics,
+  );
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'channel_id', // id
+    'MY FOREGROUND SERVICE', // title
+    description: 'This channel is used for important notifications.', // description
+    importance: Importance.max, // importance must be at low or higher level
+  );
+  await _localNotifications
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  //only this one
+  print('before stream');
+
+  try {
+    // alarmStream = Alarm.ringStream.stream.listen((event) async {
+    // Is this running in background?
+
+    final detroit = tz.getLocation('Asia/Karachi');
+    print('${detroit.name}');
+    await _localNotifications.zonedSchedule(
+      1, // Notification ID
+      title, // Notification Title
+      'Please Wear Helmet',
+
+      tz.TZDateTime(detroit, 2024, 01, 01, 13, 20),
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      // Notification Body
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
+    print('stream listening');
+    // });
+  } catch (e, s) {
+    print(s);
+    print(e);
+  }
+
+  return true;
 }
-
-// @pragma('vm:entry-point')
-// Future<bool> onStart(ServiceInstance service) async {
-//   // Only available for flutter 3.0.0 and later
-//   DartPluginRegistrant.ensureInitialized();
-//
-//   // bring to foreground
-//
-//   final String title = 'Connect Helmet Alert';
-//   final String body = 'Please enter helmet';
-//
-//   // Display a local notification
-//   AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-//     'channel_id',
-//     'channel_name',
-//     channelDescription: body,
-//     importance: Importance.max,
-//     priority: Priority.high,
-//     icon: '@mipmap/launcher_icon',
-//   );
-//   DarwinNotificationDetails iosPlatformChanelSpecifics = const DarwinNotificationDetails(
-//     presentAlert: true,
-//     presentSound: true,
-//   );
-//   NotificationDetails platformChannelSpecifics = NotificationDetails(
-//     android: androidPlatformChannelSpecifics,
-//     iOS: iosPlatformChanelSpecifics,
-//   );
-//   const AndroidNotificationChannel channel = AndroidNotificationChannel(
-//     'channel_id', // id
-//     'MY FOREGROUND SERVICE', // title
-//     description: 'This channel is used for important notifications.', // description
-//     importance: Importance.max, // importance must be at low or higher level
-//   );
-//   await _localNotifications
-//       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-//       ?.createNotificationChannel(channel);
-//
-//   ringAlarm();
-//   // await FlutterLocalNotificationsPlugin().show(
-//   //   1, // Notification ID
-//   //   title, // Notification Title
-//   //   body, // Notification Body
-//   //   platformChannelSpecifics,
-//   //   payload: 'item x',
-//   // );
-//   return true;
-// }
-
-// @pragma('vm:entry-point')
-// Future<void> setUpNotifications() async {
-//   final service = FlutterBackgroundService();
-//   const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/launcher_icon');
-//   const initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-//   _localNotifications.initialize(
-//     initializationSettings,
-//     onDidReceiveNotificationResponse: (details) {},
-//   );
-//
-//   await service.configure(
-//       iosConfiguration: IosConfiguration(
-//         autoStart: true,
-//         onBackground: onStart,
-//         onForeground: onStart,
-//       ),
-//       androidConfiguration: AndroidConfiguration(
-//         // this will be executed when app is in foreground or background in separated isolate
-//         onStart: onStart,
-//
-//         // auto start service
-//         autoStart: true,
-//         isForegroundMode: true,
-//
-//         notificationChannelId: 'channel_id', // this must match with notification channel you created above.
-//         initialNotificationTitle: 'AWESOME SERVICE',
-//         initialNotificationContent: 'Initializing',
-//         foregroundServiceNotificationId: 1,
-//       ));
-// }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -193,12 +139,24 @@ Future<void> main() async {
     await permissions();
 
     registerServices();
+    initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Karachi'));
+
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/launcher_icon');
+    const initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+    _localNotifications.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (details) {},
+    );
     await Alarm.init();
-    // setUpNotifications();
 
     await checkIsFirstRun();
     await clearPreviousRecord();
-    ringAlarm();
+    await onNotifications();
   } catch (e) {
     log('$e');
   }
