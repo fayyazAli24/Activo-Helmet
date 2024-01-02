@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
@@ -10,7 +11,6 @@ import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dar
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
-import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
@@ -375,13 +375,14 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.delayed(
       const Duration(minutes: 5),
       () async {
+        final pref = await SharedPreferences.getInstance();
         final bluetoothCubit = context.read<BluetoothCubit>();
         final alarmCubit = context.read<AlarmCubit>();
         if (bluetoothCubit.connection?.isConnected ?? false) {
           appAlarmTime = appAlarmTime.add(const Duration(days: 1));
           await alarmCubit.setAlarm(appAlarmTime);
           onNotifications();
-          await StorageService().write(savedAlarmTimeKey, appAlarmTime.toIso8601String());
+          await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
           print('$appAlarmTime updated time');
         } else {
           await alarmCubit.setAlarm(DateTime.now());

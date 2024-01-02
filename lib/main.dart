@@ -47,17 +47,22 @@ Future<void> permissions() async {
 
 Future<void> manageAlarmTIme() async {
   final pref = await SharedPreferences.getInstance();
-
   final dateNow = DateTime.now();
-  final dateTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 19, 00);
+  final dateTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 09, 00);
   final savedTime = pref.getString(savedAlarmTimeKey);
   if (savedTime != null) {
-    final parsedTime = DateTime.parse(savedAlarmTimeKey);
-    appAlarmTime = parsedTime;
+    final parsedTime = DateTime.parse(savedTime);
+    if (parsedTime.isAfter(dateNow)) {
+      appAlarmTime = parsedTime;
+    } else {
+      appAlarmTime = dateTime;
+    }
   } else {
     appAlarmTime = dateTime;
-    await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
   }
+  await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
+
+  print('${appAlarmTime.toIso8601String()}');
 }
 
 Future<void> checkIsFirstRun() async {
@@ -161,9 +166,8 @@ Future<void> main() async {
     await Alarm.init();
     await checkIsFirstRun();
     manageAlarmTIme();
-
-    await clearPreviousRecord();
     await onNotifications();
+    await clearPreviousRecord();
   } catch (e) {
     log('$e');
   }

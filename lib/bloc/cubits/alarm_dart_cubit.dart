@@ -34,7 +34,14 @@ class AlarmCubit extends Cubit<AlarmState> {
       notificationTitle: 'Time to ride',
       notificationBody: 'Its time to wear helmet',
     );
-    await Alarm.set(alarmSettings: alarmSettings);
+    alarms.add(alarmSettings);
+    for (AlarmSettings alarm in alarms) {
+      final now = DateTime.now();
+      if (alarm.dateTime.isBefore(now)) {
+        alarm = alarm.copyWith(dateTime: alarm.dateTime.add(const Duration(days: 1)));
+        Alarm.set(alarmSettings: alarm);
+      }
+    }
   }
 
   Future<void> ringAlarm() async {
