@@ -5,22 +5,24 @@ import 'package:bloc/bloc.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
 import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/utils/assets.dart';
+import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 class AlarmCubit extends Cubit<AlarmState> {
   AlarmCubit() : super(AlarmDartInitial()) {
-    sortAlarms();
+    setAlarm(appAlarmTime);
     ringAlarm();
   }
 
-  List<AlarmSettings> alarms = [];
+  // List<AlarmSettings> alarms = [];
 
   late AlarmSettings alarmSettings;
-  Future<void> sortAlarms() async {
-    alarms = Alarm.getAlarms();
-    alarms.sort(
-      (a, b) => a.dateTime.isBefore(b.dateTime) ? -1 : 1,
-    );
-  }
+  //
+  // Future<void> sortAlarms() async {
+  //   alarms = Alarm.getAlarms();
+  //   alarms.sort(
+  //     (a, b) => a.dateTime.isBefore(b.dateTime) ? -1 : 1,
+  //   );
+  // }
 
   Future<void> setAlarm(DateTime alarmTime) async {
     alarmSettings = AlarmSettings(
@@ -34,20 +36,7 @@ class AlarmCubit extends Cubit<AlarmState> {
       notificationTitle: 'Time to ride',
       notificationBody: 'Its time to wear helmet',
     );
-
-    if (alarms.isEmpty) {
-      Alarm.set(alarmSettings: alarmSettings);
-    } else {
-      alarms = Alarm.getAlarms();
-      for (AlarmSettings alarm in alarms) {
-        final now = DateTime.now();
-        if (alarm.dateTime.isBefore(now)) {
-          alarm = alarm.copyWith(dateTime: alarm.dateTime.add(const Duration(days: 1)));
-          Alarm.set(alarmSettings: alarm);
-          print('alarm set ${alarm.dateTime}');
-        }
-      }
-    }
+    await Alarm.set(alarmSettings: alarmSettings);
   }
 
   Future<void> ringAlarm() async {

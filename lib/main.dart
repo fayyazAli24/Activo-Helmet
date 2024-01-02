@@ -48,16 +48,16 @@ Future<void> permissions() async {
 Future<void> manageAlarmTIme() async {
   final pref = await SharedPreferences.getInstance();
   final dateNow = DateTime.now();
-  final dateTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 14, 05);
-  final savedTime = pref.getString(savedAlarmTimeKey);
-  if (savedTime != null) {
-    final parsedTime = DateTime.parse(savedTime);
-    if (parsedTime.isBefore(dateNow)) {
-      appAlarmTime = parsedTime.add(const Duration(days: 1));
-    }
+
+  ///this time will come from API
+  final firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 15, 26);
+
+  if (firstTime.isAfter(dateNow)) {
+    appAlarmTime = firstTime;
   } else {
-    appAlarmTime = dateTime;
+    appAlarmTime = firstTime.add(const Duration(days: 1));
   }
+
   await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
 
   print('${appAlarmTime.toIso8601String()}');

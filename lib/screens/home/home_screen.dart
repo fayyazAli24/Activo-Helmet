@@ -3,8 +3,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
@@ -35,13 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController statusDescController = TextEditingController();
   String? selectedReason;
 
-  Future<void> initialization() async {
-    await context.read<AlarmCubit>().setAlarm(appAlarmTime);
-  }
-
   @override
   void initState() {
-    initialization();
     super.initState();
   }
 
@@ -372,22 +365,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> manageAlarm() async {
     context.read<AlarmCubit>().stopAlarm();
+
+    final bluetoothCubit = context.read<BluetoothCubit>();
+    final alarmCubit = context.read<AlarmCubit>();
+    appAlarmTime = appAlarmTime.add(const Duration(days: 1));
+    await alarmCubit.setAlarm(appAlarmTime);
+    onNotifications();
+    print('$appAlarmTime updated time');
+
     Future.delayed(
       const Duration(minutes: 5),
       () async {
-        final pref = await SharedPreferences.getInstance();
-        final bluetoothCubit = context.read<BluetoothCubit>();
-        final alarmCubit = context.read<AlarmCubit>();
-        if (bluetoothCubit.connection?.isConnected ?? false) {
-          appAlarmTime = appAlarmTime.add(const Duration(days: 1));
-          await alarmCubit.setAlarm(appAlarmTime);
-          onNotifications();
-          await pref.setString(savedAlarmTimeKey, appAlarmTime.toIso8601String());
-          print('$appAlarmTime updated time');
-        } else {
+        if (!(bluetoothCubit.connection?.isConnected ?? true)) {
           await alarmCubit.setAlarm(DateTime.now());
-          onNotifications();
-          print('$appAlarmTime snoozed time');
         }
       },
     );
