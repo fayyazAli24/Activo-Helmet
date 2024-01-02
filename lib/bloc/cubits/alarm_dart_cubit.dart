@@ -27,19 +27,25 @@ class AlarmCubit extends Cubit<AlarmState> {
       id: 1,
       dateTime: alarmTime,
       loopAudio: false,
-      volume: 0,
+      volume: 0.1,
       vibrate: false,
       enableNotificationOnKill: false,
       assetAudioPath: AssetsPath.alarmSound,
       notificationTitle: 'Time to ride',
       notificationBody: 'Its time to wear helmet',
     );
-    alarms.add(alarmSettings);
-    for (AlarmSettings alarm in alarms) {
-      final now = DateTime.now();
-      if (alarm.dateTime.isBefore(now)) {
-        alarm = alarm.copyWith(dateTime: alarm.dateTime.add(const Duration(days: 1)));
-        Alarm.set(alarmSettings: alarm);
+
+    if (alarms.isEmpty) {
+      Alarm.set(alarmSettings: alarmSettings);
+    } else {
+      alarms = Alarm.getAlarms();
+      for (AlarmSettings alarm in alarms) {
+        final now = DateTime.now();
+        if (alarm.dateTime.isBefore(now)) {
+          alarm = alarm.copyWith(dateTime: alarm.dateTime.add(const Duration(days: 1)));
+          Alarm.set(alarmSettings: alarm);
+          print('alarm set ${alarm.dateTime}');
+        }
       }
     }
   }
