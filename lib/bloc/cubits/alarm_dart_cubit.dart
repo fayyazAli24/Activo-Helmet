@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:alarm/alarm.dart';
 import 'package:bloc/bloc.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
-import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
 
@@ -13,8 +12,8 @@ class AlarmCubit extends Cubit<AlarmState> {
     ringAlarm();
   }
 
-  // List<AlarmSettings> alarms = [];
-
+  List<AlarmSettings> alarms = [];
+  StreamSubscription<AlarmSettings>? alarmStream;
   late AlarmSettings alarmSettings;
   //
   // Future<void> sortAlarms() async {
@@ -36,6 +35,7 @@ class AlarmCubit extends Cubit<AlarmState> {
       notificationTitle: 'Time to ride',
       notificationBody: 'Its time to wear helmet',
     );
+
     await Alarm.set(alarmSettings: alarmSettings);
   }
 
@@ -53,6 +53,7 @@ class AlarmCubit extends Cubit<AlarmState> {
 
   @override
   Future<void> close() {
+    alarmStream?.cancel();
     return super.close();
   }
 }

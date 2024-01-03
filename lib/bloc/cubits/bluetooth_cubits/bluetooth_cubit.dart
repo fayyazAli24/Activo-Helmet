@@ -8,12 +8,12 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
-import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/utils/assets.dart';
 

@@ -3,13 +3,13 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
-import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
@@ -370,7 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final alarmCubit = context.read<AlarmCubit>();
     appAlarmTime = appAlarmTime.add(const Duration(days: 1));
     await alarmCubit.setAlarm(appAlarmTime);
-    onNotifications();
+    setUpNotifications();
     print('$appAlarmTime updated time');
 
     Future.delayed(

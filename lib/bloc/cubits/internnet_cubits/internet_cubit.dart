@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
-import 'package:unilever_activo/main.dart';
 
 enum InternetState {
   initial,

@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
-import 'package:unilever_activo/main.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
 class LocationStatus {}

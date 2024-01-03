@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
-import 'package:unilever_activo/main.dart';
 
 class HelmetService {
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
