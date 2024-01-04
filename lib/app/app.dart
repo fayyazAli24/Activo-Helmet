@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alarm/alarm.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -40,10 +41,12 @@ void initializeNotifications() {
 }
 
 Future<void> manageAlarmTIme() async {
+  if (await Alarm.isRinging(1)) return;
+
   final dateNow = DateTime.now();
 
   ///this time will come from API
-  final firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 00);
+  final firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 17, 15);
 
   if (firstTime.isAfter(dateNow)) {
     appAlarmTime = firstTime;
@@ -58,7 +61,6 @@ Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();
 
   final isFirstRun = pref.getBool('firstRun');
-  await pref.clear();
 
   if (isFirstRun ?? true) {
     await pref.clear();
@@ -79,7 +81,7 @@ Future<void> clearPreviousRecord() async {
   );
 }
 
-Future<bool> setUpNotifications() async {
+Future<void> setUpNotifications() async {
   final String title = 'Connect Helmet Alert';
   final String body = 'Please enter helmet';
 
@@ -109,7 +111,9 @@ Future<bool> setUpNotifications() async {
   await _localNotifications
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-
+  if (await Alarm.isRinging(1)) {
+    return;
+  }
   try {
     await _localNotifications.zonedSchedule(
       1, // Notification ID
@@ -126,8 +130,6 @@ Future<bool> setUpNotifications() async {
     print(s);
     print(e);
   }
-
-  return true;
 }
 
 class App {

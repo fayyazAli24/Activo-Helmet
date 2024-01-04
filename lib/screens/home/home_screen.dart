@@ -61,16 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
           print('state $state');
           final bluetoothState = context.read<BluetoothCubit>();
 
-            if (bluetoothState.connection?.isConnected ?? false) {
-              await Alarm.stop(1);
-              manageAlarmTIme();
+          if (bluetoothState.connection?.isConnected ?? false) {
+            final isStopped = await Alarm.stop(1);
+            if (isStopped) {
+              await manageAlarmTIme();
+              await setUpNotifications();
               context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');
-            } else {
-              disconnectedDialog();
-              print('alarm stopped');
             }
-
+          } else {
+            disconnectedDialog();
+            print('alarm stopped');
+          }
         }
       },
       builder: (context, state) => BlocListener<LocationCubit, LocationStatus>(

@@ -5,3 +5,5 @@ class AlarmDartInitial extends AlarmState {}
 class AlarmRingingState extends AlarmState {}
 
 class AlarmStoppedState extends AlarmState {}
+
+class AlarmSetState extends AlarmState {}

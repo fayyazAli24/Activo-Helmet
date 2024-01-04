@@ -25,6 +25,7 @@ class AlarmCubit extends Cubit<AlarmState> {
   // }
 
   Future<void> setAlarm(DateTime alarmTime) async {
+    if (await Alarm.isRinging(1)) return;
     alarmSettings = AlarmSettings(
       id: 1,
       dateTime: alarmTime,
@@ -38,6 +39,8 @@ class AlarmCubit extends Cubit<AlarmState> {
     );
 
     await Alarm.set(alarmSettings: alarmSettings);
+    print('alarm set $alarmTime');
+    emit(AlarmSetState());
   }
 
   Future<void> ringAlarm() async {
@@ -50,12 +53,15 @@ class AlarmCubit extends Cubit<AlarmState> {
   }
 
   Future<void> stopAlarm() async {
-    await Alarm.stop(1);
+    final isStopped = await Alarm.stop(1);
+    print('$isStopped');
+    if (isStopped) {
+      appAlarmTime = appAlarmTime.add(const Duration(seconds: 40));
+      await setUpNotifications();
+      await setAlarm(appAlarmTime);
+      print('alarm time $appAlarmTime');
+    }
 
-    appAlarmTime = appAlarmTime.add(const Duration(minutes: 5));
-    await setAlarm(appAlarmTime);
-    setUpNotifications();
-    print('alarm time $appAlarmTime');
     emit(AlarmStoppedState());
   }
 
