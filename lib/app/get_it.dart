@@ -1,4 +1,5 @@
 import 'package:unilever_activo/app/app.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
@@ -7,4 +8,8 @@ void registerServices() {
   di.registerSingleton<LocationService>(LocationService());
   di.registerSingleton<HelmetService>(HelmetService());
   di.registerSingleton<UnSyncRecordService>(UnSyncRecordService());
+
+  ///cubits
+
+  di.registerSingleton<BluetoothCubit>(BluetoothCubit());
 }

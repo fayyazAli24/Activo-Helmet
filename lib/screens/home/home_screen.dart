@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/app.dart';
@@ -35,6 +36,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    final bluetoothCubit = context.read<BluetoothCubit>();
+    bluetoothCubit.checkPermissions();
+    bluetoothCubit.checkStatus();
+    bluetoothCubit.listenState();
+
     super.initState();
   }
 
@@ -49,13 +55,25 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
 
-    return BlocListener<AlarmCubit, AlarmState>(
-      listener: (context, state) {
+    return BlocConsumer<AlarmCubit, AlarmState>(
+      listener: (context, state) async {
         if (state is AlarmRingingState) {
-          disconnectedDialog();
+          print('state $state');
+          final bluetoothState = context.read<BluetoothCubit>();
+
+            if (bluetoothState.connection?.isConnected ?? false) {
+              await Alarm.stop(1);
+              manageAlarmTIme();
+              context.read<AlarmCubit>().setAlarm(appAlarmTime);
+              print('alarm stopped');
+            } else {
+              disconnectedDialog();
+              print('alarm stopped');
+            }
+
         }
       },
-      child: BlocListener<LocationCubit, LocationStatus>(
+      builder: (context, state) => BlocListener<LocationCubit, LocationStatus>(
         listener: (context, locationState) {
           if (locationState is LocationOff) {
             final bluetoothState = context.read<BluetoothCubit>().state;
@@ -325,7 +343,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ElevatedButton(
                 onPressed: () async {
                   await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
-
                   pop();
                 },
                 child: const Center(child: AppText(text: 'Close')),
@@ -365,22 +382,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> manageAlarm() async {
     context.read<AlarmCubit>().stopAlarm();
-
-    final bluetoothCubit = context.read<BluetoothCubit>();
-    final alarmCubit = context.read<AlarmCubit>();
-    appAlarmTime = appAlarmTime.add(const Duration(days: 1));
-    await alarmCubit.setAlarm(appAlarmTime);
-    setUpNotifications();
-    print('$appAlarmTime updated time');
-
-    Future.delayed(
-      const Duration(minutes: 5),
-      () async {
-        if (!(bluetoothCubit.connection?.isConnected ?? true)) {
-          await alarmCubit.setAlarm(DateTime.now());
-        }
-      },
-    );
   }
 
   Future<dynamic> noDeviceFoundDialog(BluetoothFailedState state) {

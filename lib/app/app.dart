@@ -43,7 +43,7 @@ Future<void> manageAlarmTIme() async {
   final dateNow = DateTime.now();
 
   ///this time will come from API
-  final firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 13, 46);
+  final firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 00);
 
   if (firstTime.isAfter(dateNow)) {
     appAlarmTime = firstTime;
@@ -58,6 +58,7 @@ Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();
 
   final isFirstRun = pref.getBool('firstRun');
+  await pref.clear();
 
   if (isFirstRun ?? true) {
     await pref.clear();

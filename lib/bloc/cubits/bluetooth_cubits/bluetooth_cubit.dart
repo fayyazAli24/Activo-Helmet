@@ -18,11 +18,7 @@ import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/utils/assets.dart';
 
 class BluetoothCubit extends Cubit<AppBluetoothState> {
-  BluetoothCubit() : super(BluetoothStateInitial()) {
-    checkPermissions();
-    checkStatus();
-    listenState();
-  }
+  BluetoothCubit() : super(BluetoothStateInitial());
 
   BluetoothConnection? connection;
 
