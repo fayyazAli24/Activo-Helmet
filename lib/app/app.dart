@@ -69,8 +69,8 @@ Future<void> manageAlarmTime() async {
 
       print('${appAlarmTime.toIso8601String()}');
     } else {
-      String tempHour = await StorageService().read(hourFromApi) ?? '12';
-      String tempMinutes = await StorageService().read(minutesFromApi) ?? '52';
+      String tempHour = await StorageService().read(hourFromApi) ?? '13';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '9';
 
       int hour = int.parse(tempHour);
       int minutes = int.parse(tempMinutes);
