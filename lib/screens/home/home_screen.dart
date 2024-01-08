@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final dateNow = DateTime.now();
               DateTime firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 0);
               appAlarmTime = firstTime.add(const Duration(days: 1));
-              // await manageAlarmTime();
+              await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
               context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');

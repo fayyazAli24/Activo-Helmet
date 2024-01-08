@@ -52,6 +52,7 @@ void initializeNotifications() {
 Future<void> manageAlarmTime() async {
   if (await Alarm.isRinging(1)) return;
 
+
   String? date = await di.get<DateService>().getDate();
   List<String>? temp = [];
   final dateNow = DateTime.now();
@@ -69,8 +70,8 @@ Future<void> manageAlarmTime() async {
 
       print('${appAlarmTime.toIso8601String()}');
     } else {
-      String tempHour = await StorageService().read(hourFromApi) ?? '13';
-      String tempMinutes = await StorageService().read(minutesFromApi) ?? '9';
+      String tempHour = await StorageService().read(hourFromApi) ?? '15';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '4';
 
       int hour = int.parse(tempHour);
       int minutes = int.parse(tempMinutes);
@@ -89,6 +90,51 @@ Future<void> manageAlarmTime() async {
   }
   print('${appAlarmTime.toIso8601String()}');
 }
+
+
+Future<void> manageAlarmTimeAfterBluetooth() async {
+
+  String? date = await di.get<DateService>().getDate();
+  List<String>? temp = [];
+  final dateNow = DateTime.now();
+  DateTime firstTime;
+
+  try {
+    if (date != null) {
+      temp = date.split(':');
+      int hour = int.parse(temp[0]);
+      int minutes = int.parse(temp[1]);
+      await StorageService().write(hourFromApi, hour.toString());
+      await StorageService().write(minutesFromApi, minutes.toString());
+      firstTime =
+          DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
+
+      print('${appAlarmTime.toIso8601String()}');
+    } else {
+      String tempHour = await StorageService().read(hourFromApi) ?? '9';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '0';
+
+      int hour = int.parse(tempHour);
+      int minutes = int.parse(tempMinutes);
+
+      firstTime =
+          DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
+    }
+
+      // appAlarmTime = firstTime.add(const Duration(days: 1));
+
+    if (firstTime.isAfter(dateNow)) {
+      appAlarmTime = firstTime;
+
+    } else {
+      appAlarmTime = firstTime.add(const Duration(days: 1));
+    }
+  } catch (e) {
+    print('server api is not working');
+  }
+  print('${appAlarmTime.toIso8601String()}');
+}
+
 
 Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();

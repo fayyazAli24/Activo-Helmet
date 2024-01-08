@@ -56,7 +56,7 @@ class AlarmCubit extends Cubit<AlarmState> {
     final isStopped = await Alarm.stop(1);
     print('$isStopped');
     if (isStopped) {
-      appAlarmTime = appAlarmTime.add(const Duration(seconds: 40));
+      appAlarmTime = appAlarmTime.add(const Duration(minutes: 5));
       await setUpNotifications();
       await setAlarm(appAlarmTime);
       print('alarm time $appAlarmTime');
