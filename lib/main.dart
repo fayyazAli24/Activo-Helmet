@@ -13,16 +13,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await permissions();
-
     registerServices();
     initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Karachi'));
-    initializeNotifications();
-
     await Alarm.init();
 
     await checkIsFirstRun();
-    manageAlarmTIme();
+    await manageAlarmTime();
+    initializeNotifications();
     await setUpNotifications();
     await clearPreviousRecord();
   } catch (e) {

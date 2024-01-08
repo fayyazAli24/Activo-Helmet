@@ -50,12 +50,16 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
 
+
+
     return BlocConsumer<AlarmCubit, AlarmState>(
+      // do stuff here based on BlocA's state
       listener: (context, state) async {
         if (state is AlarmRingingState) {
           print('state $state');
@@ -64,7 +68,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (bluetoothState.connection?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
-              await manageAlarmTIme();
+              final dateNow = DateTime.now();
+              DateTime firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 0);
+              appAlarmTime = firstTime.add(const Duration(days: 1));
+              // await manageAlarmTime();
               await setUpNotifications();
               context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');
@@ -75,7 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
       },
-      builder: (context, state) => BlocListener<LocationCubit, LocationStatus>(
+
+      // return widget here based on BlocA's state
+      builder: (context, state) {
+        return BlocListener<LocationCubit, LocationStatus>(
         listener: (context, locationState) {
           if (locationState is LocationOff) {
             final bluetoothState = context.read<BluetoothCubit>().state;
@@ -155,7 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-      ),
+      );
+      },
     );
   }
 
@@ -292,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       selectedReason = null;
                       statusDescController.clear();
                       pop();
-                      log('popped popeed');
+                      log('popped popped');
                     } catch (e) {
                       log('alarm Exc: $e ');
                       pop();
@@ -384,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> manageAlarm() async {
     context.read<AlarmCubit>().stopAlarm();
+
   }
 
   Future<dynamic> noDeviceFoundDialog(BluetoothFailedState state) {

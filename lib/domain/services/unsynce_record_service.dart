@@ -8,6 +8,8 @@ import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
 class UnSyncRecordService {
+
+  // getting unsynced data from local storage and sending it to server
   Future<void> syncUnsyncedReasonRecord(bool shouldDelete) async {
     try {
       final reasonDataList = await StorageService().read(unSyncedReasonData);
