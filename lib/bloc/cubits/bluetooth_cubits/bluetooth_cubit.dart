@@ -208,9 +208,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   final parsedStatus = int.parse(deviceStatus);
 
                   ///condition inverted
-                  isWore = parsedStatus == 0 ? 1 : 0;
+                  isWore = parsedStatus;
                   if (splitData.length > 1) {
-                    final batteryValue = splitData[1].toString();
+                    final batteryValue = splitData[2].toString();
                     batteryPercentage = double.tryParse(batteryValue);
 
                     ///pressure
@@ -289,7 +289,11 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await inputStream?.cancel();
     disconnectReasonCode = reason ?? 0;
     emit(DisconnectedState(reason ?? 0));
-    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+
+    if(reason != null){
+      await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+
+    }
     if (reason != null) await getDevices();
     await disconnectAlert(reason);
     await alarmSettings();

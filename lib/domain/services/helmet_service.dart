@@ -26,6 +26,7 @@ class HelmetService {
       final speed = (locationService.speed * 3.6);
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
+        apiDateTime: DateTime.now(),
         userId: '',
         latitude: locationService.latitude,
         longitude: locationService.longitude,
@@ -78,7 +79,7 @@ class HelmetService {
       if (res != null) {
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
-          unsyncedModel.apiDateTime = DateTime.now();
+          // unsyncedModel.apiDateTime = DateTime.now();
         }
       } else {
         throw Exception('API call failed during unsynced data sync');

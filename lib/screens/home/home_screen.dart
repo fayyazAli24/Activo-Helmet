@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:alarm/alarm.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/app.dart';
@@ -33,6 +34,37 @@ class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController statusDescController = TextEditingController();
   String? selectedReason;
+  Timer? timer;
+  StreamSubscription<ConnectivityResult>? subscription;
+
+  Future<void> initialization() async {
+    try {
+      if (!mounted) return;
+
+      final connection = await Connectivity().checkConnectivity();
+      if (connection == ConnectivityResult.none) {
+        print('internet issue');
+        return;
+      } else {
+        List? res = await di
+            .get<HelmetService>().syncUnsyncedData();
+
+        if (res != null) {
+          snackBar('Data Synced Successfully', context,color: Colors.green,textColor: Colors.green);
+        } else {
+          print('empty');
+          return;
+
+        }
+      }
+    }
+    catch (e) {
+      if (!mounted) return;
+
+      print('ex: $e');
+      return;
+    }
+  }
 
   @override
   void initState() {
@@ -41,6 +73,10 @@ class _HomeScreenState extends State<HomeScreen> {
     bluetoothCubit.checkStatus();
     bluetoothCubit.listenState();
 
+
+    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      await initialization();
+    });
     super.initState();
   }
 
@@ -50,13 +86,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
-
-
 
     return BlocConsumer<AlarmCubit, AlarmState>(
       // do stuff here based on BlocA's state
@@ -69,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
               final dateNow = DateTime.now();
-              DateTime firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 0);
+              DateTime firstTime =
+                  DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 0);
               appAlarmTime = firstTime.add(const Duration(days: 1));
               await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
@@ -86,86 +120,87 @@ class _HomeScreenState extends State<HomeScreen> {
       // return widget here based on BlocA's state
       builder: (context, state) {
         return BlocListener<LocationCubit, LocationStatus>(
-        listener: (context, locationState) {
-          if (locationState is LocationOff) {
-            final bluetoothState = context.read<BluetoothCubit>().state;
-            if (bluetoothState is BluetoothConnectedState) {
-              context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+          listener: (context, locationState) {
+            if (locationState is LocationOff) {
+              final bluetoothState = context.read<BluetoothCubit>().state;
+              if (bluetoothState is BluetoothConnectedState) {
+                context.read<LocationCubit>().deviceName =
+                    bluetoothState.deviceName;
+              }
+              locationOffDialog(context);
             }
-            locationOffDialog(context);
-          }
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: theme.appBarTheme.backgroundColor,
-            leading: AppSpace.noSpace,
-            leadingWidth: 0,
-            title: const AppText(
-              text: 'Smart Helmet (Activo)',
-              fontSize: 18,
-              color: AppColors.white,
-              weight: FontWeight.w500,
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: theme.appBarTheme.backgroundColor,
+              leading: AppSpace.noSpace,
+              leadingWidth: 0,
+              title: const AppText(
+                text: 'Smart Helmet (Activo)',
+                fontSize: 18,
+                color: AppColors.white,
+                weight: FontWeight.w500,
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    optionsDialogBox();
+                  },
+                  icon: const Icon(
+                    Icons.more_vert_rounded,
+                    color: AppColors.white,
+                  ),
+                ),
+              ],
             ),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  optionsDialogBox();
-                },
-                icon: const Icon(
-                  Icons.more_vert_rounded,
-                  color: AppColors.white,
+            body: SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.background,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  children: [
+                    AppSpace.vrtSpace(10),
+                    BlocConsumer<BluetoothCubit, AppBluetoothState>(
+                      builder: (context, state) {
+                        if (state is BluetoothStateOff) {
+                          return BluetoothOffScreen(
+                            size: size,
+                          );
+                        } else if (state is BluetoothConnectedState) {
+                          return BluetoothConnectedScreen(
+                            state: state,
+                            deviceName: state.deviceName,
+                            size: size,
+                          );
+                        }
+                        return BluetoothScanDeviceScreen(
+                          theme: theme,
+                          size: size,
+                        );
+                      },
+                      listener: (context, state) {
+                        if (state is BluetoothStateOff) {
+                          snackBar('Bluetooth is turned off', context);
+                        } else if (state is BluetoothFailedState) {
+                          noDeviceFoundDialog(state);
+                        } else if (state is AutoDisconnectedState) {
+                          stopAlarmDialog();
+                          snackBar('Device Disconnected', context);
+                        }
+
+                        if (state is BluetoothConnectingState) {
+                          connectingDialog();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          body: SafeArea(
-            child: Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.background,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                children: [
-                  AppSpace.vrtSpace(10),
-                  BlocConsumer<BluetoothCubit, AppBluetoothState>(
-                    builder: (context, state) {
-                      if (state is BluetoothStateOff) {
-                        return BluetoothOffScreen(
-                          size: size,
-                        );
-                      } else if (state is BluetoothConnectedState) {
-                        return BluetoothConnectedScreen(
-                          state: state,
-                          deviceName: state.deviceName,
-                          size: size,
-                        );
-                      }
-                      return BluetoothScanDeviceScreen(
-                        theme: theme,
-                        size: size,
-                      );
-                    },
-                    listener: (context, state) {
-                      if (state is BluetoothStateOff) {
-                        snackBar('Bluetooth is turned off', context);
-                      } else if (state is BluetoothFailedState) {
-                        noDeviceFoundDialog(state);
-                      } else if (state is AutoDisconnectedState) {
-                        stopAlarmDialog();
-                        snackBar('Device Disconnected', context);
-                      }
-
-                      if (state is BluetoothConnectingState) {
-                        connectingDialog();
-                      }
-                    },
-                  ),
-                ],
-              ),
             ),
           ),
-        ),
-      );
+        );
       },
     );
   }
@@ -186,7 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
             iconPadding: EdgeInsets.zero,
             actionsPadding: EdgeInsets.zero,
             buttonPadding: EdgeInsets.zero,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
             insetPadding: const EdgeInsets.only(
               right: 10,
               top: kToolbarHeight,
@@ -238,7 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (BuildContext context, Function(void Function()) setState) {
+        return StatefulBuilder(builder:
+            (BuildContext context, Function(void Function()) setState) {
           return AlertDialog.adaptive(
             scrollable: true,
             content: Form(
@@ -262,7 +299,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               RadioListTile<String>(
-                                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 4),
                                 dense: true,
                                 value: e,
                                 title: AppText(
@@ -295,10 +333,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         return invalidDialog();
                       }
 
-                      final device = await context.read<BluetoothCubit>().checkSavedDevice();
-                      await di
-                          .get<HelmetService>()
-                          .disconnectingReason(device?.name ?? '', selectedReason ?? '', statusDescController.text);
+                      final device = await context
+                          .read<BluetoothCubit>()
+                          .checkSavedDevice();
+                      await di.get<HelmetService>().disconnectingReason(
+                          device?.name ?? '',
+                          selectedReason ?? '',
+                          statusDescController.text);
                       manageAlarm();
                       selectedReason = null;
                       statusDescController.clear();
@@ -355,7 +396,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
+                  await BlocProvider.of<BluetoothCubit>(context)
+                      .audioPlayer
+                      .stop();
                   pop();
                 },
                 child: const Center(child: AppText(text: 'Close')),
@@ -395,7 +438,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> manageAlarm() async {
     context.read<AlarmCubit>().stopAlarm();
-
   }
 
   Future<dynamic> noDeviceFoundDialog(BluetoothFailedState state) {

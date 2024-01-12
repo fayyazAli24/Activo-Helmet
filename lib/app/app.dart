@@ -142,6 +142,8 @@ Future<void> checkIsFirstRun() async {
   final isFirstRun = pref.getBool('firstRun');
 
 
+  // await pref.clear();
+
   if (isFirstRun ?? true) {
     await pref.clear();
     await pref.setBool('firstRun', false);
