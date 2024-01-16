@@ -69,9 +69,10 @@ Future<void> manageAlarmTime() async {
           DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
 
       print('${appAlarmTime.toIso8601String()}');
+
     } else {
-      String tempHour = await StorageService().read(hourFromApi) ?? '15';
-      String tempMinutes = await StorageService().read(minutesFromApi) ?? '4';
+      String tempHour = await StorageService().read(hourFromApi) ?? '16';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '55';
 
       int hour = int.parse(tempHour);
       int minutes = int.parse(tempMinutes);
@@ -80,9 +81,11 @@ Future<void> manageAlarmTime() async {
           DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
     }
 
+
     if (firstTime.isAfter(dateNow)) {
       appAlarmTime = firstTime;
-    } else {
+    }
+    else {
       appAlarmTime = firstTime.add(const Duration(days: 1));
     }
   } catch (e) {
@@ -93,7 +96,6 @@ Future<void> manageAlarmTime() async {
 
 
 Future<void> manageAlarmTimeAfterBluetooth() async {
-
   String? date = await di.get<DateService>().getDate();
   List<String>? temp = [];
   final dateNow = DateTime.now();
@@ -138,12 +140,9 @@ Future<void> manageAlarmTimeAfterBluetooth() async {
 
 Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();
-
   final isFirstRun = pref.getBool('firstRun');
 
-
-  // await pref.clear();
-
+  await pref.clear();
   if (isFirstRun ?? true) {
     await pref.clear();
     await pref.setBool('firstRun', false);

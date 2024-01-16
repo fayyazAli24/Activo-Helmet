@@ -70,6 +70,9 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
     initialization();
 
 
+    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      await initialization();
+    });
   }
 
   @override
@@ -89,8 +92,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
         children: [
           GestureDetector(
             onTap: () async {
-              await context.read<BluetoothCubit>().disconnect();
-
+              await context.read<BluetoothCubit>().disconnect(555);
               ///User Disconnect
             },
             child: Lottie.asset(
@@ -148,6 +150,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
             ///condition inverted
             text: widget.state.isWore == 0 ? 'Not Weared' : 'Weared',
             weight: FontWeight.w500,
+
             color: theme.textTheme.bodyLarge?.color,
           ),
         ],

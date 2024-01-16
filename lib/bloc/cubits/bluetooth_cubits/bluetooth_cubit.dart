@@ -132,7 +132,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   scannedDevices.indexWhere((element) => element.device.name == newDevice.device.name);
               if ((alreadyExists == -1) && (newDevice.device.name?.isNotEmpty ?? false)) {
                 ///555 = user has voluntarily disconnected
-                if (disconnectReasonCode != 555 && autoConnected) {
+                if ( autoConnected) {
                   final device = await checkSavedDevice();
                   if (device != null) {
                     if (newDevice.device == device) {
@@ -141,7 +141,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     }
                   }
                 }
-
                 scannedDevices.add(newDevice);
 
                 isDiscovering = true;

@@ -37,34 +37,34 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? timer;
   StreamSubscription<ConnectivityResult>? subscription;
 
-  Future<void> initialization() async {
-    try {
-      if (!mounted) return;
-
-      final connection = await Connectivity().checkConnectivity();
-      if (connection == ConnectivityResult.none) {
-        print('internet issue');
-        return;
-      } else {
-        List? res = await di
-            .get<HelmetService>().syncUnsyncedData();
-
-        if (res != null) {
-          snackBar('Data Synced Successfully', context,color: Colors.green,textColor: Colors.green);
-        } else {
-          print('empty');
-          return;
-
-        }
-      }
-    }
-    catch (e) {
-      if (!mounted) return;
-
-      print('ex: $e');
-      return;
-    }
-  }
+  /// made by fayyaz for testing purpose
+  // Future<void> initialization() async {
+  //   try {
+  //     if (!mounted) return;
+  //
+  //     final connection = await Connectivity().checkConnectivity();
+  //     if (connection == ConnectivityResult.none) {
+  //       print('internet issue');
+  //       return;
+  //     } else {
+  //       List? res = await di
+  //           .get<HelmetService>().syncUnsyncedData();
+  //
+  //       if (res != null) {
+  //         snackBar('Data Synced Successfully', context,color: Colors.green,textColor: Colors.green);
+  //       } else {
+  //         print('empty');
+  //         return;
+  //
+  //       }
+  //     }
+  //   }
+  //   catch (e) {
+  //     if (!mounted) return;
+  //     print('ex: $e');
+  //     return;
+  //   }
+  // }
 
   @override
   void initState() {
@@ -74,9 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
     bluetoothCubit.listenState();
 
 
-    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      await initialization();
-    });
+
+    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    //   await initialization();
+    // });
+
     super.initState();
   }
 
@@ -101,10 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
           if (bluetoothState.connection?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
-              final dateNow = DateTime.now();
-              DateTime firstTime =
-                  DateTime(dateNow.year, dateNow.month, dateNow.day, 9, 0);
-              appAlarmTime = firstTime.add(const Duration(days: 1));
               await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
               context.read<AlarmCubit>().setAlarm(appAlarmTime);
