@@ -74,6 +74,7 @@ class HelmetService {
     if (unsyncedDataList.isEmpty) return null;
 
     try {
+      print('unsycned data list is ${unsyncedDataList.first.userId}');
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
 
       if (res != null) {
@@ -146,14 +147,19 @@ class HelmetService {
   }
 
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
+    var date = DateTime.now().toIso8601String();
+    var newDate = date.substring(0,date.length - 4);
+    print('the new date is $newDate');
     try {
       var body = <String, dynamic>{
         'Helmet_ID': helmetName,
         'USER_ID': '',
-        'DATE': DateTime.now().toIso8601String(),
+        'DATE': newDate,
         'REASON': reason,
         'STATUS_DESC': desc,
       };
+
+      print('the body of disconnecting alert is $body');
 
       final isInternetAvailable = await Connectivity().checkConnectivity();
       if (isInternetAvailable == ConnectivityResult.none) {

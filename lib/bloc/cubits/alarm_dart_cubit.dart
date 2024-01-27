@@ -13,16 +13,10 @@ class AlarmCubit extends Cubit<AlarmState> {
     ringAlarm();
   }
 
+
   List<AlarmSettings> alarms = [];
 
   late AlarmSettings alarmSettings;
-  //
-  // Future<void> sortAlarms() async {
-  //   alarms = Alarm.getAlarms();
-  //   alarms.sort(
-  //     (a, b) => a.dateTime.isBefore(b.dateTime) ? -1 : 1,
-  //   );
-  // }
 
   Future<void> setAlarm(DateTime alarmTime) async {
     if (await Alarm.isRinging(1)) return;
@@ -30,7 +24,6 @@ class AlarmCubit extends Cubit<AlarmState> {
       id: 1,
       dateTime: alarmTime,
       loopAudio: false,
-      volume: 0.1,
       vibrate: false,
       enableNotificationOnKill: false,
       assetAudioPath: AssetsPath.alarmSound,
@@ -51,6 +44,7 @@ class AlarmCubit extends Cubit<AlarmState> {
       },
     );
   }
+
 
   Future<void> stopAlarm() async {
     final isStopped = await Alarm.stop(1);

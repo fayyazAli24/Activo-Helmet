@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:alarm/alarm.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +11,8 @@ import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/domain/services/unsynce_record_service.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
-
 import '../domain/services/dateServices.dart';
+
 
 final di = GetIt.instance;
 StreamSubscription<ConnectivityResult>? connectionStream;
@@ -71,8 +70,8 @@ Future<void> manageAlarmTime() async {
       print('${appAlarmTime.toIso8601String()}');
 
     } else {
-      String tempHour = await StorageService().read(hourFromApi) ?? '16';
-      String tempMinutes = await StorageService().read(minutesFromApi) ?? '55';
+      String tempHour = await StorageService().read(hourFromApi) ?? '12';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '30';
 
       int hour = int.parse(tempHour);
       int minutes = int.parse(tempMinutes);
@@ -88,6 +87,7 @@ Future<void> manageAlarmTime() async {
     else {
       appAlarmTime = firstTime.add(const Duration(days: 1));
     }
+
   } catch (e) {
     print('server api is not working');
   }
@@ -122,7 +122,6 @@ Future<void> manageAlarmTimeAfterBluetooth() async {
       firstTime =
           DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
     }
-
       // appAlarmTime = firstTime.add(const Duration(days: 1));
 
     if (firstTime.isAfter(dateNow)) {
@@ -136,6 +135,7 @@ Future<void> manageAlarmTimeAfterBluetooth() async {
   }
   print('${appAlarmTime.toIso8601String()}');
 }
+
 
 
 Future<void> checkIsFirstRun() async {
@@ -176,6 +176,7 @@ Future<void> setUpNotifications() async {
     priority: Priority.high,
     icon: '@mipmap/launcher_icon',
   );
+
   DarwinNotificationDetails iosPlatformChanelSpecifics =
       const DarwinNotificationDetails(
     presentAlert: true,
@@ -196,9 +197,11 @@ Future<void> setUpNotifications() async {
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
   if (await Alarm.isRinging(1)) {
     return;
   }
+
   try {
     await _localNotifications.zonedSchedule(
       1, // Notification ID

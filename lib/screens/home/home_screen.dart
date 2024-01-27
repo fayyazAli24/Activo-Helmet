@@ -99,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state is AlarmRingingState) {
           print('state $state');
           final bluetoothState = context.read<BluetoothCubit>();
-
           if (bluetoothState.connection?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
@@ -330,7 +329,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (selectedReason == null) {
                         return invalidDialog();
                       }
-
                       final device = await context
                           .read<BluetoothCubit>()
                           .checkSavedDevice();
