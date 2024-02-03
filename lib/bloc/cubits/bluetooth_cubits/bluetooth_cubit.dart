@@ -202,6 +202,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               if (newConnectedDeviceData != connectedDeviceData) {
                 connectedDeviceData = newConnectedDeviceData;
                 final splitData = connectedDeviceData?.split(',');
+                print("the data after splittting is $splitData");
                 if (splitData?.isNotEmpty ?? false) {
                   var deviceStatus = splitData![0];
 
@@ -210,7 +211,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   ///condition inverted
                   isWore = parsedStatus == 0 ? 1 : 0;
                   if (splitData.length > 1) {
-                    final batteryValue = splitData[1].toString();
+                    final batteryValue = splitData[2].toString();
                     batteryPercentage = double.tryParse(batteryValue);
 
                     ///pressure

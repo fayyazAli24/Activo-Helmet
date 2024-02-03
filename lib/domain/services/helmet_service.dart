@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:location/location.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
@@ -12,10 +13,14 @@ import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
 class HelmetService {
+  Location location = Location();
+
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
-      final locationService = await di.get<LocationService>().getLocation();
-
+      location.enableBackgroundMode(enable: true);
+      final locationService = await location.getLocation();
+      // final locationService = await di.get<LocationService>().getLocation();
+      print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
       if (encodedList != null) {
@@ -23,7 +28,7 @@ class HelmetService {
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
 
-      final speed = (locationService.speed * 3.6);
+      final speed = (locationService.speed! * 3.6);
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
         userId: '',

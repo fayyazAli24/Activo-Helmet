@@ -17,7 +17,6 @@ Future<void> main() async {
     initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Karachi'));
     await Alarm.init();
-
     await checkIsFirstRun();
     await manageAlarmTime();
     initializeNotifications();
@@ -26,6 +25,5 @@ Future<void> main() async {
   } catch (e) {
     log('$e');
   }
-
   runApp(const MyApp());
 }
