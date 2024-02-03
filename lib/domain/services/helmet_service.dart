@@ -19,7 +19,6 @@ class HelmetService {
     try {
       location.enableBackgroundMode(enable: true);
       final locationService = await location.getLocation();
-      // final locationService = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -106,7 +105,6 @@ class HelmetService {
     return [];
   }
 
-
   Future<void> disconnectingAlert(
     String helmetName,
     int reasonCode,
@@ -153,7 +151,7 @@ class HelmetService {
 
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
     var date = DateTime.now().toIso8601String();
-    var newDate = date.substring(0,date.length - 4);
+    var newDate = date.substring(0, date.length - 4);
     print('the new date is $newDate');
     try {
       var body = <String, dynamic>{
