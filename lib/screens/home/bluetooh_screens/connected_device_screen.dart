@@ -68,6 +68,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
     });
 
     initialization();
+
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       await initialization();
     });
@@ -149,6 +150,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
             ///condition inverted
             text: widget.state.isWore == 0 ? 'Not Weared' : 'Weared',
             weight: FontWeight.w500,
+
             color: theme.textTheme.bodyLarge?.color,
           ),
         ],

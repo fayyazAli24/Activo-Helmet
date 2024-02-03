@@ -14,6 +14,7 @@ class UnSyncRecordService {
     try {
       final reasonDataList = await StorageService().read(unSyncedReasonData);
       if (reasonDataList != null) {
+
         var list = List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
 
@@ -28,6 +29,7 @@ class UnSyncRecordService {
       print('e $e');
     }
   }
+
 
   Future<void> syncUnsyncedAlertRecord(bool shouldDelete) async {
     try {

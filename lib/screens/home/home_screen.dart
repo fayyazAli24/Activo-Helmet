@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:alarm/alarm.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/app.dart';
@@ -33,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController statusDescController = TextEditingController();
   String? selectedReason;
+  Timer? timer;
+  StreamSubscription<ConnectivityResult>? subscription;
 
   @override
   void initState() {
@@ -61,11 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state is AlarmRingingState) {
           print('state $state');
           final bluetoothState = context.read<BluetoothCubit>();
-
           if (bluetoothState.connection?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
               manageAlarmTimeAfterBluetooth();
+              await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
               // context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');
@@ -84,6 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
             if (locationState is LocationOff) {
               final bluetoothState = context.read<BluetoothCubit>().state;
               if (bluetoothState is BluetoothConnectedState) {
+                context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+
                 context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
               }
               locationOffDialog(context);
@@ -288,7 +293,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (selectedReason == null) {
                         return invalidDialog();
                       }
-
                       final device = await context.read<BluetoothCubit>().checkSavedDevice();
                       await di
                           .get<HelmetService>()

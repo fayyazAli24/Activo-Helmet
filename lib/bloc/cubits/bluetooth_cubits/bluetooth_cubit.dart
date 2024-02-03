@@ -132,7 +132,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   scannedDevices.indexWhere((element) => element.device.name == newDevice.device.name);
               if ((alreadyExists == -1) && (newDevice.device.name?.isNotEmpty ?? false)) {
                 ///555 = user has voluntarily disconnected
-                if (disconnectReasonCode != 555 && autoConnected) {
+                if (autoConnected) {
                   final device = await checkSavedDevice();
                   if (device != null) {
                     if (newDevice.device == device) {
@@ -141,7 +141,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     }
                   }
                 }
-
                 scannedDevices.add(newDevice);
 
                 isDiscovering = true;
@@ -202,14 +201,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               if (newConnectedDeviceData != connectedDeviceData) {
                 connectedDeviceData = newConnectedDeviceData;
                 final splitData = connectedDeviceData?.split(',');
-                print("the data after splittting is $splitData");
+
+                print('the data after splitting is $splitData');
+
                 if (splitData?.isNotEmpty ?? false) {
-                  var deviceStatus = splitData![0];
+                  var deviceStatus = splitData![1];
 
                   final parsedStatus = int.parse(deviceStatus);
 
                   ///condition inverted
-                  isWore = parsedStatus == 0 ? 1 : 0;
+                  isWore = parsedStatus;
                   if (splitData.length > 1) {
                     final batteryValue = splitData[2].toString();
                     batteryPercentage = double.tryParse(batteryValue);
@@ -290,7 +291,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     await inputStream?.cancel();
     disconnectReasonCode = reason ?? 0;
     emit(DisconnectedState(reason ?? 0));
-    await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+
+    if (reason != null) {
+      await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
+    }
     if (reason != null) await getDevices();
     await disconnectAlert(reason);
     await alarmSettings();

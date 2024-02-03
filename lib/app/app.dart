@@ -122,8 +122,9 @@ Future<void> manageAlarmTimeAfterBluetooth() async {
 
 Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();
-
   final isFirstRun = pref.getBool('firstRun');
+
+  await pref.clear();
 
   if (isFirstRun ?? true) {
     await pref.clear();
@@ -157,6 +158,7 @@ Future<void> setUpNotifications() async {
     priority: Priority.high,
     icon: '@mipmap/launcher_icon',
   );
+
   DarwinNotificationDetails iosPlatformChanelSpecifics = const DarwinNotificationDetails(
     presentAlert: true,
     presentSound: true,
@@ -174,9 +176,11 @@ Future<void> setUpNotifications() async {
   await _localNotifications
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
   if (await Alarm.isRinging(1)) {
     return;
   }
+
   try {
     await _localNotifications.zonedSchedule(
       1, // Notification ID

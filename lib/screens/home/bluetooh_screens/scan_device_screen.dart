@@ -57,9 +57,11 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
                     activeColor: AppColors.black,
                     value: state,
                     onChanged: (value) {
-                      context.read<BluetoothCubit>().autoConnected = value;
-                      context.read<BluetoothCubit>().disconnectReasonCode = 0;
-                      context.read<SwitchCubit>().updateValue(value);
+                      // setState(() {
+                        context.read<BluetoothCubit>().autoConnected = value;
+                        context.read<BluetoothCubit>().disconnectReasonCode = 0;
+                        context.read<SwitchCubit>().updateValue(value);
+                      // });
                     },
                   );
                 },
