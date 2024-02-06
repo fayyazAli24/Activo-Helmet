@@ -109,7 +109,10 @@ Future<void> manageAlarmTimeAfterBluetooth() async {
 
       firstTime = DateTime(dateNow.year, dateNow.month, dateNow.day, hour, minutes);
     }
+<<<<<<< HEAD
     // appAlarmTime = firstTime.add(const Duration(days: 1));
+=======
+>>>>>>> effc001cf87632592ff14f002a59bf3787cf2b09
 
     if (firstTime.isAfter(dateNow)) {
       appAlarmTime = firstTime;
@@ -126,6 +129,11 @@ Future<void> checkIsFirstRun() async {
   final pref = await SharedPreferences.getInstance();
   final isFirstRun = pref.getBool('firstRun');
 
+<<<<<<< HEAD
+=======
+  await pref.clear();
+
+>>>>>>> effc001cf87632592ff14f002a59bf3787cf2b09
   if (isFirstRun ?? true) {
     await pref.clear();
     await pref.setBool('firstRun', false);

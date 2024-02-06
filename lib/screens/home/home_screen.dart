@@ -37,47 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? timer;
   StreamSubscription<ConnectivityResult>? subscription;
 
-  /// made by fayyaz for testing purpose
-  // Future<void> initialization() async {
-  //   try {
-  //     if (!mounted) return;
-  //
-  //     final connection = await Connectivity().checkConnectivity();
-  //     if (connection == ConnectivityResult.none) {
-  //       print('internet issue');
-  //       return;
-  //     } else {
-  //       List? res = await di
-  //           .get<HelmetService>().syncUnsyncedData();
-  //
-  //       if (res != null) {
-  //         snackBar('Data Synced Successfully', context,color: Colors.green,textColor: Colors.green);
-  //       } else {
-  //         print('empty');
-  //         return;
-  //
-  //       }
-  //     }
-  //   }
-  //   catch (e) {
-  //     if (!mounted) return;
-  //     print('ex: $e');
-  //     return;
-  //   }
-  // }
-
   @override
   void initState() {
     final bluetoothCubit = context.read<BluetoothCubit>();
     bluetoothCubit.checkPermissions();
     bluetoothCubit.checkStatus();
     bluetoothCubit.listenState();
-
-
-
-    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-    //   await initialization();
-    // });
 
     super.initState();
   }
@@ -102,9 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (bluetoothState.connection?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
+              manageAlarmTimeAfterBluetooth();
               await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
-              context.read<AlarmCubit>().setAlarm(appAlarmTime);
+              // context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');
             }
           } else {
@@ -121,8 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
             if (locationState is LocationOff) {
               final bluetoothState = context.read<BluetoothCubit>().state;
               if (bluetoothState is BluetoothConnectedState) {
-                context.read<LocationCubit>().deviceName =
-                    bluetoothState.deviceName;
+                context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+
+                context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
               }
               locationOffDialog(context);
             }
@@ -218,8 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
             iconPadding: EdgeInsets.zero,
             actionsPadding: EdgeInsets.zero,
             buttonPadding: EdgeInsets.zero,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
             insetPadding: const EdgeInsets.only(
               right: 10,
               top: kToolbarHeight,
@@ -271,8 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder:
-            (BuildContext context, Function(void Function()) setState) {
+        return StatefulBuilder(builder: (BuildContext context, Function(void Function()) setState) {
           return AlertDialog.adaptive(
             scrollable: true,
             content: Form(
@@ -296,8 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               RadioListTile<String>(
-                                contentPadding:
-                                    const EdgeInsets.symmetric(vertical: 4),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 4),
                                 dense: true,
                                 value: e,
                                 title: AppText(
@@ -329,13 +293,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (selectedReason == null) {
                         return invalidDialog();
                       }
-                      final device = await context
-                          .read<BluetoothCubit>()
-                          .checkSavedDevice();
-                      await di.get<HelmetService>().disconnectingReason(
-                          device?.name ?? '',
-                          selectedReason ?? '',
-                          statusDescController.text);
+                      final device = await context.read<BluetoothCubit>().checkSavedDevice();
+                      await di
+                          .get<HelmetService>()
+                          .disconnectingReason(device?.name ?? '', selectedReason ?? '', statusDescController.text);
                       manageAlarm();
                       selectedReason = null;
                       statusDescController.clear();
@@ -392,9 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  await BlocProvider.of<BluetoothCubit>(context)
-                      .audioPlayer
-                      .stop();
+                  await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
                   pop();
                 },
                 child: const Center(child: AppText(text: 'Close')),

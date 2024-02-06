@@ -26,6 +26,5 @@ Future<void> main() async {
   } catch (e) {
     log('$e');
   }
-
   runApp(const MyApp());
 }

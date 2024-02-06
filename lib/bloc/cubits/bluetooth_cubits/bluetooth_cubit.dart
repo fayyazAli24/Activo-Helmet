@@ -200,7 +200,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               if (newConnectedDeviceData != connectedDeviceData) {
                 connectedDeviceData = newConnectedDeviceData;
                 final splitData = connectedDeviceData?.split(',');
+
                 print('the data after splitting is $splitData');
+
                 if (splitData?.isNotEmpty ?? false) {
                   var deviceStatus = splitData![1];
 

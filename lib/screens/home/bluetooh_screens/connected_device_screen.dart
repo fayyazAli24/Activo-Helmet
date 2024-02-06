@@ -13,6 +13,7 @@ import 'package:unilever_activo/utils/widgets/app_text.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
 
 import '../../../app/app.dart';
+import '../../../bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import '../../../domain/services/helmet_service.dart';
 
 class BluetoothConnectedScreen extends StatefulWidget {
@@ -72,10 +73,12 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
     Location location = Location();
 
     location.enableBackgroundMode(enable: true);
+
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       var res = await location.getLocation();
       print('the location is $res');
     });
+
     // initialization();
 
     // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
@@ -122,6 +125,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
         children: [
           GestureDetector(
             onTap: () async {
+              await context.read<BluetoothCubit>().disconnect(555);
+
               ///User Disconnect
             },
             child: Lottie.asset(
