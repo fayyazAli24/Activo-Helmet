@@ -2,19 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
-import 'package:unilever_activo/app/app.dart';
-import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
-import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
 
+import '../../../app/app.dart';
+import '../../../domain/services/helmet_service.dart';
+
 class BluetoothConnectedScreen extends StatefulWidget {
+  final BluetoothConnectedState state;
+  final Size size;
+  final String? deviceName;
+
   const BluetoothConnectedScreen({
     super.key,
     required this.state,
@@ -22,15 +27,11 @@ class BluetoothConnectedScreen extends StatefulWidget {
     required this.deviceName,
   });
 
-  final BluetoothConnectedState state;
-  final Size size;
-  final String? deviceName;
-
   @override
   State<BluetoothConnectedScreen> createState() => _BluetoothConnectedScreenState();
 }
 
-class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
+class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> with WidgetsBindingObserver {
   Timer? timer;
   Timer? counter;
   late DateTime connectedTime;
@@ -60,6 +61,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     connectedTime = DateTime.now();
     context.read<TimerCubit>().updateTimer(connectedTime);
 
@@ -67,20 +69,48 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       context.read<TimerCubit>().updateTimer(connectedTime);
     });
 
-    initialization();
+    Location location = Location();
 
-
+    location.enableBackgroundMode(enable: true);
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      await initialization();
+      var res = await location.getLocation();
+      print('the location is $res');
     });
+    // initialization();
+
+    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    //   await initialization();
+    // });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     timer?.cancel();
     counter?.cancel();
     connectedTime = DateTime.now();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    switch (state) {
+      case AppLifecycleState.detached:
+        print('app is detached');
+
+      case AppLifecycleState.resumed:
+        print('app is resumed');
+
+      case AppLifecycleState.inactive:
+        print('app is hidden');
+
+      case AppLifecycleState.hidden:
+        print('app is hidden');
+
+      case AppLifecycleState.paused:
+        print('app is paused');
+    }
   }
 
   @override
@@ -92,7 +122,6 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
         children: [
           GestureDetector(
             onTap: () async {
-              await context.read<BluetoothCubit>().disconnect(555);
               ///User Disconnect
             },
             child: Lottie.asset(

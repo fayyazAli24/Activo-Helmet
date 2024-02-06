@@ -77,7 +77,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           (event) async {
             if (event == BluetoothState.STATE_OFF) {
               emit(BluetoothStateOff());
-
               if (connection?.isConnected ?? false) {
                 disconnectReasonCode = 222;
                 await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
@@ -132,7 +131,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                   scannedDevices.indexWhere((element) => element.device.name == newDevice.device.name);
               if ((alreadyExists == -1) && (newDevice.device.name?.isNotEmpty ?? false)) {
                 ///555 = user has voluntarily disconnected
-                if ( autoConnected) {
+                if (autoConnected) {
                   final device = await checkSavedDevice();
                   if (device != null) {
                     if (newDevice.device == device) {
@@ -290,9 +289,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     disconnectReasonCode = reason ?? 0;
     emit(DisconnectedState(reason ?? 0));
 
-    if(reason != null){
+    if (reason != null) {
       await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
-
     }
     if (reason != null) await getDevices();
     await disconnectAlert(reason);

@@ -3,27 +3,31 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:unilever_activo/app/app.dart';
+import 'package:location/location.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
-import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
+import '../../app/app.dart';
+import 'location_service.dart';
+
 class HelmetService {
+  Location location = Location();
+
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
-      final locationService = await di.get<LocationService>().getLocation();
-
+      location.enableBackgroundMode(enable: true);
+      final locationService = await location.getLocation();
+      print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
       if (encodedList != null) {
         deviceDataList =
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
-
-      final speed = (locationService.speed * 3.6);
+      final speed = (locationService.speed! * 3.6);
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
         apiDateTime: DateTime.now(),
@@ -39,7 +43,6 @@ class HelmetService {
         createdBy: '',
         updatedBy: '',
       );
-
       deviceDataList.add(reqModel);
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
       final isInternetAvailable = await Connectivity().checkConnectivity();
@@ -101,13 +104,14 @@ class HelmetService {
     return [];
   }
 
-
   Future<void> disconnectingAlert(
     String helmetName,
     int reasonCode,
   ) async {
     try {
       final locationService = await di.get<LocationService>().getLocation();
+      // location.enableBackgroundMode(enable: true);
+      // final locationService = await location.getLocation();
 
       log('$reasonCode code');
       final body = {
@@ -148,7 +152,7 @@ class HelmetService {
 
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
     var date = DateTime.now().toIso8601String();
-    var newDate = date.substring(0,date.length - 4);
+    var newDate = date.substring(0, date.length - 4);
     print('the new date is $newDate');
     try {
       var body = <String, dynamic>{

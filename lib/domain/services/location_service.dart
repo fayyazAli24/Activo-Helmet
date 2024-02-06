@@ -11,7 +11,6 @@ class LocationService {
       final loc = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
       return loc;
     } catch (e) {
       log('get location : $e');
