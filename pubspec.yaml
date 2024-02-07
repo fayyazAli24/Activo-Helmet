@@ -44,12 +44,12 @@ dependencies:
   path_provider: ^2.1.1
   shared_preferences: ^2.2.2
   connectivity_plus: ^5.0.0
-  location: ^5.0.3
+  location: 5.0.3
   geolocator: ^10.1.0
   get_it: ^7.6.4
   intl: ^0.19.0
   just_audio: ^0.9.36
-  alarm: ^3.0.6
+  alarm: 3.0.8
   flutter_local_notifications: ^16.2.0
   workmanager: ^0.5.2
   flutter_background_service: ^5.0.5

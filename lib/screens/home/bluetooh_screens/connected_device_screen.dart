@@ -32,7 +32,7 @@ class BluetoothConnectedScreen extends StatefulWidget {
   State<BluetoothConnectedScreen> createState() => _BluetoothConnectedScreenState();
 }
 
-class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> with WidgetsBindingObserver {
+class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
   Timer? timer;
   Timer? counter;
   late DateTime connectedTime;
@@ -62,7 +62,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    // WidgetsBinding.instance.addObserver(this);
     connectedTime = DateTime.now();
     context.read<TimerCubit>().updateTimer(connectedTime);
 
@@ -79,41 +79,20 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       print('the location is $res');
     });
 
-    // initialization();
+    initialization();
 
-    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-    //   await initialization();
-    // });
+    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      await initialization();
+    });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    // WidgetsBinding.instance.removeObserver(this);
     timer?.cancel();
     counter?.cancel();
     connectedTime = DateTime.now();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: implement didChangeAppLifecycleState
-    switch (state) {
-      case AppLifecycleState.detached:
-        print('app is detached');
-
-      case AppLifecycleState.resumed:
-        print('app is resumed');
-
-      case AppLifecycleState.inactive:
-        print('app is hidden');
-
-      case AppLifecycleState.hidden:
-        print('app is hidden');
-
-      case AppLifecycleState.paused:
-        print('app is paused');
-    }
   }
 
   @override

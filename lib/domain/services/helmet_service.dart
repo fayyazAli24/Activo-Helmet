@@ -14,12 +14,14 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'location_service.dart';
 
 class HelmetService {
-  Location location = Location();
+  // Location location = Location();
 
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
+      Location location = Location();
       location.enableBackgroundMode(enable: true);
       final locationService = await location.getLocation();
+      // final locationService = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -146,6 +148,7 @@ class HelmetService {
         }
       }
     } catch (e) {
+      print("exception while sending data to server");
       log('$e');
     }
   }
