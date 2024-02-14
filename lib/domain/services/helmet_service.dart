@@ -14,11 +14,10 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'location_service.dart';
 
 class HelmetService {
-  // Location location = Location();
+  Location location = Location();
 
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
-      Location location = Location();
       location.enableBackgroundMode(enable: true);
       final locationService = await location.getLocation();
       // final locationService = await di.get<LocationService>().getLocation();
@@ -79,7 +78,8 @@ class HelmetService {
     if (unsyncedDataList.isEmpty) return null;
 
     try {
-      print('unsycned data list is ${unsyncedDataList.first.userId}');
+      // print('unsycned data list latitude is ${unsyncedDataList.first}');
+      print('unsynced data list latitude is ${jsonEncode(unsyncedDataList.first.toJson())}');
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
 
       if (res != null) {

@@ -5,6 +5,7 @@ import 'package:alarm/alarm.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:location/location.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
@@ -32,6 +33,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
+  Location location = Location();
   TextEditingController statusDescController = TextEditingController();
   String? selectedReason;
   Timer? timer;
@@ -43,6 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
     bluetoothCubit.checkPermissions();
     bluetoothCubit.checkStatus();
     bluetoothCubit.listenState();
+
+    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+    //   location.enableBackgroundMode(enable: true);
+    //   final loc = await Geolocator.getCurrentPosition();
+    //   print("res $loc");
+    // });
 
     super.initState();
   }

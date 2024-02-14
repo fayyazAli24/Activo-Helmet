@@ -6,6 +6,7 @@ import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
@@ -75,7 +76,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
     location.enableBackgroundMode(enable: true);
 
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      var res = await location.getLocation();
+      var res = await di.get<LocationService>().getLocation();
       print('the location is $res');
     });
 

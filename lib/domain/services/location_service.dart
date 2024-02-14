@@ -8,15 +8,14 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 class LocationService {
   Future<Position> getLocation() async {
     try {
-      final loc = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      final loc = await Geolocator.getCurrentPosition();
       return loc;
     } catch (e) {
       log('get location : $e');
       throw Exception('$e');
     }
   }
+
 
   String getReason(int code) {
     if (code == 222) {
