@@ -45,7 +45,6 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       List? res = await di
           .get<HelmetService>()
           .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore);
-
       if (res != null) {
         snackBar('Data Synced Successfully', context);
       } else {
@@ -80,8 +79,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
       print('the location is $res');
     });
 
-    initialization();
-
+    // initialization();
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       await initialization();
     });

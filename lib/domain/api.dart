@@ -8,5 +8,5 @@ class Api {
 
   static const disconnectingAlert = '${_baseUrl}DisconnectingAlert/DisconnectingAlert?';
 
-  static const alarmTime = '${_baseUrl}GetMobileAlarmTimes';
+  static const alarmTime = '${_baseUrl}GetMobileAlarmTime';
 }

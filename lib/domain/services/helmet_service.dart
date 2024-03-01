@@ -10,6 +10,7 @@ import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
+import 'package:unilever_activo/navigations/navigation_helper.dart';
 
 import 'location_service.dart';
 
@@ -18,9 +19,17 @@ class HelmetService {
 
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
-      location.enableBackgroundMode(enable: true);
+      var temp = await location.isBackgroundModeEnabled();
+      if (!temp) {
+        try {
+          var permission2 = await location.enableBackgroundMode(enable: true);
+        } catch (e) {
+          print("second try");
+          print(e);
+        }
+      }
+
       final locationService = await location.getLocation();
-      // final locationService = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -28,6 +37,7 @@ class HelmetService {
         deviceDataList =
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
+
       final speed = (locationService.speed! * 3.6);
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
@@ -44,6 +54,7 @@ class HelmetService {
         createdBy: '',
         updatedBy: '',
       );
+      print("model being added to local storage is $reqModel");
       deviceDataList.add(reqModel);
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
       final isInternetAvailable = await Connectivity().checkConnectivity();
@@ -74,7 +85,6 @@ class HelmetService {
       dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
-
     if (unsyncedDataList.isEmpty) return null;
 
     try {
@@ -148,6 +158,7 @@ class HelmetService {
         }
       }
     } catch (e) {
+      pop();
       print("exception while sending data to server");
       log('$e');
     }
@@ -157,6 +168,7 @@ class HelmetService {
     var date = DateTime.now().toIso8601String();
     var newDate = date.substring(0, date.length - 4);
     print('the new date is $newDate');
+
     try {
       var body = <String, dynamic>{
         'Helmet_ID': helmetName,

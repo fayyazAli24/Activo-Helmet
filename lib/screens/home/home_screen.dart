@@ -42,15 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     final bluetoothCubit = context.read<BluetoothCubit>();
-    bluetoothCubit.checkPermissions();
-    bluetoothCubit.checkStatus();
-    bluetoothCubit.listenState();
 
-    // timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-    //   location.enableBackgroundMode(enable: true);
-    //   final loc = await Geolocator.getCurrentPosition();
-    //   print("res $loc");
-    // });
+    bluetoothCubit.checkPermissions();
+    // bluetoothCubit.checkStatus();
+    bluetoothCubit.listenState();
 
     super.initState();
   }
@@ -72,7 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state is AlarmRingingState) {
           print('state $state');
           final bluetoothState = context.read<BluetoothCubit>();
-          if (bluetoothState.connection?.isConnected ?? false) {
+
+          /// changed this line
+          if (bluetoothState.device?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
               manageAlarmTimeAfterBluetooth();
@@ -136,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     AppSpace.vrtSpace(10),
                     BlocConsumer<BluetoothCubit, AppBluetoothState>(
                       builder: (context, state) {
+                        log('message $state');
                         if (state is BluetoothStateOff) {
                           return BluetoothOffScreen(
                             size: size,
@@ -152,16 +150,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           size: size,
                         );
                       },
-                      listener: (context, state) {
+                      listener: (context, state) async {
+                        if (state is BluetoothScannedState) {
+                          // print('starting the scan in home screen');
+                          // context.read<BluetoothCubit>().getDevices();
+                        }
                         if (state is BluetoothStateOff) {
                           snackBar('Bluetooth is turned off', context);
                         } else if (state is BluetoothFailedState) {
                           noDeviceFoundDialog(state);
                         } else if (state is AutoDisconnectedState) {
                           stopAlarmDialog();
+                          print('get device is called before');
+                          // context.read<BluetoothCubit>().getDevices();
+                          print('get device is called after');
                           snackBar('Device Disconnected', context);
                         }
-
                         if (state is BluetoothConnectingState) {
                           connectingDialog();
                         }
@@ -304,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final device = await context.read<BluetoothCubit>().checkSavedDevice();
                       await di
                           .get<HelmetService>()
-                          .disconnectingReason(device?.name ?? '', selectedReason ?? '', statusDescController.text);
+                          .disconnectingReason(device ?? '', selectedReason ?? '', statusDescController.text);
                       manageAlarm();
                       selectedReason = null;
                       statusDescController.clear();

@@ -9,7 +9,7 @@ import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
-class BluetoothScanDeviceScreen extends StatefulWidget {
+class BluetoothScanDeviceScreen extends StatelessWidget {
   const BluetoothScanDeviceScreen({
     super.key,
     required this.theme,
@@ -21,21 +21,6 @@ class BluetoothScanDeviceScreen extends StatefulWidget {
   final Size size;
 
   @override
-  State<BluetoothScanDeviceScreen> createState() => _BluetoothScanDeviceScreenState();
-}
-
-class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> with SingleTickerProviderStateMixin {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
@@ -45,23 +30,23 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
             children: [
               AppText(
                 text: 'Auto connect with last paired',
-                color: widget.theme.textTheme.bodyLarge?.color,
+                color: theme.textTheme.bodyLarge?.color,
               ),
               BlocConsumer<SwitchCubit, bool>(
                 listener: (context, state) {},
                 builder: (context, state) {
-                  context.read<BluetoothCubit>().autoConnected = state;
+                  // context.read<BluetoothCubit>().autoConnected = state;
                   return Switch.adaptive(
-                    trackColor: widget.theme.switchTheme.trackColor,
+                    trackColor: theme.switchTheme.trackColor,
                     activeTrackColor: AppColors.white,
                     activeColor: AppColors.black,
                     value: state,
                     onChanged: (value) {
-                      // setState(() {
-                        context.read<BluetoothCubit>().autoConnected = value;
-                        context.read<BluetoothCubit>().disconnectReasonCode = 0;
-                        context.read<SwitchCubit>().updateValue(value);
-                      // });
+                      context.read<BluetoothCubit>().autoConnected = value;
+                      print('the state of auto connect is ${context.read<BluetoothCubit>().autoConnected}');
+                      context.read<BluetoothCubit>().disconnectReasonCode = 0;
+                      context.read<SwitchCubit>().updateValue(value);
+                      print(context.read<BluetoothCubit>().autoConnected);
                     },
                   );
                 },
@@ -77,7 +62,7 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
               frameRate: FrameRate.max,
               animate: context.read<BluetoothCubit>().isDiscovering,
               fit: BoxFit.fill,
-              height: widget.size.height * 0.2,
+              height: size.height * 0.2,
             ),
           ),
           if (context.read<BluetoothCubit>().isDiscovering)
@@ -106,7 +91,8 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
                         child: Card(
                           child: ListTile(
                             onTap: () async {
-                              await context.read<BluetoothCubit>().connect(item.device);
+                              await context.read<BluetoothCubit>().connect(item);
+                              // context.read<BluetoothCubit>().device = item;
                             },
                             dense: true,
                             leading: const Icon(
@@ -115,11 +101,11 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> w
                               size: 30,
                             ),
                             title: AppText(
-                              text: item.device.name ?? '',
+                              text: item.platformName ?? '',
                               fontSize: 15,
                             ),
                             subtitle: AppText(
-                              text: item.device.address,
+                              text: item.remoteId.toString(),
                               fontSize: 12,
                             ),
                           ),

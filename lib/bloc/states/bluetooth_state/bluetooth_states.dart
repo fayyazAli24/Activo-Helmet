@@ -1,4 +1,4 @@
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class AppBluetoothState {}
 
@@ -11,9 +11,9 @@ class BluetoothStateOff extends AppBluetoothState {}
 class BluetoothConnectingState extends AppBluetoothState {}
 
 class BluetoothScannedState extends AppBluetoothState {
-  List<BluetoothDiscoveryResult> devices = [];
+  // List<BluetoothDiscoveryResult> devices = [];
+  List<BluetoothDevice> devices = [];
   bool isDiscovering = false;
-
   BluetoothScannedState({required this.devices, required this.isDiscovering});
 }
 
