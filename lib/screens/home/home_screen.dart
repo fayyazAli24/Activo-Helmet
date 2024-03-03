@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedReason;
   Timer? timer;
   StreamSubscription<ConnectivityResult>? subscription;
+  String? device;
 
   @override
   void initState() {
@@ -69,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final bluetoothState = context.read<BluetoothCubit>();
 
           /// changed this line
-          if (bluetoothState.device?.isConnected ?? false) {
+          if (bluetoothState.connectedDevice?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
               manageAlarmTimeAfterBluetooth();
@@ -133,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     AppSpace.vrtSpace(10),
                     BlocConsumer<BluetoothCubit, AppBluetoothState>(
                       builder: (context, state) {
-                        log('message $state');
+                        log('state $state');
                         if (state is BluetoothStateOff) {
                           return BluetoothOffScreen(
                             size: size,

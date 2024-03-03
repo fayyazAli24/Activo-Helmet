@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,7 +31,10 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   bool autoConnected = false;
   bool isAlarmPlayed = false;
   bool connecting = true;
-  BluetoothDevice? device;
+  BluetoothDevice? connectedDevice;
+  StreamSubscription<List<ScanResult>>? resultsStream;
+  var timer;
+  int check = 0;
 
   List<BluetoothDevice> scannedDevices = [];
   BluetoothAdapterState adapterState = BluetoothAdapterState.unknown;
@@ -56,51 +58,26 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     }
   }
 
-  // Future<void> checkStatus() async {
-  //   var permission = Permission.bluetooth;
-  //   if (await permission.isGranted) {
-  //     emit(BluetoothStateOn());
-  //     await getDevices();
-  //     return;
-  //   } else {
-  // }
-
-  Future<void> checkStatus() async {
-    if (adapterState == BluetoothAdapterState.off) {
-      emit(BluetoothStateOff());
-      await FlutterBluePlus.turnOn();
-
-      if (adapterState == BluetoothAdapterState.on) {
-        emit(BluetoothStateOn());
-        await getDevices();
-      } else {
-        emit(BluetoothStateOff());
-      }
-    } else {
-      emit(BluetoothStateOn());
-      await getDevices();
-    }
-  }
-
   void listenState() async {
     adapterStateStateSubscription = FlutterBluePlus.adapterState.listen((BluetoothAdapterState state) async {
       adapterState = state;
-      print('the state is $adapterState');
-      if (adapterState == BluetoothAdapterState.off) {
+      log("$state*********");
+      if (state == BluetoothAdapterState.off) {
+        if (connectedDevice != null) {
+          disconnectReasonCode = 222;
+          disconnectDevice(disconnectReasonCode);
+          FlutterBluePlus.stopScan();
+        }
         emit(BluetoothStateOff());
-        await FlutterBluePlus.stopScan();
-        // if (device?.isConnected ?? false) {
-        disconnectReasonCode = 222;
-        // await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
-        // await disconnectAlert(disconnectReasonCode);
-        // await alarmSettings();
-        // }
-      } else if (adapterState == BluetoothAdapterState.on) {
+      } else if (state == BluetoothAdapterState.on) {
         emit(BluetoothStateOn());
-        getDevices();
+
+        print('listen state get device is called');
+        await getDevices();
       }
     }, onDone: () async {
-      // FlutterBluePlus.stopScan();
+      await FlutterBluePlus.stopScan();
+
       /// cancel scanning and streaming
     });
     // adapterStateStateSubscription.cancel();
@@ -108,15 +85,21 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> turnOn() async {
     try {
-      FlutterBluePlus.turnOn();
-      if (adapterState == BluetoothAdapterState.on) {
-        emit(BluetoothStateOn());
-        await getDevices();
-      } else {
-        emit(BluetoothStateOff());
-        await FlutterBluePlus.stopScan();
-        return;
-      }
+      print("turn on");
+      await FlutterBluePlus.turnOn();
+
+      // if (adapterState == BluetoothAdapterState.on) {
+      //   emit(BluetoothStateOn());
+      //   print("turn on get device is called");
+      //   await getDevices();
+      // } else {
+      //   emit(BluetoothStateOff());
+      //
+      //   await FlutterBluePlus.stopScan();
+      //   print("turn on stop scan is called");
+
+      return;
+      // }
     } catch (e) {
       emit(BluetoothStateOff());
     }
@@ -124,47 +107,45 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> getDevices() async {
     try {
-      if (isDiscovering) {
-        await FlutterBluePlus.stopScan();
-        isDiscovering = false;
+      if (adapterState == BluetoothAdapterState.on) {
+        isDiscovering = true;
         scannedDevices = [];
         emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
-      } else {
-        // print("adpter in scan is $adapterState");
-        if (adapterState == BluetoothAdapterState.on) {
-          isDiscovering = true;
-          scannedDevices = [];
-
-          emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
-
-          await FlutterBluePlus.startScan();
-          FlutterBluePlus.scanResults.listen((event) async {
+        await FlutterBluePlus.startScan();
+        resultsStream = FlutterBluePlus.scanResults.listen(
+          (event) async {
             for (ScanResult result in event) {
               if (!scannedDevices.contains(result.device) && (result.device.platformName.isNotEmpty)) {
+                scannedDevices.add(result.device);
                 if (autoConnected) {
-                  final device = await checkSavedDevice();
-                  print('checked device in local storage is $device');
-                  if (device != null) {
-                    try {
-                      if (result.device.platformName == device) {
-                        print('condition is checked');
-                        await connect(result.device);
-                        return;
+                  for (int i = 0; i < scannedDevices.length; i++) {
+                    final device = await checkSavedDevice();
+                    print('checked device in local storage is $device');
+                    if (device != null) {
+                      try {
+                        if (scannedDevices[i].platformName == device) {
+                          print('condition is checked');
+                          await connect(result.device);
+                          await FlutterBluePlus.stopScan();
+                          return;
+                        }
+                      } catch (e) {
+                        print('error $e');
                       }
-                    } catch (e) {
-                      print("error $e");
                     }
                   }
                 }
-                scannedDevices.add(result.device);
                 emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
               }
             }
-          });
-        } else {
-          isDiscovering = false;
-          Permission.bluetooth.request();
-        }
+          },
+          onDone: () {
+            resultsStream?.cancel();
+          },
+        );
+      } else {
+        isDiscovering = false;
+        Permission.bluetooth.request();
       }
     } catch (e) {
       await FlutterBluePlus.stopScan();
@@ -180,58 +161,85 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       final connection = await checkConnections();
       if (connection != null) {
         emit(BluetoothFailedState(message: 'Failed to connect'));
+        return;
       }
       emit(BluetoothConnectingState());
-      this.device = device;
-      FlutterBluePlus.stopScan();
-      print("the device is $device");
+      connectedDevice = device;
+      await FlutterBluePlus.stopScan();
+
+      print('the device is $connectedDevice');
       await device.connect();
 
-      if (this.device?.isConnected ?? false) {
-        final convertedDevice = jsonEncode(this.device?.platformName);
-        await StorageService().write(lastDeviceKey, convertedDevice);
+      if (connectedDevice?.isConnected ?? false) {
+        final convertedDevice = connectedDevice?.platformName;
+        await StorageService().write(lastDeviceKey, convertedDevice ?? '');
         deviceName = device.platformName;
         await StorageService().write(connectTimeKey, DateTime.now().toIso8601String());
 
-        await StorageService().write(lastDeviceKey, device.platformName);
         print('device saved');
         services = await device.discoverServices();
 
-        var subscription = device.connectionState.listen((BluetoothConnectionState state) async {
-          if (state == BluetoothConnectionState.connected) {
-            /// for battery
-            final batterySub = services[2].characteristics[0].lastValueStream.listen((event) {
-              try {
-                double? value = event[0].toDouble();
-                batteryPercentage = value ?? 0.0;
-                print('the battery is $batteryPercentage');
+        try {
+          var subscription = device.connectionState.listen((BluetoothConnectionState state) async {
+            if (state == BluetoothConnectionState.disconnected) {
+              print('disconnected testing $state');
+              print('called from connect');
+
+              if (disconnectReasonCode == 0) {
+                disconnectReasonCode = 444;
+                disconnectDevice(disconnectReasonCode);
+              }
+
+              await FlutterBluePlus.stopScan();
+              await getDevices();
+            } else if (state == BluetoothConnectionState.connected) {
+              /// for battery
+              final batterySub = services[2].characteristics[0].lastValueStream.listen(
+                (event) {
+                  try {
+                    if (event.isNotEmpty) {
+                      print('check battery if');
+                      double value = event[0].toDouble();
+                      batteryPercentage = value;
+                      print('the battery is $batteryPercentage');
+                    } else {
+                      print('check battery else');
+                      batteryPercentage = 0.0;
+                    }
+
+                    emit(BluetoothConnectedState(
+                        deviceName: device.platformName,
+                        batteryPercentage: batteryPercentage ?? 0.0,
+                        isWore: isWore,
+                        speed: 0));
+                  } catch (e) {
+                    print('error occured while getting value');
+                  }
+                },
+              );
+              device.cancelWhenDisconnected(batterySub);
+              await services[2].characteristics[0].setNotifyValue(true);
+
+              /// for head sensor
+              final headSub = services[2].characteristics[1].lastValueStream.listen((event) {
+                print('the head sensor status is $event');
+                if (event.isNotEmpty) {
+                  print('check head if');
+                  isWore = event[0];
+                } else {
+                  print('check head else');
+                  isWore = 0;
+                }
 
                 emit(BluetoothConnectedState(
                     deviceName: device.platformName,
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
                     speed: 0));
-              } catch (e) {
-                print("error occured while getting value");
-              }
-            });
-
-            device.cancelWhenDisconnected(batterySub);
-            await services[2].characteristics[0].setNotifyValue(true);
-
-            /// for head sensor
-            final headSub = services[2].characteristics[1].lastValueStream.listen((event) {
-              print("the head sensor status is $event");
-              var value = event[0];
-              isWore = value != null ? value : 0;
-              emit(BluetoothConnectedState(
-                  deviceName: device.platformName,
-                  batteryPercentage: batteryPercentage ?? 0.0,
-                  isWore: isWore,
-                  speed: 0));
-            });
-            device.cancelWhenDisconnected(headSub);
-            await services[2].characteristics[1].setNotifyValue(true);
+              });
+              device.cancelWhenDisconnected(headSub);
+              await services[2].characteristics[1].setNotifyValue(true);
+            }
 
             /// for cheek sensor
             // final cheekSub = services[2].characteristics[2].lastValueStream.listen((event) {
@@ -242,16 +250,18 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
             // device.cancelWhenDisconnected(cheekSub);
             // await services[2].characteristics[2].setNotifyValue(true);
             // print("the state is ${state}");
-          }
+            // }
 
-          if (state == BluetoothConnectionState.disconnected) {
-            print("disconnected testing $state");
-            disconnect(disconnectReasonCode);
-            FlutterBluePlus.stopScan();
-            getDevices();
-          }
-        });
-        device.cancelWhenDisconnected(subscription, delayed: true, next: true);
+            //  },onDone: (){
+            //   print('called from on done');
+            //   disconnect(444);
+          });
+          // device.cancelWhenDisconnected(subscription, delayed: true, next: true);
+        } catch (e) {
+          // device.cancelWhenDisconnected(subscription, delayed: true, next: true);
+          // log("coneccted $e");
+        }
+
         pop();
         emit(
           BluetoothConnectedState(
@@ -262,15 +272,19 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         );
       } else {
         // FlutterBluePlus.startScan();
-        await disconnect();
+        pop();
+
+        print('called from else');
+        await disconnectDevice();
       }
     } catch (e) {
       pop();
       emit(
         BluetoothFailedState(message: 'Failed to connect'),
       );
-      await disconnect();
-      print(e);
+      print('called from catch');
+      await disconnectDevice();
+      await getDevices();
     }
   }
 
@@ -297,43 +311,48 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     return null;
   }
 
-  Future<void> disconnect([int? reason]) async {
+  Future<void> disconnectDevice([int? reason]) async {
     log('$reason *******');
+    connectedDevice?.disconnect();
 
-    // await bluetoothConnection?.finish();
-    // await bluetoothConnection?.close();
-    // await connection?.finish();
-    // await inputStream?.cancel();
-
-    device!.disconnect();
-    disconnectReasonCode = reason ?? 0;
+    // device?.cancelWhenDisconnected(subscription, delayed: true, next: true);
     emit(DisconnectedState(reason ?? 0));
 
     if (reason != null) {
       await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     }
-    if (reason != null) await getDevices();
-    await disconnectAlert(reason);
-    await alarmSettings();
+
+    print("calling again and again");
+    if (reason != null) {
+      print('again connecting from dc method');
+      await getDevices();
+    }
+    disconnectAlert(reason);
+    alarmSettings();
+
+    resultsStream?.cancel();
+    connectedDevice = null;
+    disconnectReasonCode = 0;
   }
 
   Future<void> disconnectAlert([int? reason]) async {
     if (reason != null) {
-      await di.get<HelmetService>().disconnectingAlert(device?.platformName ?? 'N/A', disconnectReasonCode);
+      await di.get<HelmetService>().disconnectingAlert(connectedDevice?.platformName ?? 'N/A', disconnectReasonCode);
     }
   }
 
-  Future<void> alarmSettings() async {
-    await Future.delayed(
+  void alarmSettings() {
+    Future.delayed(
       const Duration(seconds: 15),
       () async {
-        if ((device?.isConnected ?? false)) {
+        if ((connectedDevice?.isConnected ?? false) || isAlarmPlayed) {
           return;
         }
         if (adapterState == BluetoothAdapterState.on) {
-          print("adapter state in alarm is $adapterState");
-          emit(AutoDisconnectedState(device?.platformName ?? ''));
-          emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
+          print('adapter state in alarm is $adapterState');
+          emit(AutoDisconnectedState(connectedDevice?.platformName ?? ''));
+          // emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
+          // await getDevices();
         }
         isAlarmPlayed = true;
         await playAlarm();
@@ -354,13 +373,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     // await bluetoothConnection?.close();
     // await bluetoothStateStream?.cancel();
     // await bluetoothDiscoveryStream?.cancel();
-
+    resultsStream?.cancel();
     audioPlayer.dispose();
 
     // await connection?.finish();
     //
     // await inputStream?.cancel();
-
+    adapterStateStateSubscription.cancel();
     return super.close();
   }
 }

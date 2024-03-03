@@ -103,7 +103,11 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
         children: [
           GestureDetector(
             onTap: () async {
-              await context.read<BluetoothCubit>().disconnect(555);
+              context.read<BluetoothCubit>().disconnectReasonCode = 555;
+
+              await context
+                  .read<BluetoothCubit>()
+                  .disconnectDevice(context.read<BluetoothCubit>().disconnectReasonCode);
 
               ///User Disconnect
             },
