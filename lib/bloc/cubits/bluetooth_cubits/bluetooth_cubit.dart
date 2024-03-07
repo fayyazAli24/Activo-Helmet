@@ -3,8 +3,6 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-// import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-// import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
@@ -22,6 +20,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   AudioPlayer audioPlayer = AudioPlayer();
   String? deviceName;
+  bool loading = false;
   String? connectedDeviceData;
   double? batteryPercentage;
   double? pressure;
@@ -35,7 +34,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   StreamSubscription<List<ScanResult>>? resultsStream;
   var timer;
   int check = 0;
-
+  StreamSubscription<BluetoothConnectionState>? _connectionStateSubscription;
   List<BluetoothDevice> scannedDevices = [];
   BluetoothAdapterState adapterState = BluetoothAdapterState.unknown;
   late StreamSubscription<BluetoothAdapterState> adapterStateStateSubscription;
@@ -44,6 +43,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   Future<void> checkPermissions() async {
     final bluetoothPermission = await Permission.bluetooth.isGranted;
     final locationPermission = await Permission.location.isGranted;
+    bool check = false;
     // PermissionStatus status;
 
     if (!bluetoothPermission) {
@@ -61,18 +61,17 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   void listenState() async {
     adapterStateStateSubscription = FlutterBluePlus.adapterState.listen((BluetoothAdapterState state) async {
       adapterState = state;
-      log("$state*********");
+
       if (state == BluetoothAdapterState.off) {
-        if (connectedDevice != null) {
+        if (deviceName != null) {
           disconnectReasonCode = 222;
-          disconnectDevice(disconnectReasonCode);
-          FlutterBluePlus.stopScan();
+          await disconnectDevice(disconnectReasonCode);
+          print('pehley yeh chala');
         }
         emit(BluetoothStateOff());
+        FlutterBluePlus.stopScan();
       } else if (state == BluetoothAdapterState.on) {
         emit(BluetoothStateOn());
-
-        print('listen state get device is called');
         await getDevices();
       }
     }, onDone: () async {
@@ -80,23 +79,24 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
       /// cancel scanning and streaming
     });
+
     // adapterStateStateSubscription.cancel();
+  }
+
+  void test() {
+    if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
+      if (deviceName != null) {
+        disconnectReasonCode = 444;
+        disconnectDevice(disconnectReasonCode);
+        print('pehley yeh chala');
+      }
+    }
   }
 
   Future<void> turnOn() async {
     try {
-      print("turn on");
+      print('turn on');
       await FlutterBluePlus.turnOn();
-
-      // if (adapterState == BluetoothAdapterState.on) {
-      //   emit(BluetoothStateOn());
-      //   print("turn on get device is called");
-      //   await getDevices();
-      // } else {
-      //   emit(BluetoothStateOff());
-      //
-      //   await FlutterBluePlus.stopScan();
-      //   print("turn on stop scan is called");
 
       return;
       // }
@@ -180,83 +180,83 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         services = await device.discoverServices();
 
         try {
-          var subscription = device.connectionState.listen((BluetoothConnectionState state) async {
-            if (state == BluetoothConnectionState.disconnected) {
-              print('disconnected testing $state');
-              print('called from connect');
+          _connectionStateSubscription = device.connectionState.listen(
+            (BluetoothConnectionState state) async {
+              if (state == BluetoothConnectionState.connected) {
+                final batterySub = services[2].characteristics[0].lastValueStream.listen(
+                  (event) async {
+                    try {
+                      if (event.isNotEmpty) {
+                        print('check battery if');
+                        double value = event[0].toDouble();
+                        batteryPercentage = value;
+                        print('the battery is $batteryPercentage');
 
-              if (disconnectReasonCode == 0) {
-                disconnectReasonCode = 444;
-                disconnectDevice(disconnectReasonCode);
+                        var temp = await device.discoverServices();
+                        print("the length is ${temp.length}");
+                      } else {
+                        print('check battery else');
+                        batteryPercentage = 0.0;
+                      }
+
+                      emit(BluetoothConnectedState(
+                          deviceName: device.platformName,
+                          batteryPercentage: batteryPercentage ?? 0.0,
+                          isWore: isWore,
+                          speed: 0));
+                    } catch (e) {
+                      print('error occured while getting value');
+                    }
+                  },
+                );
+                device.cancelWhenDisconnected(batterySub);
+                await services[2].characteristics[0].setNotifyValue(true);
+
+                /// for head sensor
+                final headSub = services[2].characteristics[1].lastValueStream.listen((event) {
+                  print('the head sensor status is $event');
+                  if (event.isNotEmpty) {
+                    print('check head if');
+                    isWore = event[0];
+                  } else {
+                    print('check head else');
+                    isWore = 0;
+                  }
+
+                  emit(BluetoothConnectedState(
+                      deviceName: device.platformName,
+                      batteryPercentage: batteryPercentage ?? 0.0,
+                      isWore: isWore,
+                      speed: 0));
+                });
+                device.cancelWhenDisconnected(headSub);
+                await services[2].characteristics[1].setNotifyValue(true);
+              } else if (state == BluetoothConnectionState.disconnected) {
+                // await disconnectDevice();
+                test();
               }
 
-              await FlutterBluePlus.stopScan();
-              await getDevices();
-            } else if (state == BluetoothConnectionState.connected) {
-              /// for battery
-              final batterySub = services[2].characteristics[0].lastValueStream.listen(
-                (event) {
-                  try {
-                    if (event.isNotEmpty) {
-                      print('check battery if');
-                      double value = event[0].toDouble();
-                      batteryPercentage = value;
-                      print('the battery is $batteryPercentage');
-                    } else {
-                      print('check battery else');
-                      batteryPercentage = 0.0;
-                    }
+              /// for cheek sensor
+              // final cheekSub = services[2].characteristics[2].lastValueStream.listen((event) {
+              //   print("the cheek sensor status is $event");
+              // });
+              //
+              //
+              // device.cancelWhenDisconnected(cheekSub);
+              // await services[2].characteristics[2].setNotifyValue(true);
+              // print("the state is ${state}");
+              // }
 
-                    emit(BluetoothConnectedState(
-                        deviceName: device.platformName,
-                        batteryPercentage: batteryPercentage ?? 0.0,
-                        isWore: isWore,
-                        speed: 0));
-                  } catch (e) {
-                    print('error occured while getting value');
-                  }
-                },
-              );
-              device.cancelWhenDisconnected(batterySub);
-              await services[2].characteristics[0].setNotifyValue(true);
-
-              /// for head sensor
-              final headSub = services[2].characteristics[1].lastValueStream.listen((event) {
-                print('the head sensor status is $event');
-                if (event.isNotEmpty) {
-                  print('check head if');
-                  isWore = event[0];
-                } else {
-                  print('check head else');
-                  isWore = 0;
-                }
-
-                emit(BluetoothConnectedState(
-                    deviceName: device.platformName,
-                    batteryPercentage: batteryPercentage ?? 0.0,
-                    isWore: isWore,
-                    speed: 0));
-              });
-              device.cancelWhenDisconnected(headSub);
-              await services[2].characteristics[1].setNotifyValue(true);
-            }
-
-            /// for cheek sensor
-            // final cheekSub = services[2].characteristics[2].lastValueStream.listen((event) {
-            //   print("the cheek sensor status is $event");
-            // });
-            //
-            //
-            // device.cancelWhenDisconnected(cheekSub);
-            // await services[2].characteristics[2].setNotifyValue(true);
-            // print("the state is ${state}");
-            // }
-
-            //  },onDone: (){
-            //   print('called from on done');
-            //   disconnect(444);
-          });
-          // device.cancelWhenDisconnected(subscription, delayed: true, next: true);
+              //  },onDone: (){
+              //   print('called from on done');
+              //   disconnect(444);
+            },
+            onDone: () async {
+              // disconnectReasonCode = 444;
+              // await disconnectDevice(disconnectReasonCode);
+            },
+          );
+          device.cancelWhenDisconnected(_connectionStateSubscription!, delayed: true, next: true);
         } catch (e) {
           // device.cancelWhenDisconnected(subscription, delayed: true, next: true);
           // log("coneccted $e");
@@ -313,31 +313,35 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> disconnectDevice([int? reason]) async {
     log('$reason *******');
-    connectedDevice?.disconnect();
 
+    connectedDevice?.disconnect();
+    _connectionStateSubscription?.cancel();
     // device?.cancelWhenDisconnected(subscription, delayed: true, next: true);
     emit(DisconnectedState(reason ?? 0));
 
+    print('the reason is $reason');
     if (reason != null) {
       await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     }
 
-    print("calling again and again");
+    // print('calling again and again');
     if (reason != null) {
       print('again connecting from dc method');
       await getDevices();
-    }
-    disconnectAlert(reason);
-    alarmSettings();
+      isAlarmPlayed = false;
+      disconnectAlert(reason);
 
-    resultsStream?.cancel();
-    connectedDevice = null;
-    disconnectReasonCode = 0;
+      alarmSettings();
+
+      resultsStream?.cancel();
+      connectedDevice = null;
+      // disconnectReasonCode = 0;
+    }
   }
 
   Future<void> disconnectAlert([int? reason]) async {
     if (reason != null) {
-      await di.get<HelmetService>().disconnectingAlert(connectedDevice?.platformName ?? 'N/A', disconnectReasonCode);
+      await di.get<HelmetService>().disconnectingAlert(deviceName ?? 'N/A', disconnectReasonCode);
     }
   }
 
@@ -346,16 +350,16 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       const Duration(seconds: 15),
       () async {
         if ((connectedDevice?.isConnected ?? false) || isAlarmPlayed) {
+          print('ececuting in alarm');
           return;
         }
-        if (adapterState == BluetoothAdapterState.on) {
+        if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
           print('adapter state in alarm is $adapterState');
           emit(AutoDisconnectedState(connectedDevice?.platformName ?? ''));
-          // emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
-          // await getDevices();
         }
         isAlarmPlayed = true;
         await playAlarm();
+        await getDevices();
         // }
       },
     );
@@ -375,9 +379,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     // await bluetoothDiscoveryStream?.cancel();
     resultsStream?.cancel();
     audioPlayer.dispose();
-
+    _connectionStateSubscription?.cancel();
     // await connection?.finish();
-    //
+
     // await inputStream?.cancel();
     adapterStateStateSubscription.cancel();
     return super.close();

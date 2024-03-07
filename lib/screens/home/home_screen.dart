@@ -47,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
     bluetoothCubit.checkPermissions();
     // bluetoothCubit.checkStatus();
     bluetoothCubit.listenState();
-
     super.initState();
   }
 
@@ -70,6 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
           final bluetoothState = context.read<BluetoothCubit>();
 
           /// changed this line
+          ///
+
           if (bluetoothState.connectedDevice?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {

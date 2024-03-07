@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
@@ -18,15 +20,7 @@ class HelmetService {
 
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
-      var temp = await location.isBackgroundModeEnabled();
-      if (!temp) {
-        try {
-          var permission2 = await location.enableBackgroundMode(enable: true);
-        } catch (e) {
-          print("second try");
-          print(e);
-        }
-      }
+      await enableBackgroundMode();
 
       final locationService = await location.getLocation();
       print('the location is $locationService');
@@ -53,7 +47,7 @@ class HelmetService {
         createdBy: '',
         updatedBy: '',
       );
-      print("model being added to local storage is $reqModel");
+      print('model being added to local storage is $reqModel');
       deviceDataList.add(reqModel);
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
       final isInternetAvailable = await Connectivity().checkConnectivity();
@@ -70,7 +64,6 @@ class HelmetService {
 
       return null;
     }
-
     return null;
   }
 
@@ -202,6 +195,28 @@ class HelmetService {
       }
     } catch (e) {
       log('$e');
+    }
+  }
+
+  Future<bool> enableBackgroundMode() async {
+    bool _bgModeEnabled = await location.isBackgroundModeEnabled();
+    if (_bgModeEnabled) {
+      return true;
+    } else {
+      try {
+        await Permission.location.request();
+        await location.enableBackgroundMode();
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+      try {
+        await Permission.location.request();
+        _bgModeEnabled = await location.enableBackgroundMode();
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+      print(_bgModeEnabled); //True!
+      return _bgModeEnabled;
     }
   }
 }
