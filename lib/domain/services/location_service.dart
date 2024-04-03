@@ -8,14 +8,13 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 class LocationService {
   Future<Position> getLocation() async {
     try {
-      final loc = await Geolocator.getCurrentPosition();
+      final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
       return loc;
     } catch (e) {
       log('get location : $e');
       throw Exception('$e');
     }
   }
-
 
   String getReason(int code) {
     if (code == 222) {
@@ -26,6 +25,8 @@ class LocationService {
       return 'Helmet Disconnect';
     } else if (code == 555) {
       return 'User Disconnect';
+    } else if (code == 666) {
+      return 'App Exited';
     }
     return '';
   }
@@ -37,6 +38,9 @@ class LocationService {
     final location = await getLocation();
     var list = <Map<String, dynamic>>[];
     final reason = getReason(reasonCode);
+
+    print("cheecking exit of app");
+
     final body = {
       'reason': reason,
       'time': DateTime.now().toIso8601String(),

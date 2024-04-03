@@ -33,7 +33,7 @@ class BluetoothConnectedScreen extends StatefulWidget {
   State<BluetoothConnectedScreen> createState() => _BluetoothConnectedScreenState();
 }
 
-class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
+class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> with WidgetsBindingObserver {
   Timer? timer;
   Timer? counter;
   late DateTime connectedTime;
@@ -81,7 +81,11 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> {
 
     // initialization();
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      await initialization();
+      var device = context.read<BluetoothCubit>().connectedDevice;
+      if (device != null) {
+        print('calling from init');
+        await initialization();
+      }
     });
   }
 

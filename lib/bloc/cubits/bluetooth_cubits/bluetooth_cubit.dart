@@ -63,15 +63,17 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       adapterState = state;
 
       if (state == BluetoothAdapterState.off) {
-        if (deviceName != null) {
+        if (connectedDevice != null) {
           disconnectReasonCode = 222;
-          await disconnectDevice(disconnectReasonCode);
-          print('pehley yeh chala');
+          disconnectDevice(disconnectReasonCode);
+          print('ruk rha scan');
+          FlutterBluePlus.stopScan();
         }
+
         emit(BluetoothStateOff());
-        FlutterBluePlus.stopScan();
       } else if (state == BluetoothAdapterState.on) {
         emit(BluetoothStateOn());
+        print("from listen state");
         await getDevices();
       }
     }, onDone: () async {
@@ -83,11 +85,13 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     // adapterStateStateSubscription.cancel();
   }
 
-  void test() {
+  Future<void> test() async {
+    await Future.delayed(Duration(seconds: 5));
+    print('&&&& ${FlutterBluePlus.adapterStateNow}');
     if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
       if (deviceName != null) {
         disconnectReasonCode = 444;
-        disconnectDevice(disconnectReasonCode);
+        await disconnectDevice(disconnectReasonCode);
         print('pehley yeh chala');
       }
     }
@@ -161,6 +165,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       final connection = await checkConnections();
       if (connection != null) {
         emit(BluetoothFailedState(message: 'Failed to connect'));
+        print('scanning');
+        await getDevices();
         return;
       }
       emit(BluetoothConnectingState());
@@ -233,7 +239,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                 await services[2].characteristics[1].setNotifyValue(true);
               } else if (state == BluetoothConnectionState.disconnected) {
                 // await disconnectDevice();
-                test();
+                await test();
               }
 
               /// for cheek sensor
@@ -283,7 +289,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         BluetoothFailedState(message: 'Failed to connect'),
       );
       print('called from catch');
-      await disconnectDevice();
+      disconnectDevice();
+      print("called");
       await getDevices();
     }
   }
@@ -319,29 +326,49 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     // device?.cancelWhenDisconnected(subscription, delayed: true, next: true);
     emit(DisconnectedState(reason ?? 0));
 
+    var device = await checkSavedDevice();
     print('the reason is $reason');
-    if (reason != null) {
+    if (reason != null && device != null) {
+      print('---------maintain location history');
       await di.get<LocationService>().maintainLocationHistory(disconnectReasonCode);
     }
 
     // print('calling again and again');
     if (reason != null) {
       print('again connecting from dc method');
-      await getDevices();
+      // await getDevices();
       isAlarmPlayed = false;
       disconnectAlert(reason);
 
       alarmSettings();
 
       resultsStream?.cancel();
+
       connectedDevice = null;
+      print('the connected device is $connectedDevice');
+
       // disconnectReasonCode = 0;
     }
   }
 
   Future<void> disconnectAlert([int? reason]) async {
     if (reason != null) {
-      await di.get<HelmetService>().disconnectingAlert(deviceName ?? 'N/A', disconnectReasonCode);
+      print("---in disconnected alert");
+      var test = deviceName ?? 'N/A';
+
+      if (test == 'N/A') {
+        var temp = await checkSavedDevice();
+        if (temp != null) {
+          print("ifheueheueheu");
+          await di.get<HelmetService>().disconnectingAlert(temp, disconnectReasonCode);
+          return;
+        } else {
+          print("heueheueheu");
+          return;
+        }
+      } else {
+        await di.get<HelmetService>().disconnectingAlert(test, disconnectReasonCode);
+      }
     }
   }
 
@@ -360,6 +387,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         isAlarmPlayed = true;
         await playAlarm();
         await getDevices();
+        print("played from alarm");
+
         // }
       },
     );
@@ -372,17 +401,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   @override
   Future<void> close() async {
-    // await flutterBluetoothSerial.cancelDiscovery();
-    // await bluetoothConnection?.finish();
-    // await bluetoothConnection?.close();
-    // await bluetoothStateStream?.cancel();
-    // await bluetoothDiscoveryStream?.cancel();
     resultsStream?.cancel();
     audioPlayer.dispose();
     _connectionStateSubscription?.cancel();
-    // await connection?.finish();
-
-    // await inputStream?.cancel();
     adapterStateStateSubscription.cancel();
     return super.close();
   }

@@ -17,12 +17,11 @@ import 'location_service.dart';
 
 class HelmetService {
   Location location = Location();
-
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
       await enableBackgroundMode();
-
-      final locationService = await location.getLocation();
+      // final locationService = await location.getLocation();
+      final locationService = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -30,8 +29,11 @@ class HelmetService {
         deviceDataList =
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
+      var test = await di.get<LocationService>().getLocation();
+      final speed = (test.speed * 3.6);
 
-      final speed = (locationService.speed! * 3.6);
+      print("the result speed is $speed");
+      log("the result speed is $speed");
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
         apiDateTime: DateTime.now(),
@@ -80,14 +82,13 @@ class HelmetService {
     if (unsyncedDataList.isEmpty) return null;
 
     try {
-      // print('unsycned data list latitude is ${unsyncedDataList.first}');
       print('unsynced data list latitude is ${jsonEncode(unsyncedDataList.first.toJson())}');
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+      print("resppnse is in $res");
 
       if (res != null) {
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
-          // unsyncedModel.apiDateTime = DateTime.now();
         }
       } else {
         throw Exception('API call failed during unsynced data sync');
@@ -114,10 +115,8 @@ class HelmetService {
   ) async {
     try {
       final locationService = await di.get<LocationService>().getLocation();
-      // location.enableBackgroundMode(enable: true);
-      // final locationService = await location.getLocation();
-
       log('$reasonCode code');
+
       final body = {
         'Helmet_ID': helmetName,
         'Disconnect_Reason_Code': reasonCode.toString(),
@@ -129,9 +128,10 @@ class HelmetService {
         'Created_By': '',
         'Updated_By': '',
       };
-
+      print("the body of alert is $body");
       final connection = await Connectivity().checkConnectivity();
       if (connection != ConnectivityResult.none) {
+        print("checkinf if connection");
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
         if (res != null) {
           return res;

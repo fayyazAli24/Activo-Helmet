@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/api.dart';
-import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
@@ -15,9 +13,8 @@ class UnSyncRecordService {
       if (reasonDataList != null) {
         var list = List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
-
-        print("the disconnecting reason is ${jsonEncode(list[0])}");
-
+        print("in next part");
+        print(jsonEncode(list.first));
         final res = await ApiServices().post(api: Api.disconnectReason, body: list);
         if (res != null) {
           if (shouldDelete) {
@@ -37,7 +34,10 @@ class UnSyncRecordService {
         var list = List<Map<String, dynamic>>.from(jsonDecode(alertDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
 
+        print("in next part2");
+        print(jsonEncode(list.first));
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: list);
+
         if (res != null) {
           if (shouldDelete) {
             await StorageService().delete(unSyncedAlertData);
@@ -51,16 +51,20 @@ class UnSyncRecordService {
 
   Future<void> clearPreviousRecords() async {
     final savedDate = await StorageService().read('date');
+    print("the current data is $savedDate");
     if (savedDate != null) {
       final parsedDate = DateTime.parse(savedDate);
+      print("the parssed data is $parsedDate");
       final currentDate = DateTime.now();
+      print("the current data is $currentDate");
+
       if (parsedDate.day != currentDate.day) {
         try {
-          await syncUnsyncedAlertRecord(true);
-          await syncUnsyncedReasonRecord(true);
-
-          final list = await di.get<HelmetService>().syncUnsyncedData();
-          if (list != null) {
+          print("chal gaya bc $currentDate");
+          if (parsedDate.hour <= currentDate.hour && parsedDate.minute <= currentDate.minute) {
+            await syncUnsyncedAlertRecord(true);
+            await syncUnsyncedReasonRecord(true);
+            print("--------=====");
             await StorageService().delete(deviceListKey);
             await StorageService().delete(lastDeviceKey);
           }

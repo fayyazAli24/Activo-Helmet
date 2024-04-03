@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:alarm/alarm.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:location/location.dart';
 import 'package:unilever_activo/app/app.dart';
@@ -69,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
           final bluetoothState = context.read<BluetoothCubit>();
 
           /// changed this line
-          ///
 
           if (bluetoothState.connectedDevice?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
@@ -95,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
               final bluetoothState = context.read<BluetoothCubit>().state;
               if (bluetoothState is BluetoothConnectedState) {
                 context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
-
                 context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
               }
               locationOffDialog(context);
@@ -125,6 +124,73 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             body: SafeArea(
+                child: PopScope(
+              canPop: false,
+              onPopInvoked: (bool didPop) async {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text(
+                        'Are you sure you want to exit',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: 3,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 150),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      Navigator.of(context).pop(); // Close the dialog box
+
+                                      context.read<BluetoothCubit>().disconnectReasonCode = 666;
+                                      await context
+                                          .read<BluetoothCubit>()
+                                          .disconnectDevice(context.read<BluetoothCubit>().disconnectReasonCode);
+
+                                      // await Future.delayed(Duration(seconds: 2));
+                                      // Close the app
+                                      Future.delayed(Duration.zero, () => SystemNavigator.pop());
+                                    },
+                                    child: const Text(
+                                      "Yes",
+                                      style: TextStyle(color: Colors.teal, fontSize: 14),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 25.0),
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.of(context).pop(); // Close the dialog box
+                                    },
+                                    child: const Text(
+                                      "No",
+                                      style: TextStyle(color: Colors.teal, fontSize: 14),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                    );
+                  },
+                );
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.colorScheme.background,
@@ -161,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           snackBar('Bluetooth is turned off', context);
                         } else if (state is BluetoothFailedState) {
                           noDeviceFoundDialog(state);
+                          await context.read<BluetoothCubit>().getDevices();
                         } else if (state is AutoDisconnectedState) {
                           stopAlarmDialog();
                           print('get device is called before');
@@ -176,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-            ),
+            )),
           ),
         );
       },
