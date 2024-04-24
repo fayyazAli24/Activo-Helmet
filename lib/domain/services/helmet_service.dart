@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
+import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/models/device_req_body_model.dart';
 import 'package:unilever_activo/domain/services/services.dart';
@@ -17,11 +18,13 @@ import 'location_service.dart';
 
 class HelmetService {
   Location location = Location();
+  LocationCubit locationCubit = LocationCubit();
+
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
       await enableBackgroundMode();
-      // final locationService = await location.getLocation();
-      final locationService = await di.get<LocationService>().getLocation();
+      final locationService = await location.getLocation();
+      //  final test = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -29,11 +32,37 @@ class HelmetService {
         deviceDataList =
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
-      var test = await di.get<LocationService>().getLocation();
-      final speed = (test.speed * 3.6);
 
-      print("the result speed is $speed");
-      log("the result speed is $speed");
+      var speed = (locationService.speed! * 3.6);
+      LocationCubit locationCubit = LocationCubit();
+
+      print("before setting ");
+      print(LocationCubit.prevLong);
+      print(LocationCubit.prevLat);
+
+      // locationCubit.prevSpeed = speed;
+
+      // manually getting speed
+      print("before if bloc");
+      print("-------" + LocationCubit.prevLat.toString());
+      if (LocationCubit.prevLat != null && LocationCubit.prevLong != null) {
+        print(" not null manually being calculated");
+        var temp = calculateSpeed(
+            locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
+        speed = temp;
+      }
+
+      // setting the value
+      LocationCubit.prevLat = locationService.latitude;
+      LocationCubit.prevLong = locationService.longitude;
+
+      print("after setting ");
+      print(LocationCubit.prevLong);
+      print(LocationCubit.prevLat);
+
+      print("the speed in init is $speed");
+      // if (speed == 0) return;
+
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
         apiDateTime: DateTime.now(),
@@ -42,6 +71,7 @@ class HelmetService {
         longitude: locationService.longitude,
         isWearHelmet: isWore,
         isWrongWay: 0,
+        // speed: test.speed * 3.6,
         speed: speed,
         vehicleType: '',
         savedTime: DateTime.now(),
@@ -62,7 +92,7 @@ class HelmetService {
         }
       }
     } catch (e) {
-      log('$e');
+      // log('$e');
 
       return null;
     }
@@ -115,7 +145,7 @@ class HelmetService {
   ) async {
     try {
       final locationService = await di.get<LocationService>().getLocation();
-      log('$reasonCode code');
+      // log('$reasonCode code');
 
       final body = {
         'Helmet_ID': helmetName,
@@ -151,7 +181,7 @@ class HelmetService {
       }
     } catch (e) {
       print("exception while sending data to server");
-      log('$e');
+      // log('$e');
     }
   }
 
@@ -194,7 +224,7 @@ class HelmetService {
         }
       }
     } catch (e) {
-      log('$e');
+      // log('$e');
     }
   }
 
@@ -215,8 +245,39 @@ class HelmetService {
       } catch (e) {
         debugPrint(e.toString());
       }
-      print(_bgModeEnabled); //True!
+      print(_bgModeEnabled);
+
+      //True!
       return _bgModeEnabled;
     }
+  }
+
+  double calculateSpeed(
+    double currentLat,
+    double currentLong,
+    double previousLat,
+    double previousLon,
+    double timeInSeconds,
+  ) {
+    const double R = 6371.0; // Earth's radius in kilometers
+    double degToRad = pi / 180;
+
+    double lat1 = previousLat * degToRad;
+    double lon1 = previousLon * degToRad;
+    double lat2 = currentLat * degToRad;
+    double lon2 = currentLong * degToRad;
+
+    double dLat = lat2 - lat1;
+    double dLon = lon2 - lon1;
+
+    double a = sin(dLat / 2) * sin(dLat / 2) + cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    double distance = R * c; // Distance in kilometers
+
+    // Convert time from seconds to hours
+    double timeInHours = timeInSeconds / 3600;
+
+    return distance / timeInHours; // Speed in kilometers per hour
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
@@ -22,7 +23,7 @@ class _InitializeAppState extends State<InitializeApp> {
     return BlocBuilder<AppThemeModeCubit, AppThemeMode>(
       builder: (context, state) {
         final themeCubit = context.watch<AppThemeModeCubit>();
-        return MaterialApp(
+        return GetMaterialApp(
           theme: themeCubit.appTheme(),
           themeMode: themeCubit.themeMode(),
           darkTheme: ThemeData.dark(useMaterial3: true),

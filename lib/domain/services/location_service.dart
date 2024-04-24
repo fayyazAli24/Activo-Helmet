@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
@@ -8,7 +9,15 @@ import 'package:unilever_activo/domain/services/storage_services.dart';
 class LocationService {
   Future<Position> getLocation() async {
     try {
-      final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      late LocationSettings locationSettings;
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        locationSettings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          forceLocationManager: true,
+          // intervalDuration: const Duration(seconds: 15),
+        );
+      }
+      final loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       return loc;
     } catch (e) {
       log('get location : $e');

@@ -20,6 +20,9 @@ class LocationCubit extends Cubit<LocationStatus> {
   String? deviceName;
   StreamSubscription<ServiceStatus>? subscription;
   Geolocator? geolocator;
+  // double prevSpeed = 0.0;
+  static double? prevLong;
+  static double? prevLat;
 
   void checkLocation() {
     try {

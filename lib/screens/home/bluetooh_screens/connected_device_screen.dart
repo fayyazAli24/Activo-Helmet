@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
+import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
-import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
@@ -45,6 +44,11 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       List? res = await di
           .get<HelmetService>()
           .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore);
+
+      LocationCubit help = LocationCubit();
+
+      // if (help.prevSpeed == 0) return;
+
       if (res != null) {
         snackBar('Data Synced Successfully', context);
       } else {
@@ -70,16 +74,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       context.read<TimerCubit>().updateTimer(connectedTime);
     });
 
-    Location location = Location();
-
-    location.enableBackgroundMode(enable: true);
-
-    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
-      var res = await di.get<LocationService>().getLocation();
-      print('the location is $res');
-    });
-
-    // initialization();
+    initialization();
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       var device = context.read<BluetoothCubit>().connectedDevice;
       if (device != null) {
