@@ -72,7 +72,7 @@ class HelmetService {
         isWearHelmet: isWore,
         isWrongWay: 0,
         // speed: test.speed * 3.6,
-        speed: speed,
+        speed: speed > 75 ? 75 : speed,
         vehicleType: '',
         savedTime: DateTime.now(),
         synced: 0,

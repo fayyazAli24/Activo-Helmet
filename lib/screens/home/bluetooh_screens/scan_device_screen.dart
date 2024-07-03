@@ -57,10 +57,10 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> {
                     value: state,
                     onChanged: (value) {
                       context.read<BluetoothCubit>().autoConnected = value;
-                      print('the state of auto connect is ${context.read<BluetoothCubit>().autoConnected}');
+                      // print('the state of auto connect is ${context.read<BluetoothCubit>().autoConnected}');
                       context.read<BluetoothCubit>().disconnectReasonCode = 0;
                       context.read<SwitchCubit>().updateValue(value);
-                      print(context.read<BluetoothCubit>().autoConnected);
+                      // print(context.read<BluetoothCubit>().autoConnected);
                     },
                   );
                 },
