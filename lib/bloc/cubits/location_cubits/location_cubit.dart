@@ -29,9 +29,11 @@ class LocationCubit extends Cubit<LocationStatus> {
       subscription = Geolocator.getServiceStatusStream().listen(
         (locationState) async {
           if (locationState == ServiceStatus.disabled) {
-            if (deviceName != null) await di.get<HelmetService>().disconnectingAlert(deviceName ?? '', 111);
-
-            ///GPS Code
+            print('cheek');
+            if (deviceName != null) {
+              print("device name is " + deviceName!);
+              await di.get<HelmetService>().disconnectingAlert(deviceName ?? '', 111);
+            }
             emit(LocationOff());
           } else if (locationState == ServiceStatus.enabled) {
             emit(LocationOn());

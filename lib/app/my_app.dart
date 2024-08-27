@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/bottom_navigation/bottom_navigation_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
@@ -65,6 +66,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider(
           create: (context) => AlarmCubit(),
+        ),
+        BlocProvider(
+          create: (context) => BottomNavigationCubit(),
         ),
       ],
       child: const InitializeApp(),

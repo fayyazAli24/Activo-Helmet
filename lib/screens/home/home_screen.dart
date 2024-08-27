@@ -43,12 +43,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    final bluetoothCubit = context.read<BluetoothCubit>();
+    onInit();
+  }
 
-    bluetoothCubit.checkPermissions();
-    // bluetoothCubit.checkStatus();
+  Future<void> onInit() async {
+    final bluetoothCubit = context.read<BluetoothCubit>();
+    await bluetoothCubit.checkPermissions();
     bluetoothCubit.listenState();
-    super.initState();
   }
 
   @override
@@ -61,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
-
     return BlocConsumer<AlarmCubit, AlarmState>(
       // do stuff here based on BlocA's state
       listener: (context, state) async {
@@ -94,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
             if (locationState is LocationOff) {
               final bluetoothState = context.read<BluetoothCubit>().state;
               if (bluetoothState is BluetoothConnectedState) {
-                context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
-                context.read<LocationCubit>().deviceName = bluetoothState.deviceName;
+                context.read<BluetoothCubit>().disconnectReasonCode = 111;
+                context.read<BluetoothCubit>().disconnectDevice(context.read<BluetoothCubit>().disconnectReasonCode);
               }
               locationOffDialog(context);
             }
@@ -159,12 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                           .read<BluetoothCubit>()
                                           .disconnectDevice(context.read<BluetoothCubit>().disconnectReasonCode);
 
-                                      // await Future.delayed(Duration(seconds: 2));
-                                      // Close the app
                                       Future.delayed(Duration.zero, () => SystemNavigator.pop());
                                     },
                                     child: const Text(
-                                      "Yes",
+                                      'Yes',
                                       style: TextStyle(color: Colors.teal, fontSize: 14),
                                     ),
                                   ),
@@ -176,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.of(context).pop(); // Close the dialog box
                                     },
                                     child: const Text(
-                                      "No",
+                                      'No',
                                       style: TextStyle(color: Colors.teal, fontSize: 14),
                                     ),
                                   ),
@@ -203,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context, state) {
                         log('state $state');
                         if (state is BluetoothStateOff) {
+                          print('this state is true');
                           return BluetoothOffScreen(
                             size: size,
                           );
@@ -212,11 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             deviceName: state.deviceName,
                             size: size,
                           );
+                        } else {
+                          return BluetoothScanDeviceScreen(
+                            theme: theme,
+                            size: size,
+                          );
                         }
-                        return BluetoothScanDeviceScreen(
-                          theme: theme,
-                          size: size,
-                        );
                       },
                       listener: (context, state) async {
                         if (state is BluetoothScannedState) {
@@ -225,14 +225,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         if (state is BluetoothStateOff) {
                           snackBar('Bluetooth is turned off', context);
+                        } else if (state is BluetoothStateOn) {
+                          snackBar('Bluetooth is turned on', context);
                         } else if (state is BluetoothFailedState) {
                           noDeviceFoundDialog(state);
+
                           await context.read<BluetoothCubit>().getDevices();
                         } else if (state is AutoDisconnectedState) {
                           stopAlarmDialog();
                           print('get device is called before');
-                          // context.read<BluetoothCubit>().getDevices();
-                          print('get device is called after');
                           snackBar('Device Disconnected', context);
                         }
                         if (state is BluetoothConnectingState) {
@@ -305,6 +306,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+
+                // AppSpace.vrtSpace(10),
+                // InkWell(
+                //   onTap: () {
+                //     pop();
+                //     pushNamed(AppRoutes.locationHistory);
+                //   },
+                //   child: const Padding(
+                //     padding: EdgeInsets.all(8.0),
+                //     child: AppText(
+                //       text: 'Location History',
+                //       fontSize: 16,
+                //       weight: FontWeight.w500,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -520,6 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<dynamic> locationOffDialog(BuildContext context) {
+    print("from home screen");
     return showAdaptiveDialog(
       context: context,
       builder: (context) {

@@ -68,7 +68,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     buildCardRow(
-                                        'Time', DateFormat('dd-MMM-yyyy:mm:ss').format(DateTime.parse(device['time']))),
+                                        'Time', DateFormat('dd-MMM-yyyy:hh:mm').format(DateTime.parse(device['time']))),
                                     AppSpace.vrtSpace(5),
                                     buildCardRow('Latitude', device['lat'].toString()),
                                     AppSpace.vrtSpace(5),

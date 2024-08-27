@@ -1,6 +1,5 @@
 class Api {
-  static const _baseUrl = 'http://192.111.148.62:1200/Api/';
-  // static const _baseUrl = 'http://51.79.209.55:4900/Api/';
+  static const _baseUrl = 'http://175.107.195.221:8004/Api/';
 
   static const trJourney = '${_baseUrl}TrJourney';
 

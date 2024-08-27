@@ -13,7 +13,7 @@ class UnSyncRecordService {
       if (reasonDataList != null) {
         var list = List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
-        print("in next part");
+        print('in next part');
         print(jsonEncode(list.first));
         final res = await ApiServices().post(api: Api.disconnectReason, body: list);
         if (res != null) {
@@ -34,7 +34,7 @@ class UnSyncRecordService {
         var list = List<Map<String, dynamic>>.from(jsonDecode(alertDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
 
-        print("in next part2");
+        print('in next part2');
         print(jsonEncode(list.first));
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: list);
 
@@ -51,22 +51,38 @@ class UnSyncRecordService {
 
   Future<void> clearPreviousRecords() async {
     final savedDate = await StorageService().read('date');
-    print("the current data is $savedDate");
+    print('the current data is $savedDate');
     if (savedDate != null) {
       final parsedDate = DateTime.parse(savedDate);
-      print("the parssed data is $parsedDate");
+      print('the parsed data is $parsedDate');
       final currentDate = DateTime.now();
-      print("the current data is $currentDate");
+      print('the current data is $currentDate');
 
       if (parsedDate.day != currentDate.day) {
         try {
-          print("chal gaya bc $currentDate");
+          print('chal gaya bc $currentDate');
           if (parsedDate.hour <= currentDate.hour && parsedDate.minute <= currentDate.minute) {
             await syncUnsyncedAlertRecord(true);
             await syncUnsyncedReasonRecord(true);
-            print("--------=====");
-            await StorageService().delete(deviceListKey);
-            await StorageService().delete(lastDeviceKey);
+            print('--------=====');
+
+            var list = await StorageService().read(deviceListKey);
+            print('the list here is ${list.runtimeType}');
+
+            List<dynamic> jsonList = jsonDecode(list);
+            print('Decoded list here is of type: ${jsonList.runtimeType}');
+            jsonList = jsonList.where((item) => item['synced'] == 0).toList();
+            print("Filtered list here is: $jsonList");
+
+            var updatedList = jsonEncode(jsonList);
+
+            // Step 5: Overwrite the previous list in local storage with the updated list
+            await StorageService().write(deviceListKey, updatedList);
+
+            // Step 6: Optionally, print the updated list
+            print('The updated list after writing is: $jsonList');
+
+
           }
         } catch (e) {
           print('$e');

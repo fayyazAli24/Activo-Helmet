@@ -36,7 +36,7 @@ class HelmetService {
       var speed = (locationService.speed! * 3.6);
       LocationCubit locationCubit = LocationCubit();
 
-      print("before setting ");
+      print('before setting');
       print(LocationCubit.prevLong);
       print(LocationCubit.prevLat);
 
@@ -113,6 +113,7 @@ class HelmetService {
 
     try {
       print('unsynced data list latitude is ${jsonEncode(unsyncedDataList.first.toJson())}');
+
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
       print("resppnse is in $res");
 
@@ -158,10 +159,10 @@ class HelmetService {
         'Created_By': '',
         'Updated_By': '',
       };
-      print("the body of alert is $body");
+      print('the body of alert is $body');
       final connection = await Connectivity().checkConnectivity();
       if (connection != ConnectivityResult.none) {
-        print("checkinf if connection");
+        print('checking if connection');
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
         if (res != null) {
           return res;
@@ -180,16 +181,15 @@ class HelmetService {
         }
       }
     } catch (e) {
-      print("exception while sending data to server");
+      print('exception while sending data to server');
       // log('$e');
     }
   }
 
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
+    print("sharrrrr");
     var date = DateTime.now().toIso8601String();
     var newDate = date.substring(0, date.length - 4);
-    print('the new date is $newDate');
-
     try {
       var body = <String, dynamic>{
         'Helmet_ID': helmetName,

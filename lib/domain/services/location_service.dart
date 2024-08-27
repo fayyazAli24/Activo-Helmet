@@ -26,6 +26,9 @@ class LocationService {
   }
 
   String getReason(int code) {
+    if (code == 111) {
+      return 'location off';
+    }
     if (code == 222) {
       return 'Bluetooth';
     } else if (code == 333) {
@@ -41,14 +44,14 @@ class LocationService {
   }
 
   Future<void> maintainLocationHistory(int reasonCode) async {
-    if (reasonCode == 111 || reasonCode == 0) return;
+    if (reasonCode == 0) return;
 
     final record = await StorageService().read(disconnectTimeKey);
     final location = await getLocation();
     var list = <Map<String, dynamic>>[];
     final reason = getReason(reasonCode);
 
-    print("cheecking exit of app");
+    print('cheecking exit of app');
 
     final body = {
       'reason': reason,

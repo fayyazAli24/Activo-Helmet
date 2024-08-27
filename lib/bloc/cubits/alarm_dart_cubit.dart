@@ -13,7 +13,6 @@ class AlarmCubit extends Cubit<AlarmState> {
     ringAlarm();
   }
 
-
   List<AlarmSettings> alarms = [];
 
   late AlarmSettings alarmSettings;
@@ -44,7 +43,6 @@ class AlarmCubit extends Cubit<AlarmState> {
       },
     );
   }
-
 
   Future<void> stopAlarm() async {
     final isStopped = await Alarm.stop(1);

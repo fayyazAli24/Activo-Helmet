@@ -25,6 +25,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   double? batteryPercentage;
   double? pressure;
   int isWore = 0;
+  bool checkLocation = false;
   bool isDiscovering = false;
   int disconnectReasonCode = 0;
   bool autoConnected = false;
@@ -39,14 +40,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   BluetoothAdapterState adapterState = BluetoothAdapterState.unknown;
   late StreamSubscription<BluetoothAdapterState> adapterStateStateSubscription;
   List<BluetoothService> services = [];
+  StreamSubscription<ServiceStatus>? subscription;
 
   Future<void> checkPermissions() async {
     final bluetoothPermission = await Permission.bluetooth.isGranted;
     final locationPermission = await Permission.location.isGranted;
-    bool check = false;
     // PermissionStatus status;
 
     if (!bluetoothPermission) {
+      print('not bluetooth');
       emit(BluetoothStateOff());
       await Permission.bluetooth.request();
     }
@@ -69,24 +71,20 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           print('ruk rha scan');
           FlutterBluePlus.stopScan();
         }
-
         emit(BluetoothStateOff());
       } else if (state == BluetoothAdapterState.on) {
+        print('in else if');
         emit(BluetoothStateOn());
-        print("from listen state");
+        print('from listen state');
         await getDevices();
       }
-    }, onDone: () async {
-      await FlutterBluePlus.stopScan();
-
-      /// cancel scanning and streaming
     });
 
     // adapterStateStateSubscription.cancel();
   }
 
   Future<void> test() async {
-    await Future.delayed(Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 5));
     print('&&&& ${FlutterBluePlus.adapterStateNow}');
     if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
       if (deviceName != null) {
@@ -111,6 +109,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> getDevices() async {
     try {
+      print('in get device $adapterState');
       if (adapterState == BluetoothAdapterState.on) {
         isDiscovering = true;
         scannedDevices = [];
@@ -148,10 +147,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           },
         );
       } else {
+        print("in else");
         isDiscovering = false;
         Permission.bluetooth.request();
       }
     } catch (e) {
+      print("in catch block");
       await FlutterBluePlus.stopScan();
       isDiscovering = false;
       scannedDevices = [];
@@ -173,16 +174,23 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       connectedDevice = device;
       await FlutterBluePlus.stopScan();
 
+      if (!connectedDevice!.platformName.contains("Activo Helmet")) {
+        emit(BluetoothFailedState(message: 'Invalid device'));
+        pop();
+        return;
+      }
+
       print('the device is $connectedDevice');
       await device.connect();
-
       if (connectedDevice?.isConnected ?? false) {
         final convertedDevice = connectedDevice?.platformName;
         await StorageService().write(lastDeviceKey, convertedDevice ?? '');
         deviceName = device.platformName;
+
         await StorageService().write(connectTimeKey, DateTime.now().toIso8601String());
 
-        print('device saved');
+        var temp = await StorageService().read(connectTimeKey);
+        print('device saved $temp');
         services = await device.discoverServices();
 
         try {
@@ -199,7 +207,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                         print('the battery is $batteryPercentage');
 
                         var temp = await device.discoverServices();
-                        print("the length is ${temp.length}");
+                        print('the length is ${temp.length}');
                       } else {
                         print('check battery else');
                         batteryPercentage = 0.0;
@@ -239,19 +247,18 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                 await services[2].characteristics[1].setNotifyValue(true);
               } else if (state == BluetoothConnectionState.disconnected) {
                 // await disconnectDevice();
+                checkLocation = false;
                 await test();
               }
 
               /// for cheek sensor
               // final cheekSub = services[2].characteristics[2].lastValueStream.listen((event) {
-              //   print("the cheek sensor status is $event");
+              //   print('the cheek sensor status is $event');
               // });
-              //
               //
               // device.cancelWhenDisconnected(cheekSub);
               // await services[2].characteristics[2].setNotifyValue(true);
-              // print("the state is ${state}");
-              // }
+              // print('the state is ${state}');
 
               //  },onDone: (){
               //   print('called from on done');
@@ -322,6 +329,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     log('$reason *******');
 
     connectedDevice?.disconnect();
+    subscription?.cancel();
     _connectionStateSubscription?.cancel();
     // device?.cancelWhenDisconnected(subscription, delayed: true, next: true);
     emit(DisconnectedState(reason ?? 0));
@@ -353,7 +361,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> disconnectAlert([int? reason]) async {
     if (reason != null) {
-      print("---in disconnected alert");
+      print('---in disconnected alert');
       var test = deviceName ?? 'N/A';
 
       if (test == 'N/A') {
@@ -377,7 +385,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       const Duration(seconds: 15),
       () async {
         if ((connectedDevice?.isConnected ?? false) || isAlarmPlayed) {
-          print('ececuting in alarm');
+          print('executing in alarm');
           return;
         }
         if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
@@ -387,9 +395,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
         isAlarmPlayed = true;
         await playAlarm();
         await getDevices();
-        print("played from alarm");
-
-        // }
       },
     );
   }
