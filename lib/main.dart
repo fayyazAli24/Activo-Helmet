@@ -22,7 +22,7 @@ Future<void> main() async {
     await manageAlarmTime();
     initializeNotifications();
     await setUpNotifications();
-    await clearPreviousRecord();
+    // await clearPreviousRecord();
   } catch (e) {
     log('$e');
   }

@@ -58,38 +58,32 @@ class UnSyncRecordService {
       final currentDate = DateTime.now();
       print('the current data is $currentDate');
 
-      if (parsedDate.day != currentDate.day) {
-        try {
-          print('chal gaya bc $currentDate');
-          if (parsedDate.hour <= currentDate.hour && parsedDate.minute <= currentDate.minute) {
-            await syncUnsyncedAlertRecord(true);
-            await syncUnsyncedReasonRecord(true);
-            print('--------=====');
+      try {
+        print('chal gaya bc $currentDate');
+        await syncUnsyncedAlertRecord(true);
+        await syncUnsyncedReasonRecord(true);
+        print('--------=====');
 
-            var list = await StorageService().read(deviceListKey);
-            print('the list here is ${list.runtimeType}');
+        var list = await StorageService().read(deviceListKey);
+        print('the list here is ${list.runtimeType}');
 
-            List<dynamic> jsonList = jsonDecode(list);
-            print('Decoded list here is of type: ${jsonList.runtimeType}');
-            jsonList = jsonList.where((item) => item['synced'] == 0).toList();
-            print("Filtered list here is: $jsonList");
+        List<dynamic> jsonList = jsonDecode(list);
+        print('Decoded list here is of type: ${jsonList.runtimeType}');
+        jsonList = jsonList.where((item) => item['synced'] == 0).toList();
+        print('Filtered list here is: $jsonList');
 
-            var updatedList = jsonEncode(jsonList);
+        var updatedList = jsonEncode(jsonList);
 
-            // Step 5: Overwrite the previous list in local storage with the updated list
-            await StorageService().write(deviceListKey, updatedList);
+        // Step 5: Overwrite the previous list in local storage with the updated list
+        await StorageService().write(deviceListKey, updatedList);
 
-            // Step 6: Optionally, print the updated list
-            print('The updated list after writing is: $jsonList');
-
-
-          }
-        } catch (e) {
-          print('$e');
-        }
-
-        await StorageService().write('date', DateTime.now().toIso8601String());
+        // Step 6: Optionally, print the updated list
+        print('The updated list after writing is: $jsonList');
+      } catch (e) {
+        print('$e');
       }
+
+      await StorageService().write('date', DateTime.now().toIso8601String());
     } else {
       await StorageService().write('date', DateTime.now().toIso8601String());
     }

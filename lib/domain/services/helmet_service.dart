@@ -22,9 +22,9 @@ class HelmetService {
 
   Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
     try {
+      double speed = 0.0;
       await enableBackgroundMode();
       final locationService = await location.getLocation();
-      //  final test = await di.get<LocationService>().getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -33,24 +33,22 @@ class HelmetService {
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
 
-      var speed = (locationService.speed! * 3.6);
-      LocationCubit locationCubit = LocationCubit();
-
-      print('before setting');
-      print(LocationCubit.prevLong);
-      print(LocationCubit.prevLat);
-
       // locationCubit.prevSpeed = speed;
-
       // manually getting speed
-      print("before if bloc");
-      print("-------" + LocationCubit.prevLat.toString());
+
+      print('before if bloc');
+      print('-------' + LocationCubit.prevLat.toString());
       if (LocationCubit.prevLat != null && LocationCubit.prevLong != null) {
-        print(" not null manually being calculated");
+        print(' not null manually being calculated');
+
         var temp = calculateSpeed(
             locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
         speed = temp;
       }
+
+      // if (speed < 10.0) {
+      //   return;
+      // }
 
       // setting the value
       LocationCubit.prevLat = locationService.latitude;
@@ -59,9 +57,7 @@ class HelmetService {
       print("after setting ");
       print(LocationCubit.prevLong);
       print(LocationCubit.prevLat);
-
       print("the speed in init is $speed");
-      // if (speed == 0) return;
 
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
@@ -71,8 +67,7 @@ class HelmetService {
         longitude: locationService.longitude,
         isWearHelmet: isWore,
         isWrongWay: 0,
-        // speed: test.speed * 3.6,
-        speed: speed > 75 ? 75 : speed,
+        speed: speed > 105 ? 75 : speed,
         vehicleType: '',
         savedTime: DateTime.now(),
         synced: 0,
@@ -81,9 +76,12 @@ class HelmetService {
       );
       print('model being added to local storage is $reqModel');
       deviceDataList.add(reqModel);
+
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
       final isInternetAvailable = await Connectivity().checkConnectivity();
-      if (isInternetAvailable != ConnectivityResult.none) {
+
+      if (isInternetAvailable.contains(ConnectivityResult.wifi)) {
+        print('888888888');
         final list = await syncUnsyncedData();
         if (list != null) {
           return [];
@@ -99,6 +97,45 @@ class HelmetService {
     return null;
   }
 
+  // Future<List<dynamic>?> syncUnsyncedData() async {
+  //   var unsyncedDataList = <DeviceReqBodyModel>[];
+  //   var dataList = <DeviceReqBodyModel>[];
+  //
+  //   String? encodedList = await StorageService().read(deviceListKey);
+  //
+  //   if (encodedList != null) {
+  //     dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
+  //     unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+  //   }
+  //   if (unsyncedDataList.isEmpty) return null;
+  //
+  //   try {
+  //     final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+  //     print("resppnse is in $res");
+  //
+  //     if (res != null) {
+  //       for (var unsyncedModel in unsyncedDataList) {
+  //         unsyncedModel.synced = 1;
+  //       }
+  //     } else {
+  //       throw Exception('API call failed during unsynced data sync');
+  //     }
+  //   } catch (e) {
+  //     print('API call failed during unsynced data sync: $e');
+  //     throw Exception('API call failed during unsynced data sync');
+  //   }
+  //
+  //   ///updating local list
+  //   for (final updatedModel in dataList) {
+  //     final index = dataList.indexWhere((element) => element == updatedModel);
+  //     if (index != -1) {
+  //       dataList[index] = updatedModel;
+  //     }
+  //   }
+  //   await StorageService().write(deviceListKey, jsonEncode(dataList));
+  //   return [];
+  // }
+
   Future<List<dynamic>?> syncUnsyncedData() async {
     var unsyncedDataList = <DeviceReqBodyModel>[];
     var dataList = <DeviceReqBodyModel>[];
@@ -109,15 +146,15 @@ class HelmetService {
       dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
+
     if (unsyncedDataList.isEmpty) return null;
 
     try {
-      print('unsynced data list latitude is ${jsonEncode(unsyncedDataList.first.toJson())}');
-
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print("resppnse is in $res");
+      print("response is in $res");
 
       if (res != null) {
+        // Mark all unsynced models as synced (synced = 1)
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
         }
@@ -129,14 +166,12 @@ class HelmetService {
       throw Exception('API call failed during unsynced data sync');
     }
 
-    ///updating local list
-    for (final updatedModel in dataList) {
-      final index = dataList.indexWhere((element) => element == updatedModel);
-      if (index != -1) {
-        dataList[index] = updatedModel;
-      }
-    }
+    // Remove all records from dataList that are already synced (synced == 1)
+    dataList.removeWhere((element) => element.synced == 1);
+
+    // Write the remaining unsynced data back to local storage
     await StorageService().write(deviceListKey, jsonEncode(dataList));
+
     return [];
   }
 
@@ -187,7 +222,7 @@ class HelmetService {
   }
 
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
-    print("sharrrrr");
+    print('sharrrrr');
     var date = DateTime.now().toIso8601String();
     var newDate = date.substring(0, date.length - 4);
     try {
@@ -202,7 +237,7 @@ class HelmetService {
       print('the body of disconnecting alert is $body');
 
       final isInternetAvailable = await Connectivity().checkConnectivity();
-      if (isInternetAvailable == ConnectivityResult.none) {
+      if (isInternetAvailable.contains(ConnectivityResult.none)) {
         body['sync'] = false;
 
         final reasonDataList = await StorageService().read(unSyncedReasonData);
@@ -234,20 +269,19 @@ class HelmetService {
       return true;
     } else {
       try {
+        print('in handling request');
         await Permission.location.request();
-        await location.enableBackgroundMode();
+        _bgModeEnabled = await location.enableBackgroundMode(enable: true);
       } catch (e) {
         debugPrint(e.toString());
       }
       try {
         await Permission.location.request();
-        _bgModeEnabled = await location.enableBackgroundMode();
+        _bgModeEnabled = await location.enableBackgroundMode(enable: true);
       } catch (e) {
         debugPrint(e.toString());
       }
-      print(_bgModeEnabled);
-
-      //True!
+      print('the given permission is $_bgModeEnabled');
       return _bgModeEnabled;
     }
   }

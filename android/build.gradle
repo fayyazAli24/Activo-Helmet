@@ -15,12 +15,17 @@ buildscript {
     }
 }
 
+
+
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
+
 
 rootProject.buildDir = '../build'
 subprojects {
@@ -29,6 +34,8 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 }
+
+
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir

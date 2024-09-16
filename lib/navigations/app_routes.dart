@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:unilever_activo/screens/bottom_navigation/home_page.dart';
+import 'package:unilever_activo/screens/bottom_navigation/landing_page.dart';
 import 'package:unilever_activo/screens/home/drop_down/device_history_screen.dart';
 import 'package:unilever_activo/screens/home/drop_down/location_history_screen.dart';
 import 'package:unilever_activo/screens/home/home_screen.dart';

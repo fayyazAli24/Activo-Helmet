@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app_keys.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
@@ -41,6 +42,10 @@ class LocationService {
       return 'App Exited';
     }
     return '';
+  }
+
+  Future<void> locationOn() async {
+    await Permission.locationAlways.request();
   }
 
   Future<void> maintainLocationHistory(int reasonCode) async {

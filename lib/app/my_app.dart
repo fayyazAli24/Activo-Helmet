@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:unilever_activo/app/initialize_app.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit2.dart';
 import 'package:unilever_activo/bloc/cubits/bottom_navigation/bottom_navigation_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/device_history_cubit/device_history_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/internnet_cubits/internet_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/location_history_cubit/location_history_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/splash_cubits/splash_cubit.dart';
+import 'package:unilever_activo/bloc/cubits/switch_cubit/bluetooth_switch.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/switch_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/theme_cubits/theme_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
@@ -69,6 +71,12 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider(
           create: (context) => BottomNavigationCubit(),
+        ),
+        BlocProvider(
+          create: (context) => BluetoothCubit2(),
+        ),
+        BlocProvider(
+          create: (context) => BluetoothSwitch(),
         ),
       ],
       child: const InitializeApp(),

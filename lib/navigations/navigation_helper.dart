@@ -8,7 +8,6 @@ Future pushNamedReplace(String route) => App.navigatorKey.currentState!.pushRepl
 
 Future pushNamedRemoveAll(String route, [bool hasBack = true]) =>
     App.navigatorKey.currentState!.pushNamedAndRemoveUntil(route, (_) => false, arguments: hasBack);
-
 Future replaceNamedRoute(String route, [bool hasBack = true]) =>
     App.navigatorKey.currentState!.pushReplacementNamed(route, arguments: hasBack);
 

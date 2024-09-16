@@ -9,6 +9,8 @@ import 'package:unilever_activo/utils/assets.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 
+import '../../../bloc/cubits/location_cubits/location_cubit.dart';
+
 class BluetoothScanDeviceScreen extends StatefulWidget {
   const BluetoothScanDeviceScreen({
     super.key,
@@ -90,43 +92,64 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> {
               weight: FontWeight.w500,
             ),
           BlocConsumer<BluetoothCubit, AppBluetoothState>(
-            listener: (context, state) {},
-            builder: (context, state) {
-              if (state is BluetoothScannedState) {
-                return Expanded(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: state.devices.length,
-                    itemBuilder: (context, index) {
-                      final item = state.devices[index];
+            listener: (context, bluetoothState) {},
+            builder: (context, bluetoothState) {
+              if (bluetoothState is BluetoothScannedState) {
+                return BlocBuilder<LocationCubit, LocationStatus>(
+                  builder: (context, locationState) {
+                    return Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: bluetoothState.devices.length,
+                        itemBuilder: (context, index) {
+                          final item = bluetoothState.devices[index];
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Card(
-                          child: ListTile(
-                            onTap: () async {
-                              await context.read<BluetoothCubit>().connect(item);
-                              // context.read<BluetoothCubit>().device = item;
-                            },
-                            dense: true,
-                            leading: const Icon(
-                              Icons.bluetooth,
-                              color: AppColors.blueAccent,
-                              size: 30,
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Card(
+                              child: ListTile(
+                                onTap: () async {
+                                  // Check if the location is off
+                                  if (locationState is LocationOff) {
+                                    // Show pop-up dialog if location is off
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return const AlertDialog(
+                                          title: Text('Location is Off'),
+                                          content: Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Text('Please turn on your location to connect to the device.'),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  } else if (locationState is LocationOn) {
+                                    // Proceed with Bluetooth connection if location is on
+                                    await context.read<BluetoothCubit>().connect(item);
+                                  }
+                                },
+                                dense: true,
+                                leading: const Icon(
+                                  Icons.bluetooth,
+                                  color: AppColors.blueAccent,
+                                  size: 30,
+                                ),
+                                title: AppText(
+                                  text: item.platformName ?? '',
+                                  fontSize: 15,
+                                ),
+                                subtitle: AppText(
+                                  text: item.remoteId.toString(),
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
-                            title: AppText(
-                              text: item.platformName ?? '',
-                              fontSize: 15,
-                            ),
-                            subtitle: AppText(
-                              text: item.remoteId.toString(),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 );
               }
               return AppSpace.noSpace;
@@ -134,6 +157,14 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> {
           ),
           AppSpace.vrtSpace(10),
         ],
+      ),
+    );
+  }
+
+  Widget buttons(String text) {
+    return Container(
+      child: Center(
+        child: Text(text),
       ),
     );
   }

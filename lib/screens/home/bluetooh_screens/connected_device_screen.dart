@@ -50,6 +50,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       // if (help.prevSpeed == 0) return;
 
       if (res != null) {
+        print('successfully synced shukr');
         snackBar('Data Synced Successfully', context);
       } else {
         snackBar('Data Failed To Synced', context);

@@ -8,15 +8,16 @@ import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart' hide ServiceStatus;
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/app/app_keys.dart';
-import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/utils/assets.dart';
 
-class BluetoothCubit extends Cubit<AppBluetoothState> {
-  BluetoothCubit() : super(BluetoothStateInitial());
+import '../../states/bluetooth_state/bluetooth_states2.dart';
+
+class BluetoothCubit2 extends Cubit<AppBluetoothState> {
+  BluetoothCubit2() : super(BluetoothStateInitial());
 
   AudioPlayer audioPlayer = AudioPlayer();
   String? deviceName;
@@ -119,7 +120,6 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           (event) async {
             for (ScanResult result in event) {
               if (!scannedDevices.contains(result.device) && (result.device.platformName.isNotEmpty)) {
-                print("the resultant devices are ${result.device.platformName}");
                 scannedDevices.add(result.device);
                 if (autoConnected) {
                   for (int i = 0; i < scannedDevices.length; i++) {
@@ -148,7 +148,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           },
         );
       } else {
-        print('in else');
+        print("in else");
         isDiscovering = false;
         Permission.bluetooth.request();
       }
@@ -163,7 +163,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   }
 
   Future<BluetoothDevice?> search(String id) async {
-    print('searching here');
+    print("searching here");
     for (int i = 0; i < scannedDevices.length; i++) {
       print("the naming is ${scannedDevices[i].platformName}");
       if (scannedDevices[i].platformName == id) {
@@ -187,6 +187,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       connectedDevice = device;
       await FlutterBluePlus.stopScan();
 
+      if (!connectedDevice!.platformName.contains("Activo Helmet")) {
+        emit(BluetoothFailedState(message: 'Invalid device'));
+        pop();
+        return;
+      }
+
       print('the device is $connectedDevice');
       await device.connect();
       if (connectedDevice?.isConnected ?? false) {
@@ -198,107 +204,89 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
         var temp = await StorageService().read(connectTimeKey);
         print('device saved $temp');
-
         services = await device.discoverServices();
 
-        print(' the services is ${services[2]}');
-
-        // Find the service and characteristic
-
         try {
-          _connectionStateSubscription = device.connectionState.listen((BluetoothConnectionState state) async {
-            if (state == BluetoothConnectionState.connected) {
-              BluetoothService batteryService = services.firstWhere(
-                (service) => service.uuid.toString() == '180f',
-                orElse: () => throw Exception('Battery Service not found'),
-              );
+          _connectionStateSubscription = device.connectionState.listen(
+            (BluetoothConnectionState state) async {
+              if (state == BluetoothConnectionState.connected) {
+                final batterySub = services[2].characteristics[0].lastValueStream.listen(
+                  (event) async {
+                    try {
+                      if (event.isNotEmpty) {
+                        print('check battery if');
+                        double value = event[0].toDouble();
+                        batteryPercentage = value;
+                        print('the battery is $batteryPercentage');
 
-              BluetoothCharacteristic batteryCharacteristic = batteryService.characteristics.firstWhere(
-                (characteristic) => characteristic.uuid.toString() == '2a19',
-                orElse: () => throw Exception('Battery Characteristic not found'),
-              );
+                        var temp = await device.discoverServices();
+                        print('the length is ${temp.length}');
+                      } else {
+                        print('check battery else');
+                        batteryPercentage = 0.0;
+                      }
 
-              final batterySub = batteryCharacteristic.lastValueStream.listen((value) {
-                print('the stream is $value');
-                if (value.isNotEmpty) {
-                  // Assuming the first byte represents the battery level
-                  batteryPercentage = value[0].toDouble();
-                  print('Battery Level: $batteryPercentage%');
+                      emit(BluetoothConnectedState(
+                          deviceName: device.platformName,
+                          batteryPercentage: batteryPercentage ?? 0.0,
+                          isWore: isWore,
+                          speed: 0));
+                    } catch (e) {
+                      print('error occured while getting value');
+                    }
+                  },
+                );
+                device.cancelWhenDisconnected(batterySub);
+                await services[2].characteristics[0].setNotifyValue(true);
+
+                /// for head sensor
+                final headSub = services[2].characteristics[1].lastValueStream.listen((event) {
+                  print('the head sensor status is $event');
+                  if (event.isNotEmpty) {
+                    print('check head if');
+                    isWore = event[0];
+                  } else {
+                    print('check head else');
+                    isWore = 0;
+                  }
 
                   emit(BluetoothConnectedState(
                       deviceName: device.platformName,
                       batteryPercentage: batteryPercentage ?? 0.0,
                       isWore: isWore,
                       speed: 0));
-                } else {
-                  batteryPercentage = 0.0;
-                  print('No data received');
-                }
-              });
+                });
+                device.cancelWhenDisconnected(headSub);
+                await services[2].characteristics[1].setNotifyValue(true);
+              } else if (state == BluetoothConnectionState.disconnected) {
+                // await disconnectDevice();
+                checkLocation = false;
+                await test();
+              }
 
-              await batteryCharacteristic.setNotifyValue(true);
-              device.cancelWhenDisconnected(batterySub);
-
-              // Find the service and characteristics for the second sensor
-              BluetoothService sensorService2 = services.firstWhere(
-                (service) => service.uuid.toString() == '4fafc201-1fb5-459e-8fcc-c5c9c331914b',
-                orElse: () => throw Exception('Sensor 2 Service not found'),
-              );
-
-              BluetoothCharacteristic sensorCharacteristic2 = sensorService2.characteristics.firstWhere(
-                (characteristic) => characteristic.uuid.toString() == 'e5944ed2-a415-420a-93a0-ecbfc372ac96',
-                orElse: () => throw Exception('Sensor 2 Characteristic not found'),
-              );
-
-              // BluetoothCharacteristic sensorCharacteristic3 = sensorService2.characteristics.firstWhere(
-              //   (characteristic) => characteristic.uuid.toString() == '8ee13963-8d1c-428d-8654-77b20850f393',
-              //   orElse: () => throw Exception('Sensor 2 Characteristic not found'),
-              // );
-
-              // Enable notifications for the second sensor
-
-              final sensorSub2 = sensorCharacteristic2.lastValueStream.listen((value) {
-                if (value.isNotEmpty) {
-                  isWore = value[0];
-                  print('Sensor 2 Data: $value');
-                  // Convert and use the data as needed
-                } else {
-                  isWore = 0;
-                  print('No data received from Sensor 2');
-                }
-                emit(BluetoothConnectedState(
-                    deviceName: device.platformName,
-                    batteryPercentage: batteryPercentage ?? 0.0,
-                    isWore: isWore,
-                    speed: 0));
-              });
-              sensorCharacteristic2.setNotifyValue(true);
-              device.cancelWhenDisconnected(sensorSub2);
-
-              // final sensorSub3 = sensorCharacteristic3.lastValueStream.listen((value) {
-              //   if (value.isNotEmpty) {
-              //     isWore = value[0];
-              //     print('Sensor 3 Data: $value');
-              //     // Convert and use the data as needed
-              //   } else {
-              //     isWore = 0;
-              //     print('No data received from Sensor 3');
-              //   }
-              //   emit(BluetoothConnectedState(
-              //       deviceName: device.platformName,
-              //       batteryPercentage: batteryPercentage ?? 0.0,
-              //       isWore: isWore,
-              //       speed: 0));
+              /// for cheek sensor
+              // final cheekSub = services[2].characteristics[2].lastValueStream.listen((event) {
+              //   print('the cheek sensor status is $event');
               // });
-              // sensorCharacteristic2.setNotifyValue(true);
-              // device.cancelWhenDisconnected(sensorSub3);
-            } else if (state == BluetoothConnectionState.disconnected) {
-              checkLocation = false;
-              await test();
-            }
-          });
+              //
+              // device.cancelWhenDisconnected(cheekSub);
+              // await services[2].characteristics[2].setNotifyValue(true);
+              // print('the state is ${state}');
+
+              //  },onDone: (){
+              //   print('called from on done');
+              //   disconnect(444);
+            },
+            onDone: () async {
+              // disconnectReasonCode = 444;
+              // await disconnectDevice(disconnectReasonCode);
+            },
+          );
           device.cancelWhenDisconnected(_connectionStateSubscription!, delayed: true, next: true);
-        } catch (e) {}
+        } catch (e) {
+          // device.cancelWhenDisconnected(subscription, delayed: true, next: true);
+          // log("coneccted $e");
+        }
 
         pop();
         emit(

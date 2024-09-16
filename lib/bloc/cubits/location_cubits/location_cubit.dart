@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:unilever_activo/app/app.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
+import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 
 class LocationStatus {}
@@ -31,7 +32,7 @@ class LocationCubit extends Cubit<LocationStatus> {
           if (locationState == ServiceStatus.disabled) {
             print('cheek');
             if (deviceName != null) {
-              print("device name is " + deviceName!);
+              print('device name is ' + deviceName!);
               await di.get<HelmetService>().disconnectingAlert(deviceName ?? '', 111);
             }
             emit(LocationOff());
@@ -48,6 +49,10 @@ class LocationCubit extends Cubit<LocationStatus> {
       log('$e');
       subscription?.cancel();
     }
+  }
+
+  Future<void> turnOnLocation() async {
+    await LocationService().locationOn();
   }
 
   void openSettings() async {

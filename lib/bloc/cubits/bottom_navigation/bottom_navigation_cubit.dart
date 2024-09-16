@@ -1,6 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../screens/bottom_navigation/home_page.dart';
+import '../../../screens/bottom_navigation/screens/helmet_connected.dart';
+import '../../../screens/bottom_navigation/screens/manage_profile.dart';
+import '../../../screens/bottom_navigation/screens/sos.dart';
+import '../../../screens/bottom_navigation/screens/stats.dart';
 import '../../states/bottom_navigation/bottom_navigation_state.dart';
 
 class BottomNavigationCubit extends Cubit<BottomNavigationState> {
@@ -9,7 +12,7 @@ class BottomNavigationCubit extends Cubit<BottomNavigationState> {
   int pageIndex = 0;
   final pages = [
     const ManageProfile(),
-    const HelmetConnected(),
+    HelmetConnected(),
     const Stats(),
     const SOS(),
   ];

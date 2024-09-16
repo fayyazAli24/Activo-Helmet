@@ -2,10 +2,9 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id 'org.jetbrains.kotlin.android'
 }
 
-def localProperties = new Properties()
+def localProperties = new Properties    ()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
@@ -75,4 +74,5 @@ dependencies {
             "tools:desugar_jdk_libs:1.2.2"
     implementation 'androidx.window:window:1.2.0'
     implementation 'androidx.window:window-java:1.2.0'
+
 }

@@ -17,16 +17,16 @@ class InternetCubit extends Cubit<InternetState> {
     checkConnectivity();
   }
 
-  StreamSubscription<ConnectivityResult>? subscription;
+  StreamSubscription<List<ConnectivityResult>>? subscription;
 
   Future<void> checkConnectivity() async {
     final connection = await Connectivity().checkConnectivity();
-    if (connection == ConnectivityResult.none) {
+    if (connection.contains(ConnectivityResult.none)) {
       emit(InternetState.disconnected);
     }
     subscription = Connectivity().onConnectivityChanged.listen(
       (event) async {
-        if (event != ConnectivityResult.none) {
+        if (event.contains(ConnectivityResult.none)) {
           await di.get<HelmetService>().syncUnsyncedData();
           await di.get<UnSyncRecordService>().syncUnsyncedAlertRecord(false);
           await di.get<UnSyncRecordService>().syncUnsyncedReasonRecord(false);

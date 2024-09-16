@@ -16,7 +16,7 @@ import 'package:unilever_activo/utils/widgets/global_method.dart';
 import '../domain/services/dateServices.dart';
 
 final di = GetIt.instance;
-StreamSubscription<ConnectivityResult>? connectionStream;
+StreamSubscription<List<ConnectivityResult>>? connectionStream;
 
 final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -134,7 +134,8 @@ Future<void> checkIsFirstRun() async {
 Future<void> clearPreviousRecord() async {
   connectionStream = Connectivity().onConnectivityChanged.listen(
     (event) async {
-      if (event != ConnectivityResult.none) {
+      if (event.contains(ConnectivityResult.none)) {
+        print("in the condition");
         await di.get<UnSyncRecordService>().clearPreviousRecords();
       }
     },

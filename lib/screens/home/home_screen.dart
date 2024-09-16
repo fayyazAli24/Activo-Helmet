@@ -14,16 +14,16 @@ import 'package:unilever_activo/bloc/cubits/bluetooth_cubits/bluetooth_cubit.dar
 import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/domain/services/helmet_service.dart';
-import 'package:unilever_activo/navigations/app_routes.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/connected_device_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/disconnected_screen.dart';
 import 'package:unilever_activo/screens/home/bluetooh_screens/scan_device_screen.dart';
-import 'package:unilever_activo/utils/app_colors.dart';
 import 'package:unilever_activo/utils/widgets/app_button.dart';
 import 'package:unilever_activo/utils/widgets/app_space.dart';
 import 'package:unilever_activo/utils/widgets/app_text.dart';
 import 'package:unilever_activo/utils/widgets/global_method.dart';
+
+import '../../utils/widgets/custom_app_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -101,27 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
           child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: theme.appBarTheme.backgroundColor,
-              leading: AppSpace.noSpace,
-              leadingWidth: 0,
-              title: const AppText(
-                text: 'Smart Helmet (Activo)',
-                fontSize: 18,
-                color: AppColors.white,
-                weight: FontWeight.w500,
-              ),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    optionsDialogBox();
-                  },
-                  icon: const Icon(
-                    Icons.more_vert_rounded,
-                    color: AppColors.white,
-                  ),
-                ),
-              ],
+            appBar: CustomAppBar(
+              title: 'Smart Helmet (Activo)',
+              onOptionsPressed: () {
+                optionsDialogBox(context);
+              },
             ),
             body: SafeArea(
                 child: PopScope(
@@ -245,85 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             )),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<dynamic> optionsDialogBox() {
-    return showAdaptiveDialog(
-      barrierColor: AppColors.black.withOpacity(0.4),
-      context: context,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.only(left: 150),
-          child: AlertDialog.adaptive(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            alignment: Alignment.topRight,
-            titlePadding: EdgeInsets.zero,
-            iconPadding: EdgeInsets.zero,
-            actionsPadding: EdgeInsets.zero,
-            buttonPadding: EdgeInsets.zero,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-            insetPadding: const EdgeInsets.only(
-              right: 10,
-              top: kToolbarHeight,
-            ),
-            content: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    pop();
-                    pushNamed(AppRoutes.deviceHistory);
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: AppText(
-                      text: 'Connection History',
-                      fontSize: 16,
-                      weight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                AppSpace.vrtSpace(10),
-                InkWell(
-                  onTap: () {
-                    pop();
-                    pushNamed(AppRoutes.locationHistory);
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: AppText(
-                      text: 'Location History',
-                      fontSize: 16,
-                      weight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                // AppSpace.vrtSpace(10),
-                // InkWell(
-                //   onTap: () {
-                //     pop();
-                //     pushNamed(AppRoutes.locationHistory);
-                //   },
-                //   child: const Padding(
-                //     padding: EdgeInsets.all(8.0),
-                //     child: AppText(
-                //       text: 'Location History',
-                //       fontSize: 16,
-                //       weight: FontWeight.w500,
-                //     ),
-                //   ),
-                // ),
-              ],
-            ),
           ),
         );
       },
