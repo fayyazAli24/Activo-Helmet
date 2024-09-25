@@ -196,16 +196,21 @@ class HelmetService {
       };
       print('the body of alert is $body');
       final connection = await Connectivity().checkConnectivity();
-      if (connection != ConnectivityResult.none) {
+      if (connection.contains(ConnectivityResult.wifi)) {
         print('checking if connection');
+        print(await StorageService().read(unSyncedAlertData));
+
         final res = await ApiServices().post(api: Api.disconnectingAlert, body: [body]);
         if (res != null) {
           return res;
         }
       } else {
+        print("-------------------------------");
         final alertList = await StorageService().read(unSyncedAlertData);
 
         if (alertList != null) {
+          print("-------------------------------1111");
+
           var list =
               List<Map<String, dynamic>>.from(jsonDecode(alertList).map((e) => Map<String, dynamic>.from(e))).toList();
 
@@ -221,6 +226,7 @@ class HelmetService {
     }
   }
 
+  ///clear module
   Future<void> disconnectingReason(String helmetName, String reason, String desc) async {
     print('sharrrrr');
     var date = DateTime.now().toIso8601String();

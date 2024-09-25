@@ -5,11 +5,15 @@ import 'package:unilever_activo/domain/api.dart';
 import 'package:unilever_activo/domain/services/services.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
 
+import '../../app/app.dart';
+import 'helmet_service.dart';
+
 class UnSyncRecordService {
   // getting unsynced data from local storage and sending it to server
   Future<void> syncUnsyncedReasonRecord(bool shouldDelete) async {
     try {
       final reasonDataList = await StorageService().read(unSyncedReasonData);
+
       if (reasonDataList != null) {
         var list = List<Map<String, dynamic>>.from(jsonDecode(reasonDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
@@ -30,6 +34,7 @@ class UnSyncRecordService {
   Future<void> syncUnsyncedAlertRecord(bool shouldDelete) async {
     try {
       final alertDataList = await StorageService().read(unSyncedAlertData);
+      print("chhhhhhhhh $alertDataList");
       if (alertDataList != null) {
         var list = List<Map<String, dynamic>>.from(jsonDecode(alertDataList).map((e) => Map<String, dynamic>.from(e)))
             .toList();
@@ -62,11 +67,23 @@ class UnSyncRecordService {
         print('chal gaya bc $currentDate');
         await syncUnsyncedAlertRecord(true);
         await syncUnsyncedReasonRecord(true);
+
+        final list = await di.get<HelmetService>().syncUnsyncedData();
+        print("in this case is $list");
+        // if (list != null) {
+        await StorageService().delete(deviceListKey);
+        // await StorageService().delete(lastDeviceKey);
+        await StorageService().delete(disconnectTimeKey);
+        // }
         print('--------=====');
+      } catch (e) {
+        print('$e');
+      }
 
-        var list = await StorageService().read(deviceListKey);
-        print('the list here is ${list.runtimeType}');
+      var list = await StorageService().read(deviceListKey);
+      print('the list here is ${list.runtimeType}');
 
+      if (list != null) {
         List<dynamic> jsonList = jsonDecode(list);
         print('Decoded list here is of type: ${jsonList.runtimeType}');
         jsonList = jsonList.where((item) => item['synced'] == 0).toList();
@@ -79,11 +96,9 @@ class UnSyncRecordService {
 
         // Step 6: Optionally, print the updated list
         print('The updated list after writing is: $jsonList');
-      } catch (e) {
-        print('$e');
-      }
 
-      await StorageService().write('date', DateTime.now().toIso8601String());
+        await StorageService().write('date', DateTime.now().toIso8601String());
+      }
     } else {
       await StorageService().write('date', DateTime.now().toIso8601String());
     }

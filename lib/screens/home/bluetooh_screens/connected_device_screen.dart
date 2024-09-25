@@ -164,9 +164,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
           AppSpace.vrtSpace(10),
           AppText(
             ///condition inverted
-            text: widget.state.isWore == 0 ? 'Not Weared' : 'Weared',
+            text: (widget.state.isWore == 1 || widget.state.cheek == 1) ? 'Weared' : 'Not Weared',
             weight: FontWeight.w500,
-
             color: theme.textTheme.bodyLarge?.color,
           ),
         ],

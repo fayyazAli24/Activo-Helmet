@@ -25,6 +25,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   double? batteryPercentage;
   double? pressure;
   int isWore = 0;
+  int cheek = 0;
   bool checkLocation = false;
   bool isDiscovering = false;
   int disconnectReasonCode = 0;
@@ -189,6 +190,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
       print('the device is $connectedDevice');
       await device.connect();
+      await Future.delayed(Duration(seconds: 3));
       if (connectedDevice?.isConnected ?? false) {
         final convertedDevice = connectedDevice?.platformName;
         await StorageService().write(lastDeviceKey, convertedDevice ?? '');
@@ -201,17 +203,22 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
         services = await device.discoverServices();
 
-        print(' the services is ${services[2]}');
+        for (int i = 0; i < services.length; i++) {
+          print('the services is ${services[i]}');
+        }
 
         // Find the service and characteristic
 
         try {
           _connectionStateSubscription = device.connectionState.listen((BluetoothConnectionState state) async {
             if (state == BluetoothConnectionState.connected) {
+              /// battery service
               BluetoothService batteryService = services.firstWhere(
                 (service) => service.uuid.toString() == '180f',
                 orElse: () => throw Exception('Battery Service not found'),
               );
+
+              /// battery characteristics
 
               BluetoothCharacteristic batteryCharacteristic = batteryService.characteristics.firstWhere(
                 (characteristic) => characteristic.uuid.toString() == '2a19',
@@ -229,6 +236,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                       deviceName: device.platformName,
                       batteryPercentage: batteryPercentage ?? 0.0,
                       isWore: isWore,
+                      cheek: cheek,
                       speed: 0));
                 } else {
                   batteryPercentage = 0.0;
@@ -239,10 +247,14 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               await batteryCharacteristic.setNotifyValue(true);
               device.cancelWhenDisconnected(batterySub);
 
-              // Find the service and characteristics for the second sensor
               BluetoothService sensorService2 = services.firstWhere(
                 (service) => service.uuid.toString() == '4fafc201-1fb5-459e-8fcc-c5c9c331914b',
                 orElse: () => throw Exception('Sensor 2 Service not found'),
+              );
+
+              BluetoothService sensorService3 = services.firstWhere(
+                (service) => service.uuid.toString() == '4fafc201-1fb5-459e-8fcc-c5c9c331914c',
+                orElse: () => throw Exception('Sensor 3 Service not found'),
               );
 
               BluetoothCharacteristic sensorCharacteristic2 = sensorService2.characteristics.firstWhere(
@@ -250,13 +262,12 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                 orElse: () => throw Exception('Sensor 2 Characteristic not found'),
               );
 
-              // BluetoothCharacteristic sensorCharacteristic3 = sensorService2.characteristics.firstWhere(
-              //   (characteristic) => characteristic.uuid.toString() == '8ee13963-8d1c-428d-8654-77b20850f393',
-              //   orElse: () => throw Exception('Sensor 2 Characteristic not found'),
-              // );
+              BluetoothCharacteristic sensorCharacteristic3 = sensorService3.characteristics.firstWhere(
+                (characteristic) => characteristic.uuid.toString() == '8ee13963-8d1c-428d-8654-77b20850f393',
+                orElse: () => throw Exception('Sensor 3 Characteristic not found'),
+              );
 
               // Enable notifications for the second sensor
-
               final sensorSub2 = sensorCharacteristic2.lastValueStream.listen((value) {
                 if (value.isNotEmpty) {
                   isWore = value[0];
@@ -270,28 +281,29 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     deviceName: device.platformName,
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
+                    cheek: cheek,
                     speed: 0));
               });
               sensorCharacteristic2.setNotifyValue(true);
               device.cancelWhenDisconnected(sensorSub2);
 
-              // final sensorSub3 = sensorCharacteristic3.lastValueStream.listen((value) {
-              //   if (value.isNotEmpty) {
-              //     isWore = value[0];
-              //     print('Sensor 3 Data: $value');
-              //     // Convert and use the data as needed
-              //   } else {
-              //     isWore = 0;
-              //     print('No data received from Sensor 3');
-              //   }
-              //   emit(BluetoothConnectedState(
-              //       deviceName: device.platformName,
-              //       batteryPercentage: batteryPercentage ?? 0.0,
-              //       isWore: isWore,
-              //       speed: 0));
-              // });
-              // sensorCharacteristic2.setNotifyValue(true);
-              // device.cancelWhenDisconnected(sensorSub3);
+              final sensorSub3 = sensorCharacteristic3.lastValueStream.listen((value) {
+                if (value.isNotEmpty) {
+                  cheek = value[0];
+                  print('Sensor 3 Data: $value');
+                } else {
+                  cheek = 0;
+                  print('No data received from Sensor 3');
+                }
+                emit(BluetoothConnectedState(
+                    deviceName: device.platformName,
+                    batteryPercentage: batteryPercentage ?? 0.0,
+                    isWore: isWore,
+                    cheek: cheek,
+                    speed: 0));
+              });
+              sensorCharacteristic3.setNotifyValue(true);
+              device.cancelWhenDisconnected(sensorSub3);
             } else if (state == BluetoothConnectionState.disconnected) {
               checkLocation = false;
               await test();
@@ -306,7 +318,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               speed: pressure ?? 0.0,
               deviceName: deviceName ?? '',
               batteryPercentage: batteryPercentage ?? 0.0,
-              isWore: isWore),
+              isWore: isWore,
+              cheek: cheek),
         );
       } else {
         // FlutterBluePlus.startScan();

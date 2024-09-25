@@ -64,8 +64,8 @@ Future<void> manageAlarmTime() async {
 
       print('${appAlarmTime.toIso8601String()}');
     } else {
-      String tempHour = await StorageService().read(hourFromApi) ?? '9';
-      String tempMinutes = await StorageService().read(minutesFromApi) ?? '0';
+      String tempHour = await StorageService().read(hourFromApi) ?? '15';
+      String tempMinutes = await StorageService().read(minutesFromApi) ?? '10';
 
       int hour = int.parse(tempHour);
       int minutes = int.parse(tempMinutes);
@@ -134,8 +134,8 @@ Future<void> checkIsFirstRun() async {
 Future<void> clearPreviousRecord() async {
   connectionStream = Connectivity().onConnectivityChanged.listen(
     (event) async {
-      if (event.contains(ConnectivityResult.none)) {
-        print("in the condition");
+      if (event.contains(ConnectivityResult.wifi)) {
+        print('in the condition');
         await di.get<UnSyncRecordService>().clearPreviousRecords();
       }
     },

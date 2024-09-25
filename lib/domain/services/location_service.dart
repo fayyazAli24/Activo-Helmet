@@ -52,6 +52,7 @@ class LocationService {
     if (reasonCode == 0) return;
 
     final record = await StorageService().read(disconnectTimeKey);
+    print("heeh $record");
     final location = await getLocation();
     var list = <Map<String, dynamic>>[];
     final reason = getReason(reasonCode);
