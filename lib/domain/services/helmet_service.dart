@@ -80,7 +80,8 @@ class HelmetService {
       await StorageService().write(deviceListKey, jsonEncode(deviceDataList));
       final isInternetAvailable = await Connectivity().checkConnectivity();
 
-      if (isInternetAvailable.contains(ConnectivityResult.wifi)) {
+      if (isInternetAvailable.contains(ConnectivityResult.mobile) ||
+          isInternetAvailable.contains(ConnectivityResult.wifi)) {
         print('888888888');
         final list = await syncUnsyncedData();
         if (list != null) {
@@ -196,7 +197,7 @@ class HelmetService {
       };
       print('the body of alert is $body');
       final connection = await Connectivity().checkConnectivity();
-      if (connection.contains(ConnectivityResult.wifi)) {
+      if (connection.contains(ConnectivityResult.wifi) || connection.contains(ConnectivityResult.mobile)) {
         print('checking if connection');
         print(await StorageService().read(unSyncedAlertData));
 

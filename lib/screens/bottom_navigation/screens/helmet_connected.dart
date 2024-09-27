@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/bluetooth_switch.dart';
@@ -284,8 +285,15 @@ class _HelmetConnectedState extends State<HelmetConnected> {
                               activeColor: Colors.white,
                               value: state,
                               onChanged: (value) async {
+                                print("jjjjjjjjjjjj $state");
                                 context.read<BluetoothSwitch>().updateValue(value);
-                                await context.read<BluetoothCubit>().getDevices();
+
+                                if (state == false) {
+                                  await context.read<BluetoothCubit>().turnOn();
+                                  await context.read<BluetoothCubit>().getDevices();
+                                } else {
+                                  await FlutterBluePlus.turnOff();
+                                }
                               },
                             );
                           },

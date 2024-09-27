@@ -120,7 +120,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
           (event) async {
             for (ScanResult result in event) {
               if (!scannedDevices.contains(result.device) && (result.device.platformName.isNotEmpty)) {
-                print("the resultant devices are ${result.device.platformName}");
+                print('the resultant devices are ${result.device.platformName}');
                 scannedDevices.add(result.device);
                 if (autoConnected) {
                   for (int i = 0; i < scannedDevices.length; i++) {
@@ -169,6 +169,15 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       print("the naming is ${scannedDevices[i].platformName}");
       if (scannedDevices[i].platformName == id) {
         print("found the device");
+        return scannedDevices[i];
+      }
+    }
+    return null;
+  }
+
+  BluetoothDevice? searchDevice(String deviceName) {
+    for (int i = 0; i < scannedDevices.length; i++) {
+      if (scannedDevices[i].platformName == deviceName) {
         return scannedDevices[i];
       }
     }
