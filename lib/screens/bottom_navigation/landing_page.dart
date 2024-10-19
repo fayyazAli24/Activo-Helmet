@@ -102,84 +102,87 @@ class _HomePageState extends State<HomePage> {
                     ),
                     body: bottomNavigationCubit.pages[bottomNavigationCubit.pageIndex],
                     bottomNavigationBar: Container(
-                      height: 60,
-                      decoration: const BoxDecoration(
-                        color: AppColors.test3,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          IconButton(
-                            enableFeedback: false,
-                            onPressed: () {
-                              bottomNavigationCubit.setIndex(0);
-                            },
-                            icon: bottomNavigationstate is ManageProfileState
-                                ? const Icon(
-                                    Icons.person,
-                                    color: Colors.blueAccent,
-                                    size: 35,
-                                  )
-                                : const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 35,
-                                  ),
-                          ),
-                          IconButton(
-                            enableFeedback: false,
-                            onPressed: () {
-                              bottomNavigationCubit.setIndex(1);
-                            },
-                            icon: bottomNavigationstate is HelmetConnectedState
-                                ? const Icon(
-                                    Icons.directions_bike_rounded,
-                                    color: Colors.blueAccent,
-                                    size: 35,
-                                  )
-                                : const Icon(
-                                    Icons.directions_bike_rounded,
-                                    color: Colors.white,
-                                    size: 35,
-                                  ),
-                          ),
-                          IconButton(
-                            enableFeedback: false,
-                            onPressed: () {
-                              bottomNavigationCubit.setIndex(2);
-                            },
-                            icon: bottomNavigationstate is StatsState
-                                ? const Icon(
-                                    Icons.widgets_rounded,
-                                    color: Colors.blueAccent,
-                                    size: 35,
-                                  )
-                                : const Icon(
-                                    Icons.widgets_outlined,
-                                    color: Colors.white,
-                                    size: 35,
-                                  ),
-                          ),
-                          IconButton(
-                            enableFeedback: false,
-                            onPressed: () {
-                              bottomNavigationCubit.setIndex(3);
-                            },
-                            icon: state is SOSState
-                                ? const Icon(
-                                    Icons.person,
-                                    color: Colors.blueAccent,
-                                    size: 35,
-                                  )
-                                : const Icon(
-                                    Icons.person_outline,
-                                    color: Colors.white,
-                                    size: 35,
-                                  ),
-                          ),
-                        ],
-                      ),
-                    )));
+                        height: 60,
+                        decoration: const BoxDecoration(
+                          color: AppColors.test3,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // HelmetConnected (index 0)
+                            IconButton(
+                              enableFeedback: false,
+                              onPressed: () {
+                                bottomNavigationCubit.setIndex(0); // HelmetConnected index
+                              },
+                              icon: bottomNavigationstate is HelmetConnectedState
+                                  ? const Icon(
+                                      Icons.directions_bike_rounded,
+                                      color: Colors.blueAccent,
+                                      size: 35,
+                                    )
+                                  : const Icon(
+                                      Icons.directions_bike_rounded,
+                                      color: Colors.white,
+                                      size: 35,
+                                    ),
+                            ),
+                            // Stats (index 1)
+                            IconButton(
+                              enableFeedback: false,
+                              onPressed: () {
+                                bottomNavigationCubit.setIndex(1); // Stats index
+                              },
+                              icon: bottomNavigationstate is StatsState
+                                  ? const Icon(
+                                      Icons.bar_chart_rounded,
+                                      color: Colors.blueAccent,
+                                      size: 35,
+                                    )
+                                  : const Icon(
+                                      Icons.bar_chart_rounded,
+                                      color: Colors.white,
+                                      size: 35,
+                                    ),
+                            ),
+                            // SOS (index 2)
+                            IconButton(
+                              enableFeedback: false,
+                              onPressed: () {
+                                bottomNavigationCubit.setIndex(2); // SOS index
+                              },
+                              icon: bottomNavigationstate is SOSState
+                                  ? const Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.blueAccent,
+                                      size: 35,
+                                    )
+                                  : const Icon(
+                                      Icons.warning_amber_outlined,
+                                      color: Colors.white,
+                                      size: 35,
+                                    ),
+                            ),
+                            // ManageProfile (index 3)
+                            IconButton(
+                              enableFeedback: false,
+                              onPressed: () {
+                                bottomNavigationCubit.setIndex(3); // ManageProfile index
+                              },
+                              icon: bottomNavigationstate is ManageProfileState
+                                  ? const Icon(
+                                      Icons.person,
+                                      color: Colors.blueAccent,
+                                      size: 35,
+                                    )
+                                  : const Icon(
+                                      Icons.person_outline,
+                                      color: Colors.white,
+                                      size: 35,
+                                    ),
+                            ),
+                          ],
+                        ))));
           },
         );
       },
@@ -192,7 +195,7 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (BuildContext context, Function(void Function()) setState) {
-          return AlertDialog.adaptive(
+          return AlertDialog(
             scrollable: true,
             content: Form(
               key: _formKey,
@@ -208,7 +211,7 @@ class _HomePageState extends State<HomePage> {
                     AppSpace.vrtSpace(5),
                     StatusDescTextField(),
                     AppSpace.vrtSpace(5),
-                    ...['Internet', 'User Disconnect', 'Helmet', 'Bluetooth']
+                    ...['Internet', 'User Disconnect', 'Helmet', 'Bluetooth', 'Other']
                         .map(
                           (e) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

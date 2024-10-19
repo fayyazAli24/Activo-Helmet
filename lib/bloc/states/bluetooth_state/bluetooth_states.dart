@@ -23,12 +23,14 @@ class BluetoothConnectedState extends AppBluetoothState {
   int isWore = 0;
   double speed = 0.0;
   int cheek = 0;
+  int? count;
   BluetoothConnectedState(
       {required this.deviceName,
       required this.batteryPercentage,
       required this.isWore,
       required this.speed,
-      required this.cheek});
+      required this.cheek,
+      this.count});
 }
 
 class DisconnectedState extends AppBluetoothState {

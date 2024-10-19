@@ -24,10 +24,9 @@ class AlarmCubit extends Cubit<AlarmState> {
       dateTime: alarmTime,
       loopAudio: false,
       vibrate: false,
-      enableNotificationOnKill: false,
+      warningNotificationOnKill: false,
       assetAudioPath: AssetsPath.alarmSound,
-      notificationTitle: 'Time to ride',
-      notificationBody: 'Its time to wear helmet',
+      notificationSettings: const NotificationSettings(title: 'Time to ride', body: 'Its time to wear helmet'),
     );
 
     await Alarm.set(alarmSettings: alarmSettings);

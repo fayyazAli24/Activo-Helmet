@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unilever_activo/app/app.dart';
@@ -20,9 +21,10 @@ class HelmetService {
   Location location = Location();
   LocationCubit locationCubit = LocationCubit();
 
-  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore) async {
+  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek) async {
     try {
       double speed = 0.0;
+      var wearingStatus = 0;
       await enableBackgroundMode();
       final locationService = await location.getLocation();
       print('the location is $locationService');
@@ -33,31 +35,36 @@ class HelmetService {
             jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       }
 
-      // locationCubit.prevSpeed = speed;
-      // manually getting speed
-
       print('before if bloc');
       print('-------' + LocationCubit.prevLat.toString());
       if (LocationCubit.prevLat != null && LocationCubit.prevLong != null) {
         print(' not null manually being calculated');
+
+        double distance = Geolocator.distanceBetween(
+          LocationCubit.prevLat!,
+          LocationCubit.prevLong!,
+          locationService.latitude!,
+          locationService.longitude!,
+        );
+        // if (distance < 10) {
+        //   print('Distance is $distance meters, skipping update');
+        //   return;
+        // }
 
         var temp = calculateSpeed(
             locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
         speed = temp;
       }
 
-      // if (speed < 10.0) {
-      //   return;
-      // }
-
       // setting the value
       LocationCubit.prevLat = locationService.latitude;
       LocationCubit.prevLong = locationService.longitude;
 
-      print("after setting ");
-      print(LocationCubit.prevLong);
-      print(LocationCubit.prevLat);
-      print("the speed in init is $speed");
+      if (isWore == 1 || cheek == 1) {
+        wearingStatus = 1;
+      } else {
+        wearingStatus = 0;
+      }
 
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
@@ -65,7 +72,7 @@ class HelmetService {
         userId: '',
         latitude: locationService.latitude,
         longitude: locationService.longitude,
-        isWearHelmet: isWore,
+        isWearHelmet: wearingStatus,
         isWrongWay: 0,
         speed: speed > 105 ? 75 : speed,
         vehicleType: '',
@@ -138,6 +145,7 @@ class HelmetService {
   // }
 
   Future<List<dynamic>?> syncUnsyncedData() async {
+    print("in this -------");
     var unsyncedDataList = <DeviceReqBodyModel>[];
     var dataList = <DeviceReqBodyModel>[];
 
@@ -148,6 +156,7 @@ class HelmetService {
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
 
+    print("the unsynced list is $unsyncedDataList");
     if (unsyncedDataList.isEmpty) return null;
 
     try {

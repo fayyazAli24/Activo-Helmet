@@ -257,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     AppSpace.vrtSpace(5),
                     StatusDescTextField(),
                     AppSpace.vrtSpace(5),
-                    ...['Internet', 'User Disconnect', 'Helmet', 'Bluetooth']
+                    ...['Internet', 'User Disconnect', 'Helmet', 'Bluetooth', 'Other']
                         .map(
                           (e) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,9 +297,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         return invalidDialog();
                       }
                       final device = await context.read<BluetoothCubit>().checkSavedDevice();
+
                       await di
                           .get<HelmetService>()
                           .disconnectingReason(device ?? '', selectedReason ?? '', statusDescController.text);
+
                       manageAlarm();
                       selectedReason = null;
                       statusDescController.clear();

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:unilever_activo/utils/widgets/bar_chart.dart';
 
 import '../../../utils/app_colors.dart';
 import '../../../utils/widgets/indicator.dart';
@@ -98,34 +99,44 @@ class _StatsState extends State<Stats> {
         ),
         Positioned(
           top: 30.h, // Start right after the pie chart
-          child: Container(
-            width: 100.w,
-            height: 50.h,
-            decoration: BoxDecoration(
-              color: AppColors.test3,
-              borderRadius: const BorderRadius.all(Radius.circular(20)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.4), // Shadow color with opacity
-                  spreadRadius: 2, // How far the shadow spreads
-                  blurRadius: 5, // Blur effect of the shadow
-                  offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
-                ),
-              ],
-            ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Container(
-              width: 100.w,
+              width: 95.w,
               height: 50.h,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  right: 25,
-                  left: 8,
-                  top: 24,
-                  bottom: 12,
-                ),
-                child: LineChart(
-                  showAvg ? avgData() : mainData(),
-                ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: charts().length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: 92.w,
+                      height: 50.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.test3,
+                        borderRadius: const BorderRadius.all(Radius.circular(20)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4), // Shadow color with opacity
+                            spreadRadius: 2, // How far the shadow spreads
+                            blurRadius: 5, // Blur effect of the shadow
+                            offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          right: 25,
+                          left: 8,
+                          top: 24,
+                          bottom: 12,
+                        ),
+                        child: charts()[index],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -426,5 +437,14 @@ class _StatsState extends State<Stats> {
           throw Error();
       }
     });
+  }
+
+  List<Widget> charts() {
+    return [
+      LineChart(
+        showAvg ? avgData() : mainData(),
+      ),
+      BarChartSample1()
+    ];
   }
 }

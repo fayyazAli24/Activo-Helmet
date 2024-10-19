@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
-import 'package:unilever_activo/bloc/cubits/location_cubits/location_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
 import 'package:unilever_activo/utils/app_colors.dart';
@@ -43,9 +42,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
 
       List? res = await di
           .get<HelmetService>()
-          .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore);
-
-      LocationCubit help = LocationCubit();
+          .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore, widget.state.cheek);
 
       // if (help.prevSpeed == 0) return;
 
@@ -165,6 +162,13 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
           AppText(
             ///condition inverted
             text: (widget.state.isWore == 1 || widget.state.cheek == 1) ? 'Weared' : 'Not Weared',
+            weight: FontWeight.w500,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
+          AppSpace.vrtSpace(10),
+          AppText(
+            ///condition inverted
+            text: widget.state.count.toString(),
             weight: FontWeight.w500,
             color: theme.textTheme.bodyLarge?.color,
           ),

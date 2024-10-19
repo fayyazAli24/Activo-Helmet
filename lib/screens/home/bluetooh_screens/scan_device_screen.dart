@@ -27,6 +27,7 @@ class BluetoothScanDeviceScreen extends StatefulWidget {
 class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> {
   Future<void> initialization() async {
     context.read<BluetoothCubit>().autoConnected = await context.read<SwitchCubit>().initialValue();
+    print('in init of scan ${context.read<BluetoothCubit>().autoConnected}');
   }
 
   @override
@@ -57,10 +58,8 @@ class _BluetoothScanDeviceScreenState extends State<BluetoothScanDeviceScreen> {
                     value: state,
                     onChanged: (value) {
                       context.read<BluetoothCubit>().autoConnected = value;
-                      // print('the state of auto connect is ${context.read<BluetoothCubit>().autoConnected}');
                       context.read<BluetoothCubit>().disconnectReasonCode = 0;
                       context.read<SwitchCubit>().updateValue(value);
-                      // print(context.read<BluetoothCubit>().autoConnected);
                     },
                   );
                 },

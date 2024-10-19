@@ -9,7 +9,7 @@ class SplashCubit extends Cubit<int> {
     Future.delayed(
       const Duration(seconds: 2),
       () {
-        pushNamedRemoveAll(AppRoutes.home);
+        pushNamedRemoveAll(AppRoutes.home_page);
       },
     );
   }

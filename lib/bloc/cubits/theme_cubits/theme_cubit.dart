@@ -27,6 +27,59 @@ class AppThemeModeCubit extends Cubit<AppThemeMode> {
     }
   }
 
+  // ThemeData appTheme() {
+  //   if (state == AppThemeMode.dark) {
+  //     return ThemeData(
+  //       dialogTheme: const DialogTheme(surfaceTintColor: AppColors.white, backgroundColor: AppColors.white),
+  //       switchTheme: const SwitchThemeData(
+  //         trackColor: MaterialStatePropertyAll<Color>(
+  //           AppColors.white,
+  //         ),
+  //         trackOutlineColor: MaterialStatePropertyAll<Color>(AppColors.white),
+  //       ),
+  //       appBarTheme: AppBarTheme(
+  //         color: AppColors.appBarColor,
+  //         iconTheme: const IconThemeData(
+  //           color: AppColors.white,
+  //         ),
+  //       ),
+  //       colorScheme: const ColorScheme.dark(
+  //         background: AppColors.black,
+  //       ),
+  //       cardTheme: const CardTheme(
+  //         surfaceTintColor: AppColors.black,
+  //       ),
+  //       textTheme: const TextTheme(
+  //         displayLarge: TextStyle(
+  //           color: AppColors.white,
+  //         ),
+  //       ),
+  //     );
+  //   }
+  //   return ThemeData(
+  //     dialogTheme: const DialogTheme(surfaceTintColor: AppColors.white, backgroundColor: AppColors.white),
+  //     switchTheme: const SwitchThemeData(
+  //       trackOutlineColor: MaterialStatePropertyAll<Color>(AppColors.black),
+  //       trackColor: MaterialStatePropertyAll<Color>(
+  //         AppColors.white,
+  //       ),
+  //     ),
+  //     appBarTheme: AppBarTheme(
+  //       color: AppColors.appBarColor,
+  //       iconTheme: const IconThemeData(color: AppColors.white),
+  //     ),
+  //     colorScheme: const ColorScheme.light(
+  //       background: AppColors.white,
+  //     ),
+  //     cardTheme: const CardTheme(surfaceTintColor: AppColors.white, elevation: 5),
+  //     textTheme: const TextTheme(
+  //       displayLarge: TextStyle(
+  //         color: AppColors.black,
+  //       ),
+  //     ),
+  //   );
+  // }
+
   ThemeData appTheme() {
     if (state == AppThemeMode.dark) {
       return ThemeData(

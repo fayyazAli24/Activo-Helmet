@@ -9,3 +9,6 @@ const savedAlarmTimeKey = 'alarm_time';
 
 const hourFromApi = 'hour';
 const minutesFromApi = 'minutes';
+
+const sos = 'SOS';
+const disconnectReasonKey = 'reason';

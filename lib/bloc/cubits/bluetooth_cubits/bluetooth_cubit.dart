@@ -26,6 +26,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   double? pressure;
   int isWore = 0;
   int cheek = 0;
+  int count = 0;
   bool checkLocation = false;
   bool isDiscovering = false;
   int disconnectReasonCode = 0;
@@ -112,6 +113,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
     try {
       print('in get device $adapterState');
       if (adapterState == BluetoothAdapterState.on) {
+        print("thisssssssssssss");
         isDiscovering = true;
         scannedDevices = [];
         emit(BluetoothScannedState(devices: scannedDevices, isDiscovering: isDiscovering));
@@ -123,6 +125,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                 print('the resultant devices are ${result.device.platformName}');
                 scannedDevices.add(result.device);
                 if (autoConnected) {
+                  print("theeeeeeeeeee");
                   for (int i = 0; i < scannedDevices.length; i++) {
                     final device = await checkSavedDevice();
                     print('checked device in local storage is $device');
@@ -190,7 +193,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
       if (connection != null) {
         emit(BluetoothFailedState(message: 'Failed to connect'));
         print('scanning');
-        await getDevices();
+        // await getDevices();
         return;
       }
       emit(BluetoothConnectingState());
@@ -280,6 +283,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
               final sensorSub2 = sensorCharacteristic2.lastValueStream.listen((value) {
                 if (value.isNotEmpty) {
                   isWore = value[0];
+                  count++;
                   print('Sensor 2 Data: $value');
                   // Convert and use the data as needed
                 } else {
@@ -291,16 +295,20 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
                     cheek: cheek,
-                    speed: 0));
+                    speed: 0,
+                    count: count));
               });
               sensorCharacteristic2.setNotifyValue(true);
               device.cancelWhenDisconnected(sensorSub2);
 
               final sensorSub3 = sensorCharacteristic3.lastValueStream.listen((value) {
                 if (value.isNotEmpty) {
+                  // isWore = value[0];
+                  count++;
                   cheek = value[0];
                   print('Sensor 3 Data: $value');
                 } else {
+                  // isWore = 0;
                   cheek = 0;
                   print('No data received from Sensor 3');
                 }
@@ -309,7 +317,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
                     batteryPercentage: batteryPercentage ?? 0.0,
                     isWore: isWore,
                     cheek: cheek,
-                    speed: 0));
+                    speed: 0,
+                    count: count));
               });
               sensorCharacteristic3.setNotifyValue(true);
               device.cancelWhenDisconnected(sensorSub3);
@@ -374,6 +383,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
   Future<void> disconnectDevice([int? reason]) async {
     log('$reason *******');
+
+    await StorageService().write(disconnectReasonKey, reason.toString());
 
     connectedDevice?.disconnect();
     subscription?.cancel();

@@ -22,6 +22,7 @@ class SwitchCubit extends Cubit<bool> {
   }
 
   Future<void> updateValue(bool value) async {
+    print("the value written in switch is $value");
     await StorageService().write(autoConnectKey, value.toString());
     emit(value);
   }
