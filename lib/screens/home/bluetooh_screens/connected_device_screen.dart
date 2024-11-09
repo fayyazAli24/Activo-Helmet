@@ -40,9 +40,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
     try {
       if (!mounted) return;
 
-      List? res = await di
-          .get<HelmetService>()
-          .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore, widget.state.cheek);
+      List? res = await di.get<HelmetService>().sendData(widget.deviceName ?? '', widget.state.batteryPercentage,
+          widget.state.isWore, widget.state.cheek, DateTime.now(), DateTime.now());
 
       // if (help.prevSpeed == 0) return;
 
@@ -165,13 +164,13 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
             weight: FontWeight.w500,
             color: theme.textTheme.bodyLarge?.color,
           ),
-          AppSpace.vrtSpace(10),
-          AppText(
-            ///condition inverted
-            text: widget.state.count.toString(),
-            weight: FontWeight.w500,
-            color: theme.textTheme.bodyLarge?.color,
-          ),
+          // AppSpace.vrtSpace(10),
+          // AppText(
+          //   ///condition inverted
+          //   text: widget.state.count.toString(),
+          //   weight: FontWeight.w500,
+          //   color: theme.textTheme.bodyLarge?.color,
+          // ),
         ],
       ),
     );

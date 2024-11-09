@@ -21,7 +21,7 @@ class HelmetService {
   Location location = Location();
   LocationCubit locationCubit = LocationCubit();
 
-  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek) async {
+  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek, var Date1, var Date2) async {
     try {
       double speed = 0.0;
       var wearingStatus = 0;
@@ -68,7 +68,7 @@ class HelmetService {
 
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
-        apiDateTime: DateTime.now(),
+        apiDateTime: Date1,
         userId: '',
         latitude: locationService.latitude,
         longitude: locationService.longitude,
@@ -76,7 +76,7 @@ class HelmetService {
         isWrongWay: 0,
         speed: speed > 105 ? 75 : speed,
         vehicleType: '',
-        savedTime: DateTime.now(),
+        savedTime: Date2,
         synced: 0,
         createdBy: '',
         updatedBy: '',
@@ -156,12 +156,12 @@ class HelmetService {
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
 
-    print("the unsynced list is $unsyncedDataList");
+    print('the unsynced list is $unsyncedDataList');
     if (unsyncedDataList.isEmpty) return null;
 
     try {
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print("response is in $res");
+      print('response is in $res');
 
       if (res != null) {
         // Mark all unsynced models as synced (synced = 1)

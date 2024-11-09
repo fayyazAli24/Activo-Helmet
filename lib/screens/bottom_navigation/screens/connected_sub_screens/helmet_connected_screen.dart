@@ -36,9 +36,8 @@ class _HelmetConnectedScreenState extends State<HelmetConnectedScreen> {
     try {
       if (!mounted) return;
 
-      List? res = await di
-          .get<HelmetService>()
-          .sendData(widget.deviceName ?? '', widget.state.batteryPercentage, widget.state.isWore, widget.state.cheek);
+      List? res = await di.get<HelmetService>().sendData(widget.deviceName ?? '', widget.state.batteryPercentage,
+          widget.state.isWore, widget.state.cheek, DateTime.now(), DateTime.now());
 
       // if (help.prevSpeed == 0) return;
 
@@ -62,14 +61,9 @@ class _HelmetConnectedScreenState extends State<HelmetConnectedScreen> {
   void initState() {
     super.initState();
     // WidgetsBinding.instance.addObserver(this);
-    connectedTime = DateTime.now();
-    context.read<TimerCubit>().updateTimer(connectedTime);
-
-    counter = Timer.periodic(const Duration(seconds: 1), (value) {
-      context.read<TimerCubit>().updateTimer(connectedTime);
-    });
 
     initialization();
+
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       var device = context.read<BluetoothCubit>().connectedDevice;
       if (device != null) {

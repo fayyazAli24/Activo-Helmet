@@ -43,6 +43,13 @@ class _SOSState extends State<SOS> {
             SizedBox(
               height: 10.h,
             ),
+            Text(
+              "Comming Soon",
+              style: TextStyle(color: Colors.redAccent, fontSize: 18),
+            ),
+            SizedBox(
+              height: 10.h,
+            ),
             const CircleAvatar(
               backgroundColor: Colors.redAccent,
               radius: 50,

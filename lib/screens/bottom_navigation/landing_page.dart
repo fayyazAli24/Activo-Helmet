@@ -9,11 +9,13 @@ import 'package:location/location.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_cubit.dart';
 import 'package:unilever_activo/bloc/cubits/alarm_dart_state.dart';
 import 'package:unilever_activo/bloc/cubits/bottom_navigation/bottom_navigation_cubit.dart';
+import 'package:unilever_activo/domain/services/test.dart';
 import 'package:unilever_activo/utils/widgets/custom_app_bar.dart';
 
 import '../../app/app.dart';
 import '../../bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import '../../bloc/cubits/location_cubits/location_cubit.dart';
+import '../../bloc/cubits/switch_cubit/switch_cubit.dart';
 import '../../bloc/states/bluetooth_state/bluetooth_states.dart';
 import '../../bloc/states/bottom_navigation/bottom_navigation_state.dart';
 import '../../domain/services/helmet_service.dart';
@@ -35,11 +37,26 @@ class _HomePageState extends State<HomePage> {
     final bluetoothCubit = context.read<BluetoothCubit>();
     await bluetoothCubit.checkPermissions();
     bluetoothCubit.listenState();
+
+    context.read<BluetoothCubit>().autoConnected = await context.read<SwitchCubit>().initialValue();
+    print('in init of scan ${context.read<BluetoothCubit>().autoConnected}');
+
+    /// to manage counter
+    TimerTest.manageCounter(context);
   }
 
   @override
   void initState() {
+    super.initState();
     onInit();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    TimerTest.counter?.cancel();
+    TimerTest.connectedTime = DateTime.now();
+    super.dispose();
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -326,7 +343,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<dynamic> locationOffDialog(BuildContext context) {
-    print("from home screen");
+    print('from home screen');
     return showAdaptiveDialog(
       context: context,
       builder: (context) {
