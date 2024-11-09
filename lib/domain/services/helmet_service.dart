@@ -21,7 +21,7 @@ class HelmetService {
   Location location = Location();
   LocationCubit locationCubit = LocationCubit();
 
-  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek) async {
+  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek, var date1, var date2) async {
     try {
       double speed = 0.0;
       var wearingStatus = 0;
@@ -52,7 +52,7 @@ class HelmetService {
         // }
 
         var temp = calculateSpeed(
-            locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
+            locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 10);
         speed = temp;
       }
 
@@ -68,7 +68,7 @@ class HelmetService {
 
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
-        apiDateTime: DateTime.now(),
+        apiDateTime: date1,
         userId: '',
         latitude: locationService.latitude,
         longitude: locationService.longitude,
@@ -76,7 +76,7 @@ class HelmetService {
         isWrongWay: 0,
         speed: speed > 105 ? 75 : speed,
         vehicleType: '',
-        savedTime: DateTime.now(),
+        savedTime: date2,
         synced: 0,
         createdBy: '',
         updatedBy: '',

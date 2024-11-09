@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:unilever_activo/screens/bottom_navigation/landing_page.dart';
+// import 'package:unilever_activo/screens/bottom_navigation/landing_page.dart';
 import 'package:unilever_activo/screens/home/drop_down/device_history_screen.dart';
 import 'package:unilever_activo/screens/home/drop_down/location_history_screen.dart';
 import 'package:unilever_activo/screens/home/home_screen.dart';
@@ -20,6 +20,6 @@ class AppRoutes {
     locationHistory: (_) => const LocationHistoryScreen(),
     deviceHistory: (_) => const DeviceHistoryScreen(),
     calibrate: (_) => const CalibrateScreen(),
-    home_page: (_) => const HomePage()
+    // home_page: (_) => const HomePage()
   };
 }
