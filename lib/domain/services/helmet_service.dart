@@ -52,7 +52,7 @@ class HelmetService {
         // }
 
         var temp = calculateSpeed(
-            locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 10);
+            locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
         speed = temp;
       }
 

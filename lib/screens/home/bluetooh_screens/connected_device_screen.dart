@@ -72,7 +72,7 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
     });
 
     initialization();
-    timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       var device = context.read<BluetoothCubit>().connectedDevice;
       if (device != null) {
         print('calling from init');
