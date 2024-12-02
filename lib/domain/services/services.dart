@@ -34,8 +34,6 @@ abstract class AppService<T> {
       ],
     );
 
-
-
   Future<dynamic> get({required String api, String? id, Map<String, dynamic>? body}) async {}
 
   Future<dynamic> post(
@@ -43,7 +41,6 @@ abstract class AppService<T> {
 }
 
 class ApiServices extends AppService {
-
   @override
   Future get(
       {required String api, String? id, Map<String, dynamic>? body, Map<String, dynamic>? queryParameters}) async {
@@ -61,7 +58,6 @@ class ApiServices extends AppService {
 
       return null;
     } catch (e) {
-
       throw DioException(
           requestOptions: RequestOptions(
             data: body,

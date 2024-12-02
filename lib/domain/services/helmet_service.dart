@@ -20,13 +20,26 @@ import 'location_service.dart';
 class HelmetService {
   Location location = Location();
   LocationCubit locationCubit = LocationCubit();
+  StreamSubscription<LocationData>? _locationSubscription;
+  var locationService;
 
-  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek, var date1, var date2) async {
+  Future<void> initializeLocationUpdates() async {
+    await enableBackgroundMode();
+    // Start listening to location updates
+    _locationSubscription = location.onLocationChanged.listen((LocationData locationData) {
+      locationService = locationData; // Update the latest location
+      print('Updated location: $locationData');
+    });
+  }
+
+  Future<dynamic> sendData(
+      String helmetName, double batterPercent, int isWore, int cheek, var date1, var date2, var locationService) async {
     try {
       double speed = 0.0;
       var wearingStatus = 0;
-      await enableBackgroundMode();
-      final locationService = await location.getLocation();
+
+      // final locationService = await location.getLocation();
+
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -145,7 +158,7 @@ class HelmetService {
   // }
 
   Future<List<dynamic>?> syncUnsyncedData() async {
-    print("in this -------");
+    print('in this -------');
     var unsyncedDataList = <DeviceReqBodyModel>[];
     var dataList = <DeviceReqBodyModel>[];
 
@@ -156,12 +169,12 @@ class HelmetService {
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
 
-    print("the unsynced list is $unsyncedDataList");
+    print('the unsynced list is $unsyncedDataList');
     if (unsyncedDataList.isEmpty) return null;
 
     try {
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print("response is in $res");
+      print('response is in $res');
 
       if (res != null) {
         // Mark all unsynced models as synced (synced = 1)
