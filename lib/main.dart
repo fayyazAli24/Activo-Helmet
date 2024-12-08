@@ -19,7 +19,7 @@ Future<void> main() async {
     await Alarm.init();
     // await initializeService();
     await checkIsFirstRun();
-    await manageAlarmTime();
+    // await manageAlarmTime();
     initializeNotifications();
     await setUpNotifications();
     await clearPreviousRecord();

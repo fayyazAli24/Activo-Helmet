@@ -162,6 +162,8 @@ class HelmetService {
     var unsyncedDataList = <DeviceReqBodyModel>[];
     var dataList = <DeviceReqBodyModel>[];
 
+    final now = DateTime.now();
+
     String? encodedList = await StorageService().read(deviceListKey);
 
     if (encodedList != null) {
@@ -170,23 +172,32 @@ class HelmetService {
     }
 
     print('the unsynced list is $unsyncedDataList');
+    print(unsyncedDataList.first);
     if (unsyncedDataList.isEmpty) return null;
 
-    try {
-      final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print('response is in $res');
+    // unsyncedDataList.sort((a, b) => a.savedTime!.compareTo(b.savedTime!));
 
-      if (res != null) {
-        // Mark all unsynced models as synced (synced = 1)
-        for (var unsyncedModel in unsyncedDataList) {
-          unsyncedModel.synced = 1;
+    final oldestRecordTime = unsyncedDataList.first.savedTime;
+
+    if (now.difference(oldestRecordTime!).inMinutes >= 5) {
+      try {
+        final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+        print('response is in $res');
+
+        if (res != null) {
+          // Mark all unsynced models as synced (synced = 1)
+          for (var unsyncedModel in unsyncedDataList) {
+            unsyncedModel.synced = 1;
+          }
+        } else {
+          throw Exception('API call failed during unsynced data sync');
         }
-      } else {
+      } catch (e) {
+        print('API call failed during unsynced data sync: $e');
         throw Exception('API call failed during unsynced data sync');
       }
-    } catch (e) {
-      print('API call failed during unsynced data sync: $e');
-      throw Exception('API call failed during unsynced data sync');
+    } else {
+      return null;
     }
 
     // Remove all records from dataList that are already synced (synced == 1)
@@ -195,6 +206,7 @@ class HelmetService {
     // Write the remaining unsynced data back to local storage
     await StorageService().write(deviceListKey, jsonEncode(dataList));
 
+    print('this is being returned ');
     return [];
   }
 

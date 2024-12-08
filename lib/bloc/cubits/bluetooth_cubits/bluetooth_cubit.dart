@@ -190,7 +190,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   Future<void> connect(BluetoothDevice device) async {
     try {
       final connection = await checkConnections();
-      if (connection != null) {
+      if (connection != null || (!device.platformName.startsWith('TK-UL'))) {
         emit(BluetoothFailedState(message: 'Failed to connect'));
         print('scanning');
         // await getDevices();

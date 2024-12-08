@@ -74,8 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
           if (bluetoothState.connectedDevice?.isConnected ?? false) {
             final isStopped = await Alarm.stop(1);
             if (isStopped) {
-              manageAlarmTimeAfterBluetooth();
-              await manageAlarmTimeAfterBluetooth();
+              // manageAlarmTimeAfterBluetooth();
+              // await manageAlarmTimeAfterBluetooth();
               await setUpNotifications();
               // context.read<AlarmCubit>().setAlarm(appAlarmTime);
               print('alarm stopped');
