@@ -38,7 +38,7 @@ dependencies:
   flutter_bloc: ^8.1.6
   dio: ^5.7.0
   permission_handler: ^11.3.1
-#  another_telephony: ^0.3.0
+  another_telephony: ^0.3.0
   lottie: ^3.1.2
 #  flutter_bluetooth_serial: ^0.4.0
   hive: ^2.2.3
@@ -61,7 +61,7 @@ dependencies:
   responsive_sizer: ^3.3.1
   pie_chart: ^5.4.0
   fl_chart: ^0.69.0
-#  flutter_phone_direct_caller: ^2.1.1
+  flutter_phone_direct_caller: ^2.1.1
 #  url_launcher:
 
 

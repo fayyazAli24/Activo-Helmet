@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  another_telephony:
+    dependency: "direct main"
+    description:
+      name: another_telephony
+      sha256: "8d128b890c56a33d61516382b03e3f2b79831d30694f6c63eb09e8974b7573b9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   archive:
     dependency: transitive
     description:
@@ -294,6 +302,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.2.0"
+  flutter_phone_direct_caller:
+    dependency: "direct main"
+    description:
+      name: flutter_phone_direct_caller
+      sha256: a50abfb49656d39e777278348742d0d09ecfa5d4918bbc4e0b19df46e8dfd858
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
