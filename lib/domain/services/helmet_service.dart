@@ -171,7 +171,7 @@ class HelmetService {
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
 
-    print('the unsynced list is $unsyncedDataList');
+    print('the unsynced list is ${jsonDecode(unsyncedDataList.first.toString())}');
     print(unsyncedDataList.first);
     if (unsyncedDataList.isEmpty) return null;
 
@@ -179,26 +179,29 @@ class HelmetService {
 
     final oldestRecordTime = unsyncedDataList.first.savedTime;
 
-    if (now.difference(oldestRecordTime!).inMinutes >= 5) {
-      try {
-        final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-        print('response is in $res');
+    print('jjjjjj ${jsonDecode(unsyncedDataList.first.toString())}');
 
-        if (res != null) {
-          // Mark all unsynced models as synced (synced = 1)
-          for (var unsyncedModel in unsyncedDataList) {
-            unsyncedModel.synced = 1;
-          }
-        } else {
-          throw Exception('API call failed during unsynced data sync');
+    // if (now.difference(oldestRecordTime!).inMinutes >= 5) {
+    try {
+      final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+      print('response is in  $res');
+      print('post is called  $res');
+
+      if (res != null) {
+        for (var unsyncedModel in unsyncedDataList) {
+          unsyncedModel.synced = 1;
         }
-      } catch (e) {
-        print('API call failed during unsynced data sync: $e');
+      } else {
         throw Exception('API call failed during unsynced data sync');
       }
-    } else {
-      return null;
+    } catch (e) {
+      print('API call failed during unsynced data sync: $e');
+      throw Exception('API call failed during unsynced data sync');
     }
+    // } else {
+    //   print('in the else of this');
+    //   return null;
+    // }
 
     // Remove all records from dataList that are already synced (synced == 1)
     dataList.removeWhere((element) => element.synced == 1);
