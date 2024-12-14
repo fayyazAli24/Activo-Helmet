@@ -160,9 +160,10 @@ class HelmetService {
   Future<List<dynamic>?> syncUnsyncedData() async {
     print('in this -------');
     var unsyncedDataList = <DeviceReqBodyModel>[];
+
     var dataList = <DeviceReqBodyModel>[];
 
-    final now = DateTime.now();
+    // final now = DateTime.now();
 
     String? encodedList = await StorageService().read(deviceListKey);
 
@@ -170,34 +171,21 @@ class HelmetService {
       dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
       unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
     }
-
-    print('the unsynced list is $unsyncedDataList');
-    print(unsyncedDataList.first);
     if (unsyncedDataList.isEmpty) return null;
+    try {
+      final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+      print('response is in $res');
 
-    // unsyncedDataList.sort((a, b) => a.savedTime!.compareTo(b.savedTime!));
-
-    final oldestRecordTime = unsyncedDataList.first.savedTime;
-
-    if (now.difference(oldestRecordTime!).inMinutes >= 5) {
-      try {
-        final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-        print('response is in $res');
-
-        if (res != null) {
-          // Mark all unsynced models as synced (synced = 1)
-          for (var unsyncedModel in unsyncedDataList) {
-            unsyncedModel.synced = 1;
-          }
-        } else {
-          throw Exception('API call failed during unsynced data sync');
+      if (res != null) {
+        for (var unsyncedModel in unsyncedDataList) {
+          unsyncedModel.synced = 1;
         }
-      } catch (e) {
-        print('API call failed during unsynced data sync: $e');
+      } else {
         throw Exception('API call failed during unsynced data sync');
       }
-    } else {
-      return null;
+    } catch (e) {
+      print('API call failed during unsynced data sync: $e');
+      throw Exception('API call failed during unsynced data sync');
     }
 
     // Remove all records from dataList that are already synced (synced == 1)

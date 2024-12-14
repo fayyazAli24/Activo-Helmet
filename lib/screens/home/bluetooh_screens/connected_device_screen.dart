@@ -56,14 +56,14 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
         snackBar('Data Synced Successfully', context);
       } else {
         print("Data stored");
-        // snackBar('Data Stored ', context);
+        snackBar('Data Failed to sync ', context);
       }
     } catch (e) {
       if (!mounted) return;
 
       print('ex: $e');
 
-      snackBar('Data Failed To Synced', context);
+      snackBar('Data Failed To sync', context);
     }
   }
 

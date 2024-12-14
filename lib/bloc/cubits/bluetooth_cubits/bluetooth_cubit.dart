@@ -43,6 +43,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   late StreamSubscription<BluetoothAdapterState> adapterStateStateSubscription;
   List<BluetoothService> services = [];
   StreamSubscription<ServiceStatus>? subscription;
+  static int recordsListBeingSent = 0;
+  static int unSyncedRecords = 0;
+  static int previousRecrodsLength = 0;
 
   Future<void> checkPermissions() async {
     final bluetoothPermission = await Permission.bluetooth.isGranted;
