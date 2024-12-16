@@ -22,6 +22,7 @@ class HelmetService {
   LocationCubit locationCubit = LocationCubit();
   StreamSubscription<LocationData>? _locationSubscription;
   var locationService;
+  bool _isSyncing = false;
 
   Future<void> initializeLocationUpdates() async {
     await enableBackgroundMode();
@@ -118,83 +119,54 @@ class HelmetService {
     return null;
   }
 
-  // Future<List<dynamic>?> syncUnsyncedData() async {
-  //   var unsyncedDataList = <DeviceReqBodyModel>[];
-  //   var dataList = <DeviceReqBodyModel>[];
-  //
-  //   String? encodedList = await StorageService().read(deviceListKey);
-  //
-  //   if (encodedList != null) {
-  //     dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-  //     unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
-  //   }
-  //   if (unsyncedDataList.isEmpty) return null;
-  //
-  //   try {
-  //     final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-  //     print("resppnse is in $res");
-  //
-  //     if (res != null) {
-  //       for (var unsyncedModel in unsyncedDataList) {
-  //         unsyncedModel.synced = 1;
-  //       }
-  //     } else {
-  //       throw Exception('API call failed during unsynced data sync');
-  //     }
-  //   } catch (e) {
-  //     print('API call failed during unsynced data sync: $e');
-  //     throw Exception('API call failed during unsynced data sync');
-  //   }
-  //
-  //   ///updating local list
-  //   for (final updatedModel in dataList) {
-  //     final index = dataList.indexWhere((element) => element == updatedModel);
-  //     if (index != -1) {
-  //       dataList[index] = updatedModel;
-  //     }
-  //   }
-  //   await StorageService().write(deviceListKey, jsonEncode(dataList));
-  //   return [];
-  // }
-
   Future<List<dynamic>?> syncUnsyncedData() async {
-    print('in this -------');
-    var unsyncedDataList = <DeviceReqBodyModel>[];
-
-    var dataList = <DeviceReqBodyModel>[];
-
-    // final now = DateTime.now();
-
-    String? encodedList = await StorageService().read(deviceListKey);
-
-    if (encodedList != null) {
-      dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-      unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+    if (_isSyncing) {
+      print('Sync already in progress...');
+      return null;
     }
-    if (unsyncedDataList.isEmpty) return null;
+
+    _isSyncing = true;
     try {
+      print('Starting sync process...');
+      var unsyncedDataList = <DeviceReqBodyModel>[];
+      var dataList = <DeviceReqBodyModel>[];
+
+      String? encodedList = await StorageService().read(deviceListKey);
+
+      if (encodedList != null) {
+        dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
+
+        unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+      }
+
+      if (unsyncedDataList.isEmpty) return null;
+
+      print('Sending ${unsyncedDataList.length} records to the server...');
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print('response is in $res');
 
       if (res != null) {
+        print('Response: $res');
+
+        // Update synced status for successfully synced records
         for (var unsyncedModel in unsyncedDataList) {
-          unsyncedModel.synced = 1;
+          final index = dataList.indexWhere(
+              (element) => element.helmetId == unsyncedModel.helmetId && element.savedTime == unsyncedModel.savedTime);
+          if (index != -1) {
+            dataList[index].synced = 1;
+          }
         }
+
+        // Write updated data back to local storage
+        await StorageService().write(deviceListKey, jsonEncode(dataList));
+        print('Local storage updated successfully');
       } else {
-        throw Exception('API call failed during unsynced data sync');
+        throw Exception('Failed to sync with server');
       }
     } catch (e) {
-      print('API call failed during unsynced data sync: $e');
-      throw Exception('API call failed during unsynced data sync');
+      print('Error during sync: $e');
+    } finally {
+      _isSyncing = false;
     }
-
-    // Remove all records from dataList that are already synced (synced == 1)
-    dataList.removeWhere((element) => element.synced == 1);
-
-    // Write the remaining unsynced data back to local storage
-    await StorageService().write(deviceListKey, jsonEncode(dataList));
-
-    print('this is being returned ');
     return [];
   }
 
