@@ -4,21 +4,18 @@ import 'package:another_telephony/telephony.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 // import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/bluetooth_switch.dart';
+import 'package:unilever_activo/domain/services/accident_detect.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_connected_screen.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_scanning_screen.dart';
 
-import '../../../app/app_keys.dart';
 import '../../../bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import '../../../bloc/cubits/switch_cubit/switch_cubit.dart';
 import '../../../bloc/states/bluetooth_state/bluetooth_states.dart';
-import '../../../domain/services/storage_services.dart';
 import '../../../navigations/navigation_helper.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/widgets/app_space.dart';
@@ -34,6 +31,9 @@ class HelmetConnected extends StatefulWidget {
 }
 
 class _HelmetConnectedState extends State<HelmetConnected> {
+  StreamSubscription? _subscription;
+  String status = "Listening...";
+
   Future<void> initialization() async {
     context.read<BluetoothCubit>().autoConnected = await context.read<SwitchCubit>().initialValue();
     print('in init of scan ${context.read<BluetoothCubit>().autoConnected}');
@@ -43,6 +43,7 @@ class _HelmetConnectedState extends State<HelmetConnected> {
   void initState() {
     // TODO: implement initState
     initialization();
+    AccidentDetectionService().listenToAccelerometer();
     super.initState();
   }
 
@@ -67,28 +68,28 @@ class _HelmetConnectedState extends State<HelmetConnected> {
             width: 100.w,
             height: 25.h,
             color: AppColors.test3,
-            child: Column(
+            child: const Column(
               children: [
-                const SizedBox(
+                SizedBox(
                   height: 15,
                 ),
                 InkWell(
-                  onTap: accidentAlert,
-                  child: const CircleAvatar(
+                  // onTap: accidentAlert,
+                  child: CircleAvatar(
                     backgroundColor: Colors.grey,
                     radius: 40,
                     child: Text('FA'),
                   ),
                 ),
-                const Text("FA"),
-                const SizedBox(
+                Text('FA'),
+                SizedBox(
                   height: 15,
                 ),
-                const Text("Fayyaz Ali"),
-                const SizedBox(
+                Text('Fayyaz Ali'),
+                SizedBox(
                   height: 2,
                 ),
-                const Text("+924343434343"),
+                Text('+924343434343'),
               ],
             ),
           ),
@@ -252,7 +253,7 @@ class _HelmetConnectedState extends State<HelmetConnected> {
                 },
                 builder: (context, bluetoothState) {
                   return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     child: Column(
                       children: [
                         SizedBox(
@@ -422,32 +423,5 @@ class _HelmetConnectedState extends State<HelmetConnected> {
         ),
       ),
     );
-  }
-
-  String generateGoogleMapsLink(double latitude, double longitude) {
-    return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
-  }
-
-  Future<void> accidentAlert() async {
-    /// call the email post api
-    /// ---- API in making
-    /// sending the sms
-    /// falseCase = false;
-
-    var number = await StorageService().read(sos);
-    final locationService = await location.getLocation();
-    String googleMapsLink = generateGoogleMapsLink(locationService.latitude!, locationService.longitude!);
-    String emegencyMessage = '''Accident Occured !!\ntap on the link for accident location\n$googleMapsLink''';
-
-    if (number != null) {
-      if (await Permission.sms.request().isGranted) {
-        await telephony.sendSms(to: number, message: emegencyMessage);
-      } else {
-        print('SMS permission denied');
-      }
-      await FlutterPhoneDirectCaller.callNumber(number);
-    } else {
-      dialog('Please add number in the SOS');
-    }
   }
 }

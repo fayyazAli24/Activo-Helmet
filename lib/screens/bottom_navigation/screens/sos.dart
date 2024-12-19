@@ -43,7 +43,7 @@ class _SOSState extends State<SOS> {
             SizedBox(
               height: 10.h,
             ),
-            Text(
+            const Text(
               "Comming Soon",
               style: TextStyle(color: Colors.redAccent, fontSize: 18),
             ),
@@ -53,7 +53,7 @@ class _SOSState extends State<SOS> {
             const CircleAvatar(
               backgroundColor: Colors.redAccent,
               radius: 50,
-              child: Center(child: Text(style: TextStyle(fontSize: 20, color: Colors.white), "SOS")),
+              child: Center(child: Text(style: TextStyle(fontSize: 20, color: Colors.white), 'SOS')),
             ),
             SizedBox(
               height: 3.h,
@@ -84,7 +84,7 @@ class _SOSState extends State<SOS> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text(
-                          "Add a Contact for SOS signal",
+                          'Add a Contact for SOS signal',
                           style: TextStyle(fontSize: 18, color: Colors.grey.shade700, fontWeight: FontWeight.bold),
                         ),
                         InkWell(

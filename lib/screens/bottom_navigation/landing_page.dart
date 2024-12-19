@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     // TODO: implement dispose
-    TimerTest.counter?.cancel();
+    // TimerTest.stopTimerStream();
     TimerTest.connectedTime = DateTime.now();
     super.dispose();
   }

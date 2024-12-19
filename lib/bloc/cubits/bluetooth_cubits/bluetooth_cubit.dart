@@ -12,6 +12,7 @@ import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dar
 import 'package:unilever_activo/domain/services/helmet_service.dart';
 import 'package:unilever_activo/domain/services/location_service.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
+import 'package:unilever_activo/domain/services/test.dart';
 import 'package:unilever_activo/navigations/navigation_helper.dart';
 import 'package:unilever_activo/utils/assets.dart';
 
@@ -202,6 +203,9 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
       print('the device is $connectedDevice');
       await device.connect();
+
+      TimerTest.start = true;
+
       await Future.delayed(Duration(seconds: 3));
       if (connectedDevice?.isConnected ?? false) {
         final convertedDevice = connectedDevice?.platformName;
@@ -386,6 +390,8 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
 
     await StorageService().write(disconnectReasonKey, reason.toString());
 
+    TimerTest.start = false;
+    // TimerTest.counter = null;
     connectedDevice?.disconnect();
     subscription?.cancel();
     _connectionStateSubscription?.cancel();

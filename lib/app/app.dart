@@ -28,7 +28,9 @@ Future<void> permissions() async {
     Permission.bluetoothScan,
     Permission.notification,
     Permission.storage,
-    Permission.locationAlways
+    Permission.locationAlways,
+    Permission.sms,
+    Permission.phone
   ].request();
 }
 
