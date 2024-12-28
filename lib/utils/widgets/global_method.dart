@@ -11,6 +11,7 @@ DateTime appAlarmTime = DateTime(
     DateTime.now().millisecond, // Current millisecond
     DateTime.now().microsecond // Current microsecond
     );
+
 void snackBar(String msg, BuildContext context, {Color? color, Color? textColor}) {
   ScaffoldMessenger.of(context).clearSnackBars();
   ScaffoldMessenger.of(context).showSnackBar(
