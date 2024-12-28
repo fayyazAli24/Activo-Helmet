@@ -116,13 +116,14 @@ class HelmetService {
     try {
       print('Starting sync process...');
       var unsyncedDataList = <DeviceReqBodyModel>[];
-      var dataList = <DeviceReqBodyModel>[];
+      var dataList = <DeviceReqBodyModel>[]; // Stores all data from local storage
 
       String? encodedList = await StorageService().read(deviceListKey);
 
       if (encodedList != null) {
         dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
 
+        // Extract unsynced data
         unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
       }
 
@@ -134,18 +135,18 @@ class HelmetService {
       if (res != null) {
         print('Response: $res');
 
-        // Update synced status for successfully synced records
+        // Mark synced elements
         for (var unsyncedModel in unsyncedDataList) {
-          final index = dataList.indexWhere(
-              (element) => element.helmetId == unsyncedModel.helmetId && element.savedTime == unsyncedModel.savedTime);
-          if (index != -1) {
-            dataList[index].synced = 1;
-          }
+          unsyncedModel.synced = 1;
         }
 
-        // Write updated data back to local storage
-        await StorageService().write(deviceListKey, jsonEncode(dataList));
-        print('Local storage updated successfully');
+        // Remove all elements where synced == 1
+        dataList = dataList.where((element) => element.synced == 0).toList();
+
+        // Save updated list back to local storage
+        String updatedList = jsonEncode(dataList);
+        await StorageService().write(deviceListKey, updatedList);
+        print('Synced records removed from local storage.');
       } else {
         throw Exception('Failed to sync with server');
       }
