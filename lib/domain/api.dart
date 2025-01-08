@@ -1,5 +1,9 @@
 class Api {
-  static const _baseUrl = 'http://175.107.195.221:8004/Api/';
+  static const _baseUrl = 'http://175.107.195.221:1500/Api/';
+  // static const login = '${_baseUrl}'
+
+  // 8004
+  // 9555
 
   static const trJourney = '${_baseUrl}TrJourney';
 
