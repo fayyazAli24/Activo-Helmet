@@ -193,7 +193,7 @@ Future<void> setUpNotifications() async {
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       // Notification Body
       platformChannelSpecifics,
-      payload: 'item x',
+      payload: 'item x', androidScheduleMode: AndroidScheduleMode.exact,
     );
   } catch (e, s) {
     print(s);

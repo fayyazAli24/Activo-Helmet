@@ -1,10 +1,12 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:unilever_activo/utils/widgets/bar_chart.dart';
+import 'package:unilever_activo/utils/widgets/mobthly_line_chart.dart';
 
+import '../../../app/app_keys.dart';
+import '../../../domain/services/graph/graph_service.dart';
+import '../../../domain/services/storage_services.dart';
 import '../../../utils/app_colors.dart';
-import '../../../utils/widgets/indicator.dart';
 
 class Stats extends StatefulWidget {
   const Stats({Key? key}) : super(key: key);
@@ -14,134 +16,92 @@ class Stats extends StatefulWidget {
 }
 
 class _StatsState extends State<Stats> {
-  @override
   List<Color> gradientColors = [
     AppColors.contentColorCyan,
     AppColors.contentColorBlue,
   ];
 
+  var data;
   bool showAvg = false;
   int touchedIndex = -1;
+  bool isLoading = true; // Flag to indicate loading state
+
+  Future<void> getGraphData() async {
+    try {
+      var id = await StorageService().read(lastDeviceKey);
+      if (id != null) {
+        var res = await GraphService().getData(id.toString());
+        if (res != null) {
+          setState(() {
+            data = res;
+            isLoading = false; // Data is now loaded
+          });
+          print("The data is $data");
+        } else {
+          setState(() {
+            isLoading = false; // Even if null, stop loading spinner
+          });
+        }
+      }
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching graph data: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getGraphData();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Positioned(
-          top: 0, // Position at the top
-          child: Container(
-            width: 100.w,
-            height: 35.h,
-            color: AppColors.white,
-            // Occupies 30% of the height
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 2.5.h,
-                ),
-                const Text(
-                  "Riders journey summary",
-                  style: TextStyle(color: Colors.black, fontSize: 18),
-                ),
-                AspectRatio(
-                  aspectRatio: 1.95,
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: PieChart(
-                            PieChartData(
-                              pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                                  setState(() {
-                                    if (!event.isInterestedForInteractions ||
-                                        pieTouchResponse == null ||
-                                        pieTouchResponse.touchedSection == null) {
-                                      touchedIndex = -1;
-                                      return;
-                                    }
-                                    touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                                  });
-                                },
-                              ),
-                              borderData: FlBorderData(show: false),
-                              sectionsSpace: 0,
-                              centerSpaceRadius: 40,
-                              sections: showingSections(),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          SizedBox(
-                            height: 8.h,
-                          ),
-                          const Indicator(color: Colors.blue, text: 'First', isSquare: true),
-                          const SizedBox(height: 4),
-                          const Indicator(color: Colors.yellow, text: 'Second', isSquare: true),
-                          const SizedBox(height: 4),
-                          const Indicator(color: Colors.purple, text: 'Third', isSquare: true),
-                          const SizedBox(height: 4),
-                          const Indicator(color: Colors.green, text: 'Fourth', isSquare: true),
-                          const SizedBox(height: 18),
-                        ],
-                      ),
-                      const SizedBox(width: 28),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          top: 30.h, // Start right after the pie chart
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          width: 95.w,
+          height: 60.h,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              width: 95.w,
+              width: 92.w,
               height: 50.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: charts().length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: 92.w,
-                      height: 50.h,
-                      decoration: BoxDecoration(
-                        color: AppColors.test3,
-                        borderRadius: const BorderRadius.all(Radius.circular(20)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.4), // Shadow color with opacity
-                            spreadRadius: 2, // How far the shadow spreads
-                            blurRadius: 5, // Blur effect of the shadow
-                            offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
-                          ),
-                        ],
+              decoration: BoxDecoration(
+                color: AppColors.test3,
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 25,
+                  left: 8,
+                  top: 24,
+                  bottom: 12,
+                ),
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator()) // Show a loading spinner
+                    : MonthlyLineChart(
+                        data: data, // Pass data once loaded
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          right: 25,
-                          left: 8,
-                          top: 24,
-                          bottom: 12,
-                        ),
-                        child: charts()[index],
-                      ),
-                    ),
-                  );
-                },
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -151,6 +111,7 @@ class _StatsState extends State<Stats> {
       fontSize: 16,
     );
     Widget text;
+
     switch (value.toInt()) {
       case 2:
         text = const Text('MAR', style: style);
@@ -441,10 +402,13 @@ class _StatsState extends State<Stats> {
 
   List<Widget> charts() {
     return [
-      LineChart(
-        showAvg ? avgData() : mainData(),
+      // LineChart(
+      //   showAvg ? avgData() : mainData(),
+      // ),
+      MonthlyLineChart(
+        data: data,
       ),
-      BarChartSample1()
+      // BarChartSample1()
     ];
   }
 }

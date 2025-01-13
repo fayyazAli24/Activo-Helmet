@@ -23,6 +23,7 @@ class BluetoothCubit extends Cubit<AppBluetoothState> {
   String? deviceName;
   bool loading = false;
   String? connectedDeviceData;
+  String? email;
   double? batteryPercentage;
   double? pressure;
   int isWore = 0;

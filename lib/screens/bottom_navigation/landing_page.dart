@@ -26,7 +26,8 @@ import '../../utils/widgets/app_space.dart';
 import '../../utils/widgets/app_text.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  var name;
+  HomePage({Key? key, this.name}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -109,97 +110,99 @@ class _HomePageState extends State<HomePage> {
                     locationOffDialog(context);
                   }
                 },
-                child: Scaffold(
-                    backgroundColor: Colors.white,
-                    appBar: CustomAppBar(
-                      title: 'Smart Helmet (Activo)',
-                      onOptionsPressed: () {
-                        optionsDialogBox(context);
-                      },
-                    ),
-                    body: bottomNavigationCubit.pages[bottomNavigationCubit.pageIndex],
-                    bottomNavigationBar: Container(
-                        height: 60,
-                        decoration: const BoxDecoration(
-                          color: AppColors.test3,
+                child: PopScope(
+                    canPop: false,
+                    child: Scaffold(
+                        backgroundColor: Colors.white,
+                        appBar: CustomAppBar(
+                          title: 'Smart Helmet (Activo)',
+                          onOptionsPressed: () {
+                            optionsDialogBox(context);
+                          },
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            // HelmetConnected (index 0)
-                            IconButton(
-                              enableFeedback: false,
-                              onPressed: () {
-                                bottomNavigationCubit.setIndex(0); // HelmetConnected index
-                              },
-                              icon: bottomNavigationstate is HelmetConnectedState
-                                  ? const Icon(
-                                      Icons.directions_bike_rounded,
-                                      color: Colors.blueAccent,
-                                      size: 35,
-                                    )
-                                  : const Icon(
-                                      Icons.directions_bike_rounded,
-                                      color: Colors.white,
-                                      size: 35,
-                                    ),
+                        body: bottomNavigationCubit.pages[bottomNavigationCubit.pageIndex],
+                        bottomNavigationBar: Container(
+                            height: 60,
+                            decoration: const BoxDecoration(
+                              color: AppColors.test3,
                             ),
-                            // Stats (index 1)
-                            IconButton(
-                              enableFeedback: false,
-                              onPressed: () {
-                                bottomNavigationCubit.setIndex(1); // Stats index
-                              },
-                              icon: bottomNavigationstate is StatsState
-                                  ? const Icon(
-                                      Icons.bar_chart_rounded,
-                                      color: Colors.blueAccent,
-                                      size: 35,
-                                    )
-                                  : const Icon(
-                                      Icons.bar_chart_rounded,
-                                      color: Colors.white,
-                                      size: 35,
-                                    ),
-                            ),
-                            // SOS (index 2)
-                            IconButton(
-                              enableFeedback: false,
-                              onPressed: () {
-                                bottomNavigationCubit.setIndex(2); // SOS index
-                              },
-                              icon: bottomNavigationstate is SOSState
-                                  ? const Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: Colors.blueAccent,
-                                      size: 35,
-                                    )
-                                  : const Icon(
-                                      Icons.warning_amber_outlined,
-                                      color: Colors.white,
-                                      size: 35,
-                                    ),
-                            ),
-                            // ManageProfile (index 3)
-                            IconButton(
-                              enableFeedback: false,
-                              onPressed: () {
-                                bottomNavigationCubit.setIndex(3); // ManageProfile index
-                              },
-                              icon: bottomNavigationstate is ManageProfileState
-                                  ? const Icon(
-                                      Icons.person,
-                                      color: Colors.blueAccent,
-                                      size: 35,
-                                    )
-                                  : const Icon(
-                                      Icons.person_outline,
-                                      color: Colors.white,
-                                      size: 35,
-                                    ),
-                            ),
-                          ],
-                        ))));
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                // HelmetConnected (index 0)
+                                IconButton(
+                                  enableFeedback: false,
+                                  onPressed: () {
+                                    bottomNavigationCubit.setIndex(0); // HelmetConnected index
+                                  },
+                                  icon: bottomNavigationstate is HelmetConnectedState
+                                      ? const Icon(
+                                          Icons.directions_bike_rounded,
+                                          color: Colors.blueAccent,
+                                          size: 35,
+                                        )
+                                      : const Icon(
+                                          Icons.directions_bike_rounded,
+                                          color: Colors.white,
+                                          size: 35,
+                                        ),
+                                ),
+                                // Stats (index 1)
+                                IconButton(
+                                  enableFeedback: false,
+                                  onPressed: () {
+                                    bottomNavigationCubit.setIndex(1); // Stats index
+                                  },
+                                  icon: bottomNavigationstate is StatsState
+                                      ? const Icon(
+                                          Icons.bar_chart_rounded,
+                                          color: Colors.blueAccent,
+                                          size: 35,
+                                        )
+                                      : const Icon(
+                                          Icons.bar_chart_rounded,
+                                          color: Colors.white,
+                                          size: 35,
+                                        ),
+                                ),
+                                // SOS (index 2)
+                                IconButton(
+                                  enableFeedback: false,
+                                  onPressed: () {
+                                    bottomNavigationCubit.setIndex(2); // SOS index
+                                  },
+                                  icon: bottomNavigationstate is SOSState
+                                      ? const Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.blueAccent,
+                                          size: 35,
+                                        )
+                                      : const Icon(
+                                          Icons.warning_amber_outlined,
+                                          color: Colors.white,
+                                          size: 35,
+                                        ),
+                                ),
+                                // ManageProfile (index 3)
+                                // IconButton(
+                                //   enableFeedback: false,
+                                //   onPressed: () {
+                                //     bottomNavigationCubit.setIndex(3); // ManageProfile index
+                                //   },
+                                //   icon: bottomNavigationstate is ManageProfileState
+                                //       ? const Icon(
+                                //           Icons.person,
+                                //           color: Colors.blueAccent,
+                                //           size: 35,
+                                //         )
+                                //       : const Icon(
+                                //           Icons.person_outline,
+                                //           color: Colors.white,
+                                //           size: 35,
+                                //         ),
+                                // ),
+                              ],
+                            )))));
           },
         );
       },

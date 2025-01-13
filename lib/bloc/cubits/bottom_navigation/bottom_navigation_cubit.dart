@@ -12,7 +12,7 @@ class BottomNavigationCubit extends Cubit<BottomNavigationState> {
   int pageIndex = 0;
   final pages = [
     HelmetConnected(),
-    const Stats(),
+    Stats(),
     SOS(),
     const ManageProfile(),
   ];

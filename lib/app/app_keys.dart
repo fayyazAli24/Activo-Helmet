@@ -12,3 +12,5 @@ const minutesFromApi = 'minutes';
 
 const sos = 'SOS';
 const disconnectReasonKey = 'reason';
+const tokenKey = 'hahhaha';
+const userRegister = 'user Register';

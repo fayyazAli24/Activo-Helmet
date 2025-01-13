@@ -1,5 +1,6 @@
 import 'dart:async';
 
+// import 'package:another_telephony/telephony.dart';
 import 'package:another_telephony/telephony.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,13 +10,13 @@ import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/bluetooth_switch.dart';
-import 'package:unilever_activo/domain/services/accident_detect.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_connected_screen.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_scanning_screen.dart';
 
 import '../../../bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import '../../../bloc/cubits/switch_cubit/switch_cubit.dart';
 import '../../../bloc/states/bluetooth_state/bluetooth_states.dart';
+import '../../../domain/services/accident_detect.dart';
 import '../../../navigations/navigation_helper.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/widgets/app_space.dart';
@@ -24,15 +25,16 @@ import '../../../utils/widgets/global_method.dart';
 
 class HelmetConnected extends StatefulWidget {
   var counter;
+
   HelmetConnected({Key? key, this.counter}) : super(key: key);
 
   @override
   State<HelmetConnected> createState() => _HelmetConnectedState();
 }
 
-class _HelmetConnectedState extends State<HelmetConnected> {
+class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingObserver {
   StreamSubscription? _subscription;
-  String status = "Listening...";
+  String status = 'Listening...';
 
   Future<void> initialization() async {
     context.read<BluetoothCubit>().autoConnected = await context.read<SwitchCubit>().initialValue();
@@ -43,9 +45,39 @@ class _HelmetConnectedState extends State<HelmetConnected> {
   void initState() {
     // TODO: implement initState
     initialization();
-    AccidentDetectionService().listenToAccelerometer();
+    AccidentDetectionService().listenToAccelerometer(context);
+
     super.initState();
   }
+  //
+  // @override
+  // Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+  //   super.didChangeAppLifecycleState(state);
+  //
+  //   // Handle lifecycle events for each Bloc
+  //   switch (state) {
+  //     case AppLifecycleState.resumed:
+  //       AccidentDetectionService().listenToAccelerometer();
+  //
+  //       break;
+  //     case AppLifecycleState.inactive:
+  //       AccidentDetectionService().listenToAccelerometer();
+  //
+  //       break;
+  //     case AppLifecycleState.paused:
+  //       AccidentDetectionService().listenToAccelerometer();
+  //
+  //       break;
+  //     case AppLifecycleState.detached:
+  //       AccidentDetectionService().listenToAccelerometer();
+  //
+  //       break;
+  //     case AppLifecycleState.hidden:
+  //       AccidentDetectionService().listenToAccelerometer();
+  //
+  //     // TODO: Handle this case.
+  //   }
+  // }
 
   bool permissionGranted = false;
 
@@ -68,55 +100,57 @@ class _HelmetConnectedState extends State<HelmetConnected> {
             width: 100.w,
             height: 25.h,
             color: AppColors.test3,
-            child: const Column(
+            child: Column(
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 InkWell(
-                  // onTap: accidentAlert,
+                  onTap: () async {
+                    // AccidentDetectionService().accidentAlert(context);
+                  },
                   child: CircleAvatar(
                     backgroundColor: Colors.grey,
                     radius: 40,
-                    child: Text('FA'),
+                    child: Text(context.read<BluetoothCubit>().email?.substring(0, 2) ?? 'FA'),
                   ),
                 ),
-                Text('FA'),
-                SizedBox(
-                  height: 15,
+                const SizedBox(
+                  height: 8,
                 ),
-                Text('Fayyaz Ali'),
-                SizedBox(
+                Text(context.read<BluetoothCubit>().email ?? 'User'),
+                const SizedBox(
                   height: 2,
                 ),
-                Text('+924343434343'),
               ],
             ),
           ),
         ),
         Positioned(
-          left: 32,
-          bottom: Get.height * 0.53,
-          child: Container(
-            width: 85.w,
-            height: 8.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2), // Shadow color with opacity
-                  spreadRadius: 2, // How far the shadow spreads
-                  blurRadius: 5, // Blur effect of the shadow
-                  offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: InkWell(
+          left: 20,
+          bottom: Get.height * 0.55,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Container(
+              width: 90.w,
+              height: 8.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2), // Shadow color with opacity
+                    spreadRadius: 2, // How far the shadow spreads
+                    blurRadius: 5, // Blur effect of the shadow
+                    offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    InkWell(
                       onTap: () async {
                         // await context.read<BluetoothCubit>().getDevices();
                         // print('the length after getting is ${context.read<BluetoothCubit>().scannedDevices.length}');
@@ -178,40 +212,42 @@ class _HelmetConnectedState extends State<HelmetConnected> {
                           }
                         },
                       ),
-                    )),
-                const VerticalDivider(),
-                const SizedBox(
-                  width: 20,
-                ),
-                const Text(
-                  'Enable auto connect',
-                  style: TextStyle(color: Colors.black38, fontSize: 16),
-                ),
-                const SizedBox(width: 20),
-                BlocConsumer<SwitchCubit, bool>(
-                  listener: (context, state) {},
-                  builder: (context, state) {
-                    return Switch.adaptive(
-                      inactiveTrackColor: Colors.white38,
-                      activeTrackColor: AppColors.test4,
-                      activeColor: Colors.white,
-                      value: state,
-                      onChanged: (value) {
-                        context.read<BluetoothCubit>().autoConnected = value;
-                        context.read<BluetoothCubit>().disconnectReasonCode = 0;
-                        context.read<SwitchCubit>().updateValue(value);
+                    ),
+                    const VerticalDivider(),
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    const Text(
+                      'Enable auto connect',
+                      style: TextStyle(color: Colors.black38, fontSize: 16),
+                    ),
+                    const SizedBox(width: 20),
+                    BlocConsumer<SwitchCubit, bool>(
+                      listener: (context, state) {},
+                      builder: (context, state) {
+                        return Switch.adaptive(
+                          inactiveTrackColor: Colors.white38,
+                          activeTrackColor: AppColors.test4,
+                          activeColor: Colors.white,
+                          value: state,
+                          onChanged: (value) {
+                            context.read<BluetoothCubit>().autoConnected = value;
+                            context.read<BluetoothCubit>().disconnectReasonCode = 0;
+                            context.read<SwitchCubit>().updateValue(value);
+                          },
+                        );
                       },
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
         Positioned(
           left: 37,
           top: Get.height * 0.30,
-          bottom: 30,
+          // bottom: 30,
           child: Container(
               width: 80.w,
               height: 80.h,
@@ -234,7 +270,7 @@ class _HelmetConnectedState extends State<HelmetConnected> {
                   } else if (bluetoothState is BluetoothStateOn) {
                     snackBar('Bluetooth is turned on', context);
                   } else if (bluetoothState is BluetoothFailedState) {
-                    print("////////////////////");
+                    print('////////////////////');
                     noDeviceFoundDialog(bluetoothState);
 
                     await Future.delayed(const Duration(seconds: 5));
