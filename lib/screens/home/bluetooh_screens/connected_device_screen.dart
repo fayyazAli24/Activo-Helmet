@@ -191,4 +191,8 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       ),
     );
   }
+
+  Widget getContent() {
+    return widget.deviceName != null ? Container() : SizedBox();
+  }
 }
