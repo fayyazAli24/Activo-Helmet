@@ -1,18 +1,13 @@
 import 'dart:async';
-
-// import 'package:another_telephony/telephony.dart';
-import 'package:another_telephony/telephony.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-// import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:unilever_activo/bloc/cubits/switch_cubit/bluetooth_switch.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_connected_screen.dart';
 import 'package:unilever_activo/screens/bottom_navigation/screens/connected_sub_screens/helmet_scanning_screen.dart';
-
 import '../../../bloc/cubits/bluetooth_cubits/bluetooth_cubit.dart';
 import '../../../bloc/cubits/switch_cubit/switch_cubit.dart';
 import '../../../bloc/states/bluetooth_state/bluetooth_states.dart';
@@ -25,19 +20,19 @@ import '../../../utils/widgets/global_method.dart';
 
 class HelmetConnected extends StatefulWidget {
   var counter;
-
   HelmetConnected({Key? key, this.counter}) : super(key: key);
-
   @override
   State<HelmetConnected> createState() => _HelmetConnectedState();
 }
 
-class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingObserver {
+class _HelmetConnectedState extends State<HelmetConnected>
+    with WidgetsBindingObserver {
   StreamSubscription? _subscription;
   String status = 'Listening...';
 
   Future<void> initialization() async {
-    context.read<BluetoothCubit>().autoConnected = await context.read<SwitchCubit>().initialValue();
+    context.read<BluetoothCubit>().autoConnected =
+        await context.read<SwitchCubit>().initialValue();
     print('in init of scan ${context.read<BluetoothCubit>().autoConnected}');
   }
 
@@ -82,7 +77,6 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
   bool permissionGranted = false;
 
   double batteryPercentage = 100.0;
-  final Telephony telephony = Telephony.instance;
   String helmetName = 'Activo Helmet 13314580';
   String message = 'This is a test message!';
   List<String> recipents = ['03128779067'];
@@ -112,7 +106,9 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                   child: CircleAvatar(
                     backgroundColor: Colors.grey,
                     radius: 40,
-                    child: Text(context.read<BluetoothCubit>().email?.substring(0, 2) ?? 'FA'),
+                    child: Text(
+                        context.read<BluetoothCubit>().email?.substring(0, 2) ??
+                            'FA'),
                   ),
                 ),
                 const SizedBox(
@@ -139,10 +135,12 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2), // Shadow color with opacity
+                    color: Colors.black
+                        .withOpacity(0.2), // Shadow color with opacity
                     spreadRadius: 2, // How far the shadow spreads
                     blurRadius: 5, // Blur effect of the shadow
-                    offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
+                    offset: const Offset(0,
+                        4), // Position of the shadow (horizontal and vertical)
                   ),
                 ],
               ),
@@ -160,14 +158,19 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                         // }
                       },
                       child: BlocBuilder<BluetoothCubit, AppBluetoothState>(
-                        builder: (BuildContext context, AppBluetoothState state) {
+                        builder:
+                            (BuildContext context, AppBluetoothState state) {
                           if (state is BluetoothConnectedState) {
                             return InkWell(
                               onTap: () async {
-                                context.read<BluetoothCubit>().disconnectReasonCode = 555;
+                                context
+                                    .read<BluetoothCubit>()
+                                    .disconnectReasonCode = 555;
                                 await context
                                     .read<BluetoothCubit>()
-                                    .disconnectDevice(context.read<BluetoothCubit>().disconnectReasonCode);
+                                    .disconnectDevice(context
+                                        .read<BluetoothCubit>()
+                                        .disconnectReasonCode);
                               },
                               child: const CircleAvatar(
                                 radius: 20,
@@ -231,8 +234,11 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                           activeColor: Colors.white,
                           value: state,
                           onChanged: (value) {
-                            context.read<BluetoothCubit>().autoConnected = value;
-                            context.read<BluetoothCubit>().disconnectReasonCode = 0;
+                            context.read<BluetoothCubit>().autoConnected =
+                                value;
+                            context
+                                .read<BluetoothCubit>()
+                                .disconnectReasonCode = 0;
                             context.read<SwitchCubit>().updateValue(value);
                           },
                         );
@@ -256,10 +262,12 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2), // Shadow color with opacity
+                    color: Colors.black
+                        .withOpacity(0.2), // Shadow color with opacity
                     spreadRadius: 2, // How far the shadow spreads
                     blurRadius: 8, // Blur effect of the shadow
-                    offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
+                    offset: const Offset(0,
+                        4), // Position of the shadow (horizontal and vertical)
                   ),
                 ],
               ),
@@ -303,10 +311,12 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2), // Shadow color with opacity
+                                color: Colors.black.withOpacity(
+                                    0.2), // Shadow color with opacity
                                 spreadRadius: 2, // How far the shadow spreads
                                 blurRadius: 5, // Blur effect of the shadow
-                                offset: const Offset(0, 4), // Position of the shadow (horizontal and vertical)
+                                offset: const Offset(0,
+                                    4), // Position of the shadow (horizontal and vertical)
                               ),
                             ],
                           ),
@@ -317,7 +327,8 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                               ),
                               const Text(
                                 'Enable Bluetooth',
-                                style: TextStyle(color: Colors.black38, fontSize: 16),
+                                style: TextStyle(
+                                    color: Colors.black38, fontSize: 16),
                               ),
                               const SizedBox(width: 65),
                               BlocConsumer<BluetoothSwitch, bool>(
@@ -330,10 +341,16 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                                     value: state,
                                     onChanged: (value) async {
                                       print('the initial value is $state');
-                                      context.read<BluetoothSwitch>().updateValue(value);
+                                      context
+                                          .read<BluetoothSwitch>()
+                                          .updateValue(value);
                                       if (state == false) {
-                                        await context.read<BluetoothCubit>().turnOn();
-                                        await context.read<BluetoothCubit>().getDevices();
+                                        await context
+                                            .read<BluetoothCubit>()
+                                            .turnOn();
+                                        await context
+                                            .read<BluetoothCubit>()
+                                            .getDevices();
                                       } else {
                                         await FlutterBluePlus.turnOff();
                                       }
@@ -348,9 +365,12 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
                           height: 3.h,
                         ),
                         bluetoothState is BluetoothScannedState
-                            ? HelmetScanningScreen(bluetoothState: bluetoothState)
+                            ? HelmetScanningScreen(
+                                bluetoothState: bluetoothState)
                             : bluetoothState is BluetoothConnectedState
-                                ? HelmetConnectedScreen(state: bluetoothState, deviceName: bluetoothState.deviceName)
+                                ? HelmetConnectedScreen(
+                                    state: bluetoothState,
+                                    deviceName: bluetoothState.deviceName)
                                 : AppSpace.noSpace
                       ],
                     ),
@@ -420,7 +440,9 @@ class _HelmetConnectedState extends State<HelmetConnected> with WidgetsBindingOb
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  await BlocProvider.of<BluetoothCubit>(context).audioPlayer.stop();
+                  await BlocProvider.of<BluetoothCubit>(context)
+                      .audioPlayer
+                      .stop();
                   pop();
                 },
                 child: const Center(child: AppText(text: 'Close')),

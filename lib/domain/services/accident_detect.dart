@@ -1,21 +1,17 @@
 import 'dart:async';
 import 'dart:math';
-
-import 'package:another_telephony/telephony.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:unilever_activo/domain/services/storage_services.dart';
-
 import '../../app/app_keys.dart';
 
 class AccidentDetectionService {
   static double gForceThreshold = 3.0; // Threshold for accident detection
   static final double g = 9.8; // Gravitational acceleration
   static double testGForce = 0.0;
-  final Telephony telephony = Telephony.instance;
+  // final Telephony telephony = Telephony.instance;
   Location location = Location();
 
   // Listen to Accelerometer Data
@@ -71,8 +67,6 @@ class AccidentDetectionService {
     if (number != null) {
       if (await Permission.sms.request().isGranted) {
         print("jjkjkjjjk");
-        await telephony.sendSms(to: number, message: emegencyMessage);
-        await FlutterPhoneDirectCaller.callNumber(number);
       } else {
         print('Please add number in the SOS');
       }
