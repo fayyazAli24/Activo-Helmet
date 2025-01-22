@@ -83,6 +83,7 @@ class ApiServices extends AppService {
           }));
 
       if (response.statusCode == 200) {
+        print("the response is valid $response");
         return response.data;
       }
 
@@ -95,5 +96,47 @@ class ApiServices extends AppService {
         error: e,
       );
     }
+  }
+
+  Future<dynamic> Register({required String api, Object? body}) async {
+    try {
+      final response = await dio.post(
+        api,
+        data: body,
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('here the response is ${response.statusCode}');
+        return response.data;
+      }
+
+      return null;
+    } catch (e) {
+      throw DioException(requestOptions: RequestOptions(data: body), message: '$e');
+    }
+  }
+
+  Future<dynamic> login({required String api, Object? body}) async {
+    try {
+      final response = await dio.post(
+        api,
+        data: body,
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+        }),
+      );
+      if (response.statusCode == 200) {
+        return null;
+      }
+    } catch (e) {
+      if (e.toString().contains('The status code of 500')) {
+        return e;
+      }
+      print(e);
+    }
+    return null;
   }
 }

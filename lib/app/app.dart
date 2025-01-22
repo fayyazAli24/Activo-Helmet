@@ -24,7 +24,9 @@ Future<void> permissions() async {
     Permission.bluetoothScan,
     Permission.notification,
     Permission.storage,
-    Permission.locationAlways
+    Permission.locationAlways,
+    Permission.sms,
+    Permission.phone
   ].request();
 }
 
@@ -212,7 +214,7 @@ Future<void> setUpNotifications() async {
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       // Notification Body
       platformChannelSpecifics,
-      payload: 'item x',
+      payload: 'item x', androidScheduleMode: AndroidScheduleMode.exact,
     );
   } catch (e, s) {
     print(s);
