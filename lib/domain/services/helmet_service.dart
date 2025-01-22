@@ -20,26 +20,14 @@ import 'location_service.dart';
 class HelmetService {
   Location location = Location();
   LocationCubit locationCubit = LocationCubit();
-  StreamSubscription<LocationData>? _locationSubscription;
-  var locationService;
+  bool _isSyncing = false;
 
-  Future<void> initializeLocationUpdates() async {
-    await enableBackgroundMode();
-    // Start listening to location updates
-    _locationSubscription = location.onLocationChanged.listen((LocationData locationData) {
-      locationService = locationData; // Update the latest location
-      print('Updated location: $locationData');
-    });
-  }
-
-  Future<dynamic> sendData(
-      String helmetName, double batterPercent, int isWore, int cheek, var date1, var date2, var locationService) async {
+  Future<dynamic> sendData(String helmetName, double batterPercent, int isWore, int cheek, var Date1, var Date2) async {
     try {
       double speed = 0.0;
       var wearingStatus = 0;
-
-      // final locationService = await location.getLocation();
-
+      await enableBackgroundMode();
+      final locationService = await location.getLocation();
       print('the location is $locationService');
       var deviceDataList = <DeviceReqBodyModel>[];
       String? encodedList = await StorageService().read(deviceListKey);
@@ -81,7 +69,7 @@ class HelmetService {
 
       final reqModel = DeviceReqBodyModel(
         helmetId: helmetName,
-        apiDateTime: date1,
+        apiDateTime: Date1,
         userId: '',
         latitude: locationService.latitude,
         longitude: locationService.longitude,
@@ -89,7 +77,7 @@ class HelmetService {
         isWrongWay: 0,
         speed: speed > 105 ? 75 : speed,
         vehicleType: '',
-        savedTime: date2,
+        savedTime: Date2,
         synced: 0,
         createdBy: '',
         updatedBy: '',
@@ -119,59 +107,54 @@ class HelmetService {
   }
 
   Future<List<dynamic>?> syncUnsyncedData() async {
-    print('in this -------');
-    var unsyncedDataList = <DeviceReqBodyModel>[];
-    var dataList = <DeviceReqBodyModel>[];
-
-    final now = DateTime.now();
-
-    String? encodedList = await StorageService().read(deviceListKey);
-
-    if (encodedList != null) {
-      dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-      unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+    if (_isSyncing) {
+      print('Sync already in progress...');
+      return null;
     }
 
-    print('the unsynced list is ${jsonDecode(unsyncedDataList.first.toString())}');
-    print(unsyncedDataList.first);
-    if (unsyncedDataList.isEmpty) return null;
-
-    // unsyncedDataList.sort((a, b) => a.savedTime!.compareTo(b.savedTime!));
-
-    final oldestRecordTime = unsyncedDataList.first.savedTime;
-
-    print('jjjjjj ${jsonDecode(unsyncedDataList.first.toString())}');
-
-    // if (now.difference(oldestRecordTime!).inMinutes >= 5) {
+    _isSyncing = true;
     try {
+      print('Starting sync process...');
+      var unsyncedDataList = <DeviceReqBodyModel>[];
+      var dataList = <DeviceReqBodyModel>[]; // Stores all data from local storage
+
+      String? encodedList = await StorageService().read(deviceListKey);
+
+      if (encodedList != null) {
+        dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
+
+        // Extract unsynced data
+        unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
+      }
+
+      if (unsyncedDataList.isEmpty) return null;
+
+      print('Sending ${unsyncedDataList.length} records to the server...');
       final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-      print('response is in  $res');
-      print('post is called  $res');
 
       if (res != null) {
+        print('Response: $res');
+
+        // Mark synced elements
         for (var unsyncedModel in unsyncedDataList) {
           unsyncedModel.synced = 1;
         }
+
+        // Remove all elements where synced == 1
+        dataList = dataList.where((element) => element.synced == 0).toList();
+
+        // Save updated list back to local storage
+        String updatedList = jsonEncode(dataList);
+        await StorageService().write(deviceListKey, updatedList);
+        print('Synced records removed from local storage.');
       } else {
-        throw Exception('API call failed during unsynced data sync');
+        throw Exception('Failed to sync with server');
       }
     } catch (e) {
-      print('API call failed during unsynced data sync: $e');
-      throw Exception('API call failed during unsynced data sync');
+      print('Error during sync: $e');
+    } finally {
+      _isSyncing = false;
     }
-    // } else {
-    //   print('in the else of this');
-    //   return null;
-    // }
-
-    // Remove all records from dataList that are already synced (synced == 1)
-
-    dataList.removeWhere((element) => element.synced == 1);
-
-    // Write the remaining unsynced data back to local storage
-    await StorageService().write(deviceListKey, jsonEncode(dataList));
-
-    print('this is being returned ');
     return [];
   }
 

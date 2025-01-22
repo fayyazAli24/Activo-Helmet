@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unilever_activo/bloc/cubits/timer_cubit/timer_cubit.dart';
 import 'package:unilever_activo/bloc/states/bluetooth_state/bluetooth_states.dart';
@@ -35,28 +34,22 @@ class BluetoothConnectedScreen extends StatefulWidget {
 class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> with WidgetsBindingObserver {
   Timer? timer;
   Timer? counter;
-  StreamSubscription<LocationData>? _locationSubscription;
-  Location location = Location();
   late DateTime connectedTime;
-  LocationData? locationService;
 
-  Future<void> update() async {
-    await HelmetService().enableBackgroundMode();
-  }
-
-  Future<void> initialization(var location) async {
+  Future<void> initialization() async {
     try {
       if (!mounted) return;
 
       List? res = await di.get<HelmetService>().sendData(widget.deviceName ?? '', widget.state.batteryPercentage,
-          widget.state.isWore, widget.state.cheek, DateTime.now(), DateTime.now(), location);
+          widget.state.isWore, widget.state.cheek, DateTime.now(), DateTime.now());
+
+      // if (help.prevSpeed == 0) return;
 
       if (res != null) {
         print('successfully synced shukr');
         snackBar('Data Synced Successfully', context);
       } else {
-        print("Data stored");
-        // snackBar('Data Stored ', context);
+        snackBar('Data Failed To Synced', context);
       }
     } catch (e) {
       if (!mounted) return;
@@ -70,14 +63,6 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
   @override
   void initState() {
     super.initState();
-
-    update();
-
-    _locationSubscription = location.onLocationChanged.listen((LocationData locationData) async {
-      locationService = locationData; // Update the latest location
-      print('Updated location: $locationService');
-    });
-
     // WidgetsBinding.instance.addObserver(this);
     connectedTime = DateTime.now();
     context.read<TimerCubit>().updateTimer(connectedTime);
@@ -86,13 +71,12 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       context.read<TimerCubit>().updateTimer(connectedTime);
     });
 
-    // update();
-    initialization(locationService);
+    initialization();
     timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       var device = context.read<BluetoothCubit>().connectedDevice;
       if (device != null) {
         print('calling from init');
-        await initialization(locationService);
+        await initialization();
       }
     });
   }
