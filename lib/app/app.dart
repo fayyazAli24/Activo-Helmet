@@ -159,6 +159,7 @@ Future<void> clearPreviousRecord() async {
     (event) async {
       if (event.contains(ConnectivityResult.wifi)) {
         print('in the condition');
+
         await di.get<UnSyncRecordService>().clearPreviousRecords();
       }
     },

@@ -14,7 +14,6 @@ class LocationHistoryCubit extends Cubit<LocationHistoryState> {
       var newList = <Map<String, dynamic>>[];
       final updatedRecords = await StorageService().read(disconnectTimeKey);
 
-      print("xxxxxxxxxxxxxxxxx $updatedRecords");
       if (updatedRecords != null) {
         newList = List<Map<String, dynamic>>.from(jsonDecode(updatedRecords).map((e) => Map<String, dynamic>.from(e)))
             .toList();

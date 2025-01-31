@@ -58,21 +58,17 @@ class UnSyncRecordService {
     final savedDate = await StorageService().read('date');
     print('the current data is $savedDate');
     if (savedDate != null) {
-      final parsedDate = DateTime.parse(savedDate);
-      print('the parsed data is $parsedDate');
+
       final currentDate = DateTime.now();
-      print('the current data is $currentDate');
 
       try {
         print('chal gaya bc $currentDate');
         await syncUnsyncedAlertRecord(true);
         await syncUnsyncedReasonRecord(true);
 
-        final list = await di.get<HelmetService>().syncUnsyncedData();
-        print("in this case is $list");
-        // if (list != null) {
+        await di.get<HelmetService>().syncUnsyncedData();
+
         await StorageService().delete(deviceListKey);
-        // await StorageService().delete(lastDeviceKey);
         await StorageService().delete(disconnectTimeKey);
         // }
         print('--------=====');
@@ -81,20 +77,16 @@ class UnSyncRecordService {
       }
 
       var list = await StorageService().read(deviceListKey);
-      print('the list here is ${list.runtimeType}');
 
       if (list != null) {
         List<dynamic> jsonList = jsonDecode(list);
         print('Decoded list here is of type: ${jsonList.runtimeType}');
         jsonList = jsonList.where((item) => item['synced'] == 0).toList();
-        print('Filtered list here is: $jsonList');
 
         var updatedList = jsonEncode(jsonList);
 
-        // Step 5: Overwrite the previous list in local storage with the updated list
         await StorageService().write(deviceListKey, updatedList);
 
-        // Step 6: Optionally, print the updated list
         print('The updated list after writing is: $jsonList');
 
         await StorageService().write('date', DateTime.now().toIso8601String());
