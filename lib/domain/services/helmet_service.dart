@@ -23,6 +23,7 @@ class HelmetService {
   StreamSubscription<LocationData>? _locationSubscription;
   var locationService;
   bool _isSyncing = false;
+  Completer<void>? _syncCompleter;
 
   Future<void> initializeLocationUpdates() async {
     await enableBackgroundMode();
@@ -60,10 +61,6 @@ class HelmetService {
           locationService.latitude!,
           locationService.longitude!,
         );
-        // if (distance < 10) {
-        //   print('Distance is $distance meters, skipping update');
-        //   return;
-        // }
 
         var temp = calculateSpeed(
             locationService.latitude!, locationService.longitude!, LocationCubit.prevLat!, LocationCubit.prevLong!, 15);
@@ -95,6 +92,7 @@ class HelmetService {
         createdBy: '',
         updatedBy: '',
       );
+
       print('model being added to local storage is $reqModel');
       deviceDataList.add(reqModel);
 
@@ -103,7 +101,6 @@ class HelmetService {
 
       if (isInternetAvailable.contains(ConnectivityResult.mobile) ||
           isInternetAvailable.contains(ConnectivityResult.wifi)) {
-        print('888888888');
         final list = await syncUnsyncedData();
         if (list != null) {
           return [];
@@ -112,63 +109,102 @@ class HelmetService {
         }
       }
     } catch (e) {
-      // log('$e');
-
       return null;
     }
     return null;
   }
 
+  // Future<List<dynamic>?> syncUnsyncedData() async {
+  //   try {
+  //     print('Starting sync process...');
+  //     var dataList = <DeviceReqBodyModel>[]; // All data from local storage
+  //     String? encodedList = await StorageService().read(deviceListKey);
+  //
+  //     if (encodedList != null) {
+  //       dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
+  //     }
+  //
+  //     var unsyncedDataList = dataList.where((item) => item.synced == 0).toList();
+  //     if (unsyncedDataList.isEmpty) return null;
+  //
+  //     print('Sending ${unsyncedDataList.length} records to the server...');
+  //     final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+  //
+  //     if (res != null) {
+  //       print('Response: $res');
+  //
+  //       // Update the synced flag in the data list
+  //       for (var unsyncedItem in unsyncedDataList) {
+  //         var index = dataList.indexWhere((item) => item == unsyncedItem);
+  //         if (index != -1) {
+  //           dataList[index].synced = 1;
+  //         }
+  //       }
+  //
+  //       // Save the updated data list back to local storage
+  //       String updatedEncodedList = jsonEncode(dataList);
+  //       await StorageService().write(deviceListKey, updatedEncodedList);
+  //
+  //       print('Local storage updated with synced data.');
+  //     }
+  //   } catch (e) {
+  //     print('Error during sync: $e');
+  //   }
+  //   return [];
+  // }
+
   Future<List<dynamic>?> syncUnsyncedData() async {
     if (_isSyncing) {
-      print('Sync already in progress...');
+      print('already busy');
       return null;
     }
 
     _isSyncing = true;
     try {
-      print('Starting sync process...');
       var unsyncedDataList = <DeviceReqBodyModel>[];
-      var dataList = <DeviceReqBodyModel>[]; // Stores all data from local storage
+      var dataList = <DeviceReqBodyModel>[];
 
       String? encodedList = await StorageService().read(deviceListKey);
 
       if (encodedList != null) {
         dataList = jsonDecode(encodedList).map<DeviceReqBodyModel>((e) => DeviceReqBodyModel.fromJson(e)).toList();
-
-        // Extract unsynced data
         unsyncedDataList = dataList.where((element) => element.synced == 0).toList();
       }
 
-      if (unsyncedDataList.isEmpty) return null;
-
-      print('Sending ${unsyncedDataList.length} records to the server...');
-      final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
-
-      if (res != null) {
-        print('Response: $res');
-
-        // Mark synced elements
-        for (var unsyncedModel in unsyncedDataList) {
-          unsyncedModel.synced = 1;
-        }
-
-        // Remove all elements where synced == 1
-        dataList = dataList.where((element) => element.synced == 0).toList();
-
-        // Save updated list back to local storage
-        String updatedList = jsonEncode(dataList);
-        await StorageService().write(deviceListKey, updatedList);
-        print('Synced records removed from local storage.');
-      } else {
-        throw Exception('Failed to sync with server');
+      if (unsyncedDataList.isEmpty) {
+        return null;
       }
-    } catch (e) {
-      print('Error during sync: $e');
+
+      try {
+        print('unsynced data list is ${unsyncedDataList.first.userId}');
+        final res = await ApiServices().post(api: Api.trJourney, body: unsyncedDataList);
+
+        if (res != null) {
+          for (var unsyncedModel in unsyncedDataList) {
+            unsyncedModel.synced = 1;
+            // unsyncedModel.apiDateTime = DateTime.now();
+          }
+        } else {
+          throw Exception('API call failed during unsynced data sync');
+        }
+      } catch (e) {
+        print('API call failed during unsynced data sync: $e');
+        throw Exception('API call failed during unsynced data sync');
+      }
+
+      // Updating local list
+      for (final updatedModel in dataList) {
+        final index = dataList.indexWhere((element) => element == updatedModel);
+        if (index != -1) {
+          dataList[index] = updatedModel;
+        }
+      }
+
+      await StorageService().write(deviceListKey, jsonEncode(dataList));
+      return [];
     } finally {
-      _isSyncing = false;
+      _isSyncing = false; // Ensures this is always reset
     }
-    return [];
   }
 
   Future<void> disconnectingAlert(
@@ -190,6 +226,7 @@ class HelmetService {
         'Created_By': '',
         'Updated_By': '',
       };
+
       print('the body of alert is $body');
       final connection = await Connectivity().checkConnectivity();
       if (connection.contains(ConnectivityResult.wifi) || connection.contains(ConnectivityResult.mobile)) {
@@ -201,12 +238,10 @@ class HelmetService {
           return res;
         }
       } else {
-        print("-------------------------------");
+        print('-------------------------------');
         final alertList = await StorageService().read(unSyncedAlertData);
-
         if (alertList != null) {
-          print("-------------------------------1111");
-
+          print('-------------------------------1111');
           var list =
               List<Map<String, dynamic>>.from(jsonDecode(alertList).map((e) => Map<String, dynamic>.from(e))).toList();
 
