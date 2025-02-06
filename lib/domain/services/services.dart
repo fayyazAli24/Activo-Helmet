@@ -15,7 +15,7 @@ abstract class AppService<T> {
             //   option.data = (option.data as Map<String, dynamic>)
             //     ..addAll({"version": Api.apiVersion});
             // }
-            option.connectTimeout = const Duration(seconds: 30);
+            option.connectTimeout = const Duration(seconds: 15);
 
             return handler.next(option);
           },

@@ -51,12 +51,11 @@ class _BluetoothConnectedScreenState extends State<BluetoothConnectedScreen> wit
       List? res = await di.get<HelmetService>().sendData(widget.deviceName ?? '', widget.state.batteryPercentage,
           widget.state.isWore, widget.state.cheek, DateTime.now(), DateTime.now(), location);
 
-      if (res != null) {
-        print('successfully synced shukr');
-        snackBar('Data Synced Successfully', context);
-      } else {
-        print("Data stored");
+      if (res == null) {
         snackBar('Data Failed to sync ', context);
+      } else {
+        print('Data stored');
+        snackBar('Data Synced Successfully', context);
       }
     } catch (e) {
       if (!mounted) return;
